@@ -1,0 +1,125 @@
+﻿@using MudBlazor
+@using Lunatic.UI.Contracts
+@using Lunatic.UI.Models.Dtos
+@inject NavigationManager navigationManager
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<style>
+	.hover-cursor {
+		cursor: pointer;
+	}
+</style>
+
+<MudPaper Elevation="1" Class="d-flex flex-row p-1 py-2 gap-2 hover-cursor" @onclick="TeleportProfilePopover">
+
+	<MudAvatar Size="Size.Medium">
+		@if (ImageUrl != null) {
+			<MudImage ObjectFit="ObjectFit.Cover" Src="@ImageUrl" Width="40" Height="40"></MudImage>
+		}
+	</MudAvatar>
+	<MudPaper Class="d-flex flex-column" Elevation="0">
+		<MudText Typo="Typo.body1" Color="Color.Info">
+			@User.FirstName @User.LastName
+		</MudText>
+		<MudText Typo="Typo.caption" Color="Color.Default">
+			@User.Username
+		</MudText>
+	</MudPaper>
+	<MudPopover Open="isOpenProfilePopover"
+				Class="position-fixed"
+				@onmouseleave="()=>isOpenProfilePopover=false"
+				id="@PopoverId">
+
+		<MudPaper Class="d-flex flex-row p-3 gap-4 bg-transparent" Elevation="0">
+			<MudAvatar Style="height:5em; width:5em">
+				@if (ImageUrl != null) {
+					<MudImage ObjectFit="ObjectFit.Cover" Src="@ImageUrl" Width="100" Height="100"></MudImage>
+				}
+			</MudAvatar>
+			<MudPaper Elevation="0" Class="d-flex flex-column gap-1 bg-transparent">
+				<MudText Typo="Typo.h6" Color="Color.Info">
+					@User.FirstName @User.LastName
+				</MudText>
+
+				<MudText Typo="Typo.body2" Color="Color.Dark">
+					@User.Username
+				</MudText>
+
+				<MudDivider DividerType="DividerType.FullWidth" Class="flex-grow-0" Style="height:4px" />
+
+				<MudText Typo="Typo.h6">
+					Contact info
+				</MudText>
+
+				<MudText Typo="Typo.body2" Color="Color.Dark">
+					@User.Email
+				</MudText>
+
+			</MudPaper>
+		</MudPaper>
+	</MudPopover>
+</MudPaper>
+
+
+<script>
+	function teleportPopover(id, x, y) {
+
+		var div = document.getElementById(id);
+
+		var width = 350;
+		var height = 150;
+
+		var fitX = 0;
+		var fitY = 0;
+		if (x + width > window.innerWidth) {
+			fitX = window.innerWidth - width;
+		}
+		else {
+			fitX = x;
+		}
+		if (y + height > window.innerHeight) {
+			fitY = window.innerHeight - height;
+		}
+		else {
+			fitY = y;
+		}
+
+		var left = (fitX - 10) + "px";
+		var top = (fitY - 10) + "px";
+
+		div.style.left = left;
+		div.style.top = top;
+	}
+</script>
+
+@code {
+	[Parameter] public UserDto User { get; set; } = new();
+	private string? ImageUrl = null;
+	private string PopoverId => $"popover-{User.UserId}";
+
+	private bool isOpenProfilePopover = false;
+
+	//user image, maybe cached! TODO
+	[Inject] public IUserDataService UserDataService { get; set; } = null!;
+	[Inject] public IImageService ImageService { get; set; } = null!;
+}
+
+@functions {
+
+	protected override async Task OnInitializedAsync() {
+		var response = await ImageService.GetUserImageAsync(User.UserId);
+		if (!response.Success) {
+			ImageUrl = "images/default-user.jpg";
+		}
+		else {
+			ImageUrl = System.Text.Encoding.UTF8.GetString(response.GetValue("image").ImageData);
+		}
+	}
+
+	private async Task TeleportProfilePopover(MouseEventArgs args) {
+		isOpenProfilePopover = true;
+		await JS.InvokeVoidAsync("teleportPopover", PopoverId, args.PageX, args.PageY);
+
+	}
+}

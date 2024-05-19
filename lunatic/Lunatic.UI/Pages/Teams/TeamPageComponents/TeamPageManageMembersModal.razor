@@ -1,0 +1,176 @@
+﻿@using MudBlazor
+@inject ISnackbar Snackbar
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@using Microsoft.AspNetCore.Components
+@using Lunatic.UI.Contracts
+@using System.Text.Json
+@using Lunatic.UI.Pages.Teams.TeamPageComponents.Shared
+@using Lunatic.UI.Pages.Teams.TeamPageComponents.ManageMembersModalComponents
+@using System.Timers
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<style>
+	.member-management-toolbar {
+		background-color: #9271bd;
+		color: #ffffff;
+	}
+
+	.member-management-toolbar1 {
+		background-color: #ebc8a9;
+		color: #ffffff;
+	}
+
+	.member-management-toolbar2 {
+		background-color: #ebd5a9;
+		color: #ffffff;
+	}
+</style>
+
+@* <MudDialog DefaultFocus="DefaultFocus.LastChild">
+	<DialogContent> *@
+<MudPaper Width="80vw" Height="80vh" Class="m-0 overflow-x-hidden d-flex flex-column flex-grow-1">
+	@* <MudPaper Class="d-flex flex-column flex-grow-1" sytle="min-height:0;"> *@
+	<MudToolBar Class="member-management-toolbar z-10" Dense="true">
+		<MudText Typo="Typo.subtitle1">Manage members</MudText>
+		<MudSpacer />
+		<MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" OnClick="@(() => {MudDialog.Cancel(); NavigationManager.Refresh();})" />
+	</MudToolBar>
+
+	@* <MudPaper Class="d-flex flex-row  flex-grow-1 align-stretch"> *@
+	<MudGrid Spacing="0" Class="flex-grow-1 p-0">
+		<MudItem xs="12" sm="4" Class="d-flex flex-column flex-grow-1">
+			@* <MudPaper> *@
+			<MudToolBar Class="member-management-toolbar1" Dense>Add Members</MudToolBar>
+			<MudPaper Class="d-flex flex-column flex-grow-1 ">
+				<MudTextField Class="flex-grow-0 pt-1 m-2" @bind-Value="@searchValue" OnKeyUp="OnKeyUpSearchBar"
+							  Variant="Variant.Outlined" Margin="Margin.Dense"
+							  Label="Search by username"
+							  Immediate="true">
+				</MudTextField>
+
+				<MudPaper Class="d-flex flex-column flex-grow-1 overflow-y-scroll" Elevation="0">
+					@foreach (var searchResult in UserItems) {
+						<SearchUserComponent MemberId="@searchResult.UserId"
+											 TeamOwnerId="@OwnerId"
+											 Username="@searchResult.Username"
+											 TeamId="@TeamId"
+											 MembersIdsRef="@MembersIds"
+											 UpdateMemberList="@StateHasChanged"
+											 UserItems="@UserItems" />
+					}
+				</MudPaper>
+			</MudPaper>
+			@* </MudPaper> *@
+		</MudItem>
+
+		<MudItem xs="12" sm="8" Class=" d-flex flex-column flex-grow-1 m-0 ">
+			@* <MudPaper Class="flex-grow-1 d-flex flex-column "> *@
+			@* align-items-stretch *@
+			@* style=" overflow-y:scroll; overflow-x:hidden;" *@
+			<MudToolBar Class="member-management-toolbar2" Dense>Manage members</MudToolBar>
+			@* <MudPaper> *@
+			@* style="height:100%; overflow-y:scroll; overflow-x:hidden;" *@
+			@* TODO: scroll issues *@
+
+			<MudPaper Class="d-flex flex-column flex-grow-1 overflow-y-scroll">
+				@foreach (var memberId in MembersIds) {
+					<TeamMemberComponent MemberId="@memberId"
+										 TeamOwnerId="@OwnerId"
+										 TeamId="@TeamId"
+										 MembersIdsRef="@MembersIds"
+										 UpdateMemberList="@StateHasChanged" />
+				}
+				@* <MudPaper Class="flex-grow-1 mud-theme-primary" Elevation="0" /> *@
+			</MudPaper>
+			@* </MudPaper> *@
+			@* </MudPaper> *@
+		</MudItem>
+
+	</MudGrid>
+	@* </MudPaper> *@
+	@* </MudPaper> *@
+
+</MudPaper>
+
+<script>
+	window.triggerClick = function (element) {
+		element.click();
+	}
+
+</script>
+
+@code {
+	[CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+	[Parameter] public Guid TeamId { get; set; }
+	[Parameter] public Guid OwnerId { get; set; }// can access this modal only if owner
+	[Parameter] public List<Guid> MembersIds { get; set; } = null;
+
+	private List<UserItem>? UserItems { get; set; } = new();
+
+	// private string searchValue = "";
+	private string searchValue = "";
+	// private List<string> EmptyList = new List<string>();
+	private Timer? timer;
+	private bool timerActive = false;
+
+	[Inject] IUserDataService UserDataService { get; set; } = null!;
+}
+
+
+@functions {
+
+	protected override async Task OnInitializedAsync() {
+
+		try {
+			var currentUserId = await localStorage.GetItemAsync<Guid>("userId");
+			if (currentUserId != OwnerId) {
+				Snackbar.Add("You are not the owner of this team", Severity.Error);
+				MudDialog.Cancel();
+			}
+		}
+		catch (Exception e) {
+			Snackbar.Add($"Error loading your JWT from localstorage, it's not my fault! Error: {e.Message}", Severity.Error);
+			NavigationManager.NavigateTo("/login");
+		}
+
+
+
+		foreach (var memberId in MembersIds) {
+			var user = await UserDataService.GetUserByIdAsync(memberId);
+		}
+	}
+
+	public void OnKeyUpSearchBar(KeyboardEventArgs e) {
+
+		if (e.Key.Length > 1)
+			return;
+
+		if (timer == null) {
+			timer = new Timer();
+			timer.Interval = 250;
+			timer.Elapsed += new ElapsedEventHandler(SearchUsers);
+			timer.AutoReset = false;
+			timer.Start();
+		}
+		else {
+			timer.Stop();
+			timer.Start();
+		}
+	}
+
+	public async void SearchUsers(object? sender, ElapsedEventArgs e) {
+		if (searchValue.Length <= 2)
+			return;
+
+		var result = await UserDataService.GetUsersByUsernamePartialMatchAsync(searchValue);
+
+		if (result != null) {
+			UserItems.Clear();
+			foreach (var user in result) {
+				UserItems.Add(new UserItem(user.UserId, user.Username));
+				StateHasChanged();
+			}
+		}
+	}
+}

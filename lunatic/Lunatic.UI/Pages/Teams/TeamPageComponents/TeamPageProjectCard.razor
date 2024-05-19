@@ -1,0 +1,74 @@
+﻿@using MudBlazor
+@using Lunatic.UI.Contracts
+@inject NavigationManager navigationManager
+@inject ISnackbar Snackbar
+
+<style>
+	.mud-card-hover {
+		cursor: pointer;
+	}
+
+	.description-color {
+		color: #6c757d;
+	}
+</style>
+
+<MudCard Class="mud-card-hover" @onclick="CardClicked">
+	<MudCardContent>
+		<MudText>
+			@ProjectTitle
+		</MudText>
+		<MudText Typo="Typo.caption" Class="description-color">
+			@ProjectDescription
+		</MudText>
+		<MudPaper Elevation="0" Class="d-flex flex-row gap-1">
+			<MudChip Size="Size.Small" Class="m-0 mt-2">
+				<MudIcon Icon="@Icons.Material.Filled.FolderSpecial" Size="Size.Small" Class="mr-1" />
+				<MudText Style="font-size:1.1em" Class="mr-1">
+					@ProjectTasksCount
+				</MudText>
+				@if (@ProjectTasksCount == 1) {
+					<MudText Style="font-size:1.1em">
+						task
+					</MudText>
+				}
+				else {
+					<MudText Style="font-size:1.1em">
+						tasks
+					</MudText>
+				}
+			</MudChip>
+		</MudPaper>
+	</MudCardContent>
+</MudCard>
+
+@code {
+	[Parameter] public Guid ProjectId { get; set; }
+	[Parameter] public EventCallback<Guid> OnCardClick { get; set; }
+	public string ProjectTitle { get; set; } = "";
+	public string ProjectDescription { get; set; } = ""; //inform of max length!
+	public int ProjectTasksCount { get; set; } = 0;
+
+	[Inject] public IProjectDataService ProjectDataService { get; set; } = null!;
+}
+
+@functions {
+	protected override async Task OnInitializedAsync() {
+		var response = await ProjectDataService.GetProjectByIdAsync(ProjectId);
+		if (!response.Success) {
+			Snackbar.Add($"Error loading project: {response.Message}", Severity.Error);
+			return;
+		}
+		var project = response.GetValue("project");
+		ProjectTitle = project.Title;
+		ProjectDescription = project.Description.Substring(0, Math.Min(300, project.Description.Length));
+		ProjectTasksCount = project.TaskIds.Count;
+		if (project.Description.Length > 300) {
+			ProjectDescription += "...";
+		}
+	}
+
+	private async Task CardClicked() {
+		await OnCardClick.InvokeAsync(ProjectId);
+	}
+}

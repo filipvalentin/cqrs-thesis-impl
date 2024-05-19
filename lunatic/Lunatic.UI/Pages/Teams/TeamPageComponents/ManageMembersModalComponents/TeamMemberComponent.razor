@@ -1,0 +1,73 @@
+﻿@using MudBlazor
+@using Lunatic.UI.Contracts
+@inject ISnackbar Snackbar
+
+<MudPaper Class="d-flex flex-row align-items-center m-1 ml-2 p-1">
+	<MudAvatar>
+		<MudImage ObjectFit="ObjectFit.Cover" Src="@UserImageSrc" Width="40" Height="40"/>
+	</MudAvatar>
+
+	<MudText>
+		@Username
+	</MudText>
+	<MudSpacer />
+	<MudButton OnClick="RemoveMember" Disabled="@IsOwner">
+		Remove
+	</MudButton>
+</MudPaper>
+
+@code {
+	[Parameter] public Guid TeamId { get; set; }
+	[Parameter] public Guid MemberId { get; set; }
+	[Parameter] public Guid TeamOwnerId { get; set; }
+	[Parameter] public List<Guid> MembersIdsRef { get; set; } = null!;
+[Parameter] public bool IsVisible { get; set; }
+	[Parameter] public EventCallback UpdateMemberList { get; set; }
+
+	private string UserImageSrc { get; set; } = "";
+
+	public bool IsOwner { get; set; } = false;
+	// [Parameter] public EventCallback<string> OnRemoveMember { get; set; }
+	public string Username { get; set; } = "";
+
+
+	[Inject] public IUserDataService UserDataService { get; set; } = null!;
+	[Inject] public ITeamDataService TeamDataService { get; set; } = null!;
+	
+	[Inject] public IImageService ImageService { get; set; } = null!;
+}
+
+@functions {
+
+	protected override async Task OnInitializedAsync() {
+
+		var result = await UserDataService.GetUserByIdAsync(MemberId);
+
+		var user = result.GetValue("user");
+
+		Username = user.Username;
+
+		IsOwner = TeamOwnerId == MemberId;
+
+		var response = await ImageService.GetUserImageAsync(user.UserId);
+		if (!response.Success) {
+			UserImageSrc = "/img/default-user.jpg";
+		}
+		UserImageSrc = System.Text.Encoding.UTF8.GetString(response.GetValue("image").ImageData);
+
+	}
+
+	private async Task RemoveMember() {
+		var result = await TeamDataService.RemoveMemberFromTeamAsync(MemberId, TeamId);
+		if (result.Success) {
+			Snackbar.Add($"Member {Username} removed from team.", Severity.Success);
+			MembersIdsRef.Remove(MemberId);
+			Task.Run(async () => await UpdateMemberList.InvokeAsync());
+		}
+		else
+			Snackbar.Add($"Failed to remove member {Username} from team.", Severity.Error);
+	}
+	// private void MarkInvisible() {
+	// 	ItemClasses = "invisible d-flex flex-row";
+		// }
+}

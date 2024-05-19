@@ -1,0 +1,74 @@
+﻿@using MudBlazor
+@using UI.Contracts
+@using UI.Models.Dtos
+@inject NavigationManager NavigationManager
+<MudChip OnClick="()=>isOpenProfilePopover=true">
+
+	<MudAvatar Color="Color.Primary">
+		<MudImage ObjectFit="ObjectFit.Cover" Src="@UserImageSrc" Width="20" Height="20"></MudImage>
+	</MudAvatar>
+
+	<MudText>
+		@User.Username
+	</MudText>
+
+	<MudPopover Open="isOpenProfilePopover"
+				@onmouseleave="()=>isOpenProfilePopover=false"
+				OverflowBehavior="OverflowBehavior.FlipOnOpen"
+				AnchorOrigin="Origin.BottomRight"
+				TransformOrigin="Origin.CenterCenter">
+
+		<MudPaper Class="d-flex flex-row p-3 gap-4 bg-transparent" Elevation="0" Width="23em">
+			<MudAvatar Style="height:5em; width:5em">
+				<MudImage ObjectFit="ObjectFit.Cover" Src="" Width="100" Height="100"></MudImage>
+			</MudAvatar>
+			<MudPaper Elevation="0" Class="d-flex flex-column gap-1 bg-transparent">
+				<MudText Typo="Typo.h6" Color="Color.Info">
+					@User.FirstName @User.LastName
+				</MudText>
+
+				<MudText Typo="Typo.body2" Color="Color.Dark">
+					@User.Username
+				</MudText>
+
+				<MudDivider DividerType="DividerType.FullWidth" Class="flex-grow-0" Style="height:4px" />
+
+				<MudText Typo="Typo.h6">
+					Contact info
+				</MudText>
+
+				<MudText Typo="Typo.body2" Color="Color.Dark">
+					@User.Email
+				</MudText>
+
+			</MudPaper>
+		</MudPaper>
+	</MudPopover>
+</MudChip>
+
+@code {
+	[Parameter] public Guid UserId { get; set; }
+	private string UserImageSrc { get; set; } = "";
+	private UserDto User { get; set; } = new();
+	private bool isOpenProfilePopover { get; set; } = false;
+
+	[Inject] private IUserDataService UserDataService { get; set; }
+	[Inject] private IImageService ImageService { get; set; }
+}
+
+@functions {
+	protected override async Task OnInitializedAsync() {
+		var user = await UserDataService.GetUserByIdAsync(UserId);
+		if (!user.Success) {
+			return;
+		}
+		User = user.GetValue("user");
+
+		var imageResult = await ImageService.GetUserImageAsync(User.UserId);
+		if (!imageResult.Success) {
+			UserImageSrc = "img/default-user.jpg";
+			return;
+		}
+		UserImageSrc = System.Text.Encoding.UTF8.GetString(imageResult.GetValue("image").ImageData);
+	}
+}

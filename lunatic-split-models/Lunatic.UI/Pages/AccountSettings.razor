@@ -1,0 +1,332 @@
+﻿@page "/account-settings"
+@using MudBlazor
+@using Lunatic.UI.Contracts
+@using Lunatic.UI.Models.ViewModels
+@using Lunatic.UI.Models.Dtos
+@using System.ComponentModel.DataAnnotations
+@using System.Text.RegularExpressions
+@using System.Text
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorageService
+@inject ISnackbar Snackbar
+
+<style>
+
+
+	.layout {
+		display: flex;
+		flex-direction: row;
+	}
+
+	.password-div {
+		width: 26.5em;
+	}
+
+	@@media screen and (max-width: 600px) {
+		.layout {
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.password-div {
+			width: 100%;
+		}
+	}
+</style>
+
+<MudPaper Height="100%" Class="p-2 px-4 d-flex flex-column flex-grow-1 " Elevation="0">
+	<MudPaper Class="d-flex flex-column align-center justify-center " Elevation="0" Height="calc(100vh - 4em)" MinHeight="30em">
+
+		<MudPaper Class="d-flex flex-column align-center p-2 mud-background-gray">
+
+			<MudText Typo="Typo.h6" Class="m-2">
+				Account settings
+			</MudText>
+			<MudDivider DividerType="DividerType.FullWidth" Class="flex-grow-0" Style="height:2px" />
+
+
+			<MudPaper Class="layout p-4 gap-9 bg-transparent" Elevation="0">
+				<MudPaper Elevation="0" Class="d-flex flex-column bg-transparent align-center">
+					<MudAvatar Style="height:10em; width:10em" Class="overflow-hidden">
+						<MudImage ObjectFit="ObjectFit.Cover" Src="@DisplayImageSrc" Width="200" Height="200"></MudImage>
+					</MudAvatar>
+
+					<MudFileUpload T="IBrowserFile"
+								   Accept=".png, .jpg, .gif"
+								   FilesChanged="FileSelectedForUpload">
+						<ButtonTemplate>
+							@*  <MudPaper Class="overlay z-90" Elevation="0" @onclick="ChangeUserImage">
+							<MudText>Change image</MudText>
+							</MudPaper> *@
+							<MudButton HtmlTag="label"
+									   Color="Color.Secondary"
+									   StartIcon="@Icons.Material.Filled.CloudUpload"
+									   Variant="Variant.Filled"
+									   for="@context.Id"
+									   Size="Size.Small">Upload photo</MudButton>
+						</ButtonTemplate>
+					</MudFileUpload>
+
+					@if (photoLoaded) {
+						<MudPaper Class="d-flex flex-row gap-2 justify-center bg-transparent m-2" Width="100%" Elevation="0">
+							<MudButton Variant="Variant.Filled"
+									   Size="Size.Small"
+									   Color="Color.Primary"
+									   OnClick="SaveUserImage">Save</MudButton>
+							<MudButton Variant="Variant.Filled"
+									   Size="Size.Small"
+									   OnClick="()=>{DisplayImageSrc = InitialImageSrc; photoLoaded = false;}">Cancel</MudButton>
+
+						</MudPaper>
+					}
+				</MudPaper>
+				<MudPaper Elevation="0" Class="d-flex flex-column gap-4 bg-transparent">
+					@*  <MudText Typo="Typo.h5" Color="Color.Info">
+					LastName UserProfileDto.FirstName
+					</MudText> *@
+					<MudPaper Class="d-flex flex-row gap-6 justify-space-between bg-transparent" Elevation="0">
+						<MudPaper Class="d-flex flex-column bg-transparent" Elevation="0">
+							<MudTextField @bind-Value="UpdateUserInfoViewModel.FirstName" Label="First name" />
+							<MudTextField @bind-Value="UpdateUserInfoViewModel.LastName" Label="Last name" />
+						</MudPaper>
+						<MudPaper Class="bg-transparent d-flex flex-row align-center" Elevation="0">
+							<MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary" OnClick="SendRequest"> Change </MudButton>
+						</MudPaper>
+					</MudPaper>
+
+					<MudDivider DividerType="DividerType.FullWidth" Class="flex-grow-0" Style="height:2px" />
+
+					<MudPaper Class="d-flex flex-row justify-space-between bg-transparent" Elevation="0">
+						@if (!isEditingEmail) {
+							<MudPaper Class="d-flex flex-column bg-transparent" Elevation="0">
+								<MudText><b>Email address</b></MudText>
+								<MudText Typo="Typo.body1" Color="Color.Dark">
+									@UpdateUserInfoViewModel.Email
+								</MudText>
+							</MudPaper>
+							<MudPaper Class="bg-transparent d-flex flex-row align-center" Elevation="0">
+								<MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary" OnClick="()=>isEditingEmail=true"> Change </MudButton>
+							</MudPaper>
+						}
+						else {
+							@* 							<MudTextField @bind-Value="UserSettingsViewModel.Email" Label="Email address"
+						Adornment="Adornment.End"
+						AdornmentIcon="@Icons.Material.Filled.Check"
+						OnAdornmentClick="()=>{SendRequest(); isEditingEmail=false; }" /> *@
+							<MudPaper Class="d-flex flex-column bg-transparent password-div" Elevation="0">
+								<MudForm @bind-IsValid="@isValidEmailForm">
+									<MudText><b>Change email</b></MudText>
+									<MudTextField Class="m-0" @bind-Value="NewEmail" Label="New Email" Required="true"
+												  Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+									<MudTextField T="string" Label="Confirm Email" Required="true"
+												  Validation="@(new Func<string, string>(EmailMatch))" />
+									<MudPaper Class="d-flex flex-row justify-space-around bg-transparent mt-2" Elevation="0">
+										<MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary"
+												   Disabled="@(!isValidEmailForm)"
+												   OnClick="@(async ()=>{await SendRequest(); isEditingEmail=false;})"> Change </MudButton>
+										<MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Surface"
+												   OnClick="()=>isEditingEmail=false"> Cancel </MudButton>
+									</MudPaper>
+
+								</MudForm>
+							</MudPaper>
+						}
+					</MudPaper>
+					<MudDivider DividerType="DividerType.FullWidth" Class="flex-grow-0" Style="height:2px" />
+					@if (!isChangingPassword) {
+						<MudPaper Class="d-flex flex-row justify-space-between bg-transparent gap-4" Elevation="0">
+
+							<MudPaper Class="d-flex flex-column bg-transparent" Elevation="0">
+								<MudText><b>Change password</b></MudText>
+								<MudText Typo="Typo.caption" Color="Color.Dark">
+									Password must be at least 8 characters long
+								</MudText>
+							</MudPaper>
+							<MudPaper Class="bg-transparent d-flex flex-row align-center" Elevation="0">
+								<MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary"
+										   OnClick="()=>isChangingPassword=true"> Change </MudButton>
+							</MudPaper>
+						</MudPaper>
+					}
+					else {
+						<MudPaper Class="d-flex flex-column bg-transparent password-div" Elevation="0">
+							<MudText><b>Change password</b></MudText>
+							<MudForm @bind-IsValid="isValidPasswordForm">
+								<MudTextField Class="m-0" @bind-Value="OldPassword" Label="Old Password" InputType="InputType.Password" />
+								<MudTextField @bind-Value="NewPassword" Label="New Password" Required="true" InputType="InputType.Password"
+											  Validation="@(new Func<string, IEnumerable<string>>(PasswordStrength))" />
+								<MudTextField T="string" Label="Confirm Password" Required="true" InputType="InputType.Password"
+											  Validation="@(new Func<string, string>(PasswordMatch))" />
+								<MudPaper Class="d-flex flex-row justify-space-around bg-transparent mt-2" Elevation="0">
+									<MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary"
+											   Disabled="@(!isValidPasswordForm)"
+											   OnClick="@(async ()=>{ await ChangePassword();
+																		isChangingPassword = false;
+																		OldPassword = "";
+																		NewPassword = "";})">
+										Change
+									</MudButton>
+									<MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Surface"
+											   OnClick="()=>isChangingPassword=false"> Cancel </MudButton>
+								</MudPaper>
+							</MudForm>
+						</MudPaper>
+					}
+
+				</MudPaper>
+			</MudPaper>
+		</MudPaper>
+	</MudPaper>
+</MudPaper>
+
+@code {
+	private UpdateUserInfoViewModel UpdateUserInfoViewModel { get; set; } = new();
+	private UserDto CurrentUser { get; set; } = new();
+	private bool isEditingEmail = false;
+	private bool isChangingPassword = false;
+
+	IList<IBrowserFile> files = new List<IBrowserFile>();
+	private bool photoLoaded = false;
+	private string InitialImageSrc { get; set; } = "";
+	private string DisplayImageSrc { get; set; } = "";
+
+	private bool isValidEmailForm = false;
+	private bool isValidPasswordForm = false;
+
+	private string NewEmail { get; set; } = "";
+	private string ConfirmEmail { get; set; } = "";
+
+	private string OldPassword { get; set; } = "";
+	private string NewPassword { get; set; } = "";
+
+	// private byte[] ImageToUploadBytes { get; set; } = null!;
+
+	[Inject] public IUserDataService UserDataService { get; set; } = null!;
+	[Inject] public IImageService ImageService { get; set; } = null!;
+}
+
+@functions {
+	protected override async Task OnInitializedAsync() {
+
+		try {
+			Guid userId = await LocalStorageService.GetItemAsync<Guid>("userId");
+
+			if (userId == default)
+				return;
+
+			var result = await UserDataService.GetUserByIdAsync(userId);
+			if (!result.Success) {
+				Snackbar.Add($"Failed to load user data {result.GetErrorsString()}", Severity.Error);
+				return;
+			}
+			CurrentUser = result.GetValue("user");
+			UpdateUserInfoViewModel.UserId = userId;
+			UpdateUserInfoViewModel.Email = CurrentUser.Email;
+			UpdateUserInfoViewModel.FirstName = CurrentUser.FirstName;
+			UpdateUserInfoViewModel.LastName = CurrentUser.LastName;
+
+			// InitialImageSrc
+			var imageResult = await ImageService.GetUserImageAsync(CurrentUser.UserId);
+			if (!imageResult.Success) {
+				Snackbar.Add($"Failed to load user image {imageResult.GetErrorsString()}", Severity.Error);
+				return;
+			}
+			DisplayImageSrc = InitialImageSrc = System.Text.Encoding.UTF8.GetString(imageResult.GetValue("image").ImageData);
+
+		}
+		catch (Exception e) {
+			Snackbar.Add($"Error loading your user id from localstorage! Error: {e.Message}", Severity.Error);
+			NavigationManager.NavigateTo("/login");
+		}
+	}
+
+	private IEnumerable<string> PasswordStrength(string pw) {
+		if (string.IsNullOrWhiteSpace(pw)) {
+			yield return "Password is required!";
+			yield break;
+		}
+		if (pw.Length < 8)
+			yield return "Password must be at least of length 8";
+		if (!Regex.IsMatch(pw, @"[A-Z]"))
+			yield return "Password must contain at least one capital letter";
+		if (!Regex.IsMatch(pw, @"[a-z]"))
+			yield return "Password must contain at least one lowercase letter";
+		if (!Regex.IsMatch(pw, @"[0-9]"))
+			yield return "Password must contain at least one digit";
+	}
+	private string PasswordMatch(string arg) {
+		if (NewPassword != arg)
+			return "Passwords don't match";
+		return null;
+	}
+	private string EmailMatch(string arg) {
+		if (NewEmail != arg)
+			return "Emails don't match";
+		return null;
+	}
+
+	//sends request to update either the name or the email
+	private async Task SendRequest() {
+
+		if (isEditingEmail) {
+			UpdateUserInfoViewModel.Email = NewEmail;
+		}
+
+		var result = await UserDataService.UpdateUserInfoAsync(UpdateUserInfoViewModel);
+		if (!result.Success) {
+			Snackbar.Add($"Failed to update user info {result.GetErrorsString()}", Severity.Error);
+			UpdateUserInfoViewModel.Email = CurrentUser.Email;
+			UpdateUserInfoViewModel.FirstName = CurrentUser.FirstName;
+			UpdateUserInfoViewModel.LastName = CurrentUser.LastName;
+
+			return;
+		}
+
+		Snackbar.Add("User info updated successfully", Severity.Success);
+	}
+
+	private async Task ChangePassword() {
+		var result = await UserDataService.ChangeUserPasswordAsync(CurrentUser.UserId, new ChangeUserPasswordDto() {
+				UserId = CurrentUser.UserId,
+				OldPassword = OldPassword,
+				NewPassword = NewPassword
+			});
+		if (!result.Success) {
+			Snackbar.Add($"Failed to change password {result.GetErrorsString()}", Severity.Error);
+			return;
+		}
+		Snackbar.Add("Password changed successfully", Severity.Success);
+	}
+
+	private async Task FileSelectedForUpload(IBrowserFile selected) {
+		files.Clear();
+		files.Add(selected);
+
+		photoLoaded = true;
+
+		using MemoryStream ms = new MemoryStream();
+		var file = files.First();
+		await file.OpenReadStream(maxAllowedSize: file.Size).CopyToAsync(ms);
+
+		var imageSrc = Convert.ToBase64String(ms.ToArray());
+		DisplayImageSrc = string.Format("data:image/gif;base64,{0}", imageSrc);
+
+		// ImageToUploadBytes = ms.ToArray();
+	}
+
+
+	private async Task SaveUserImage() {
+		var formContent = new MultipartFormDataContent();
+		Console.WriteLine(Encoding.Default.GetString(Encoding.ASCII.GetBytes(DisplayImageSrc)));
+		formContent.Add(new ByteArrayContent(Encoding.ASCII.GetBytes(DisplayImageSrc)), "File", $"{CurrentUser.UserId}.png");
+
+		var result = await ImageService.UploadUserImageAsync(CurrentUser.UserId, formContent);
+		if (!result.Success) {
+			Snackbar.Add($"Failed to upload image {result.GetErrorsString()}", Severity.Error);
+			return;
+		}
+		//DisplayImageSrc //= result.GetValue("image").ImageData;
+		Snackbar.Add("Image updated successfully.", Severity.Success);
+		NavigationManager.Refresh();
+	}
+}

@@ -1,0 +1,182 @@
+﻿@using MudBlazor
+@using Lunatic.UI.Contracts
+@using Lunatic.UI.Models.ViewModels
+@using Lunatic.UI.Models.Dtos
+@using Lunatic.UI.Models.Shared
+@inject ISnackbar Snackbar
+
+
+<style>
+	.comment-date {
+		color: dimgray;
+	}
+
+	.comment-edit-date {
+		color: gray;
+		font-size: 0.9em;
+	}
+
+	.comment-dates {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.5em;
+	}
+
+	@@media screen and (max-width: 1200px) {
+		.comment-date {
+			font-size: 1em;
+		}
+
+		.comment-dates {
+			display: flex;
+			flex-direction: column;
+			align-items: start;
+			gap: 0;
+			justify-content: center;
+		}
+
+		.comment-spacer-dot-visible {
+			display: none;
+		}
+	}
+
+	.comment-header {
+		display: flex;
+		flex-direction: row;
+	}
+
+	@@media screen and (max-width: 600px) {
+		.comment-header {
+			display: flex;
+			flex-direction: column;
+			align-items: start;
+		}
+		.comment-dates{
+			padding-left: 0.5em;
+			gap:0;
+		}
+	}
+</style>
+
+<MudTimelineItem Color="Color.Primary" Size="Size.Small" Variant="Variant.Outlined" Elevation="0">
+	@if (CommentDto != null) {
+		<MudPaper Elevation="0" Class="p-2 pt-0 ml-n8 d-flex flex-column mud-background-gray rounded" Width="100%">
+			@if (!isEditingComment) {
+				<MudPaper Elevation="0" Class="d-flex flex-row justify-space-between align-start bg-transparent">
+
+					<MudPaper Elevation="0" Class="comment-header bg-transparent">
+
+						<UserChip UserId="@CommentDto.AuthorId"></UserChip>
+
+						<MudPaper Elevation="0" Class="comment-dates bg-transparent">
+
+							<MudText Typo="Typo.body1" Class="comment-date">
+								commented on @CommentDto.CreatedDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+							</MudText>
+
+							@if (CommentDto.CreatedDate != CommentDto.LastModifiedDate) {
+								<MudText Class="comment-spacer-dot-visible comment-edit-date">
+									&#x2022;
+								</MudText>
+								<MudText Class="comment-edit-date">
+									Edited on @CommentDto.LastModifiedDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+								</MudText>
+							}
+						</MudPaper>
+
+					</MudPaper>
+
+					@if (isOwner) {
+						<MudPaper Elevation="0" Class="bg-transparent p-2 pr-0">
+
+							<MudMenu Size="Size.Small" Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.BottomCenter" Dense="true" TransformOrigin="Origin.TopCenter">
+								<MudMenuItem OnClick="()=>{EditedComment=CommentDto.Content; isEditingComment=true;}">
+									Edit comment
+								</MudMenuItem>
+								<MudMenuItem OnClick="()=>LaunchDeleteCommentModal.InvokeAsync(CommentDto.CommentId)">
+									Delete comment
+								</MudMenuItem>
+							</MudMenu>
+						</MudPaper>
+					}
+
+				</MudPaper>
+
+				<MudDivider Style="height:2px" />
+
+				<MudText Class="p-2">
+					@CommentDto.Content
+				</MudText>
+			}
+			else {
+				<MudPaper Class="bg-transparent d-flex flex-column p-2 gap-2" Elevation="0">
+					<MudText Typo="Typo.subtitle1" Class="mb-n2"><b>Edit your comment</b> </MudText>
+					<MudTextField T="string" Variant="Variant.Outlined" Lines="3" AutoGrow="true" Text="@EditedComment" @bind-Value="EditedComment" />
+					<MudPaper Class="bg-transparent d-flex flex-row justify-end" Elevation="0">
+						<MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+							<MudButton OnClick="UpdateComment">SAVE</MudButton>
+							<MudButton OnClick="@(()=>{isEditingComment=false; EditedComment="";})">CANCEL</MudButton>
+						</MudButtonGroup>
+					</MudPaper>
+				</MudPaper>
+			}
+		</MudPaper>
+	}
+</MudTimelineItem>
+
+
+@code {
+	// [Parameter] public Guid CommentId { get; set; } = default!;
+	// [Parameter] public Guid TaskId { get; set; } = default!;
+	[Parameter] public EventCallback<Guid> LaunchDeleteCommentModal { get; set; }
+	[Parameter] public Guid CurrentUserId { get; set; }
+	[Parameter] public CommentDto CommentDto { get; set; } = null!;
+
+	public string EditedComment { get; set; } = "";
+
+	private bool isEditingComment = false;
+	private bool isOwner = false;
+
+	[Inject] public ITaskDataService TaskDataService { get; set; } = null!;
+	[Inject] public ICommentDataService CommentDataService { get; set; } = null!;
+}
+
+@functions {
+
+	protected override async Task OnInitializedAsync() {
+		// var response = await CommentDataService.GetCommentByIdAsync(CommentId);
+		// if (!response.Success) {
+		// 	Snackbar.Add("Couldn't load comment: " + response.Message, Severity.Error);
+		// }
+		// CurrentComment = response.GetValue("comment");
+
+
+		isOwner = CommentDto.AuthorId == CurrentUserId;
+	}
+
+	// private async Task DeleteComment() {
+	// 	var response = await CommentDataService.DeleteCommentAsync(CommentId);
+	// 	if (!response.Success) {
+	// 		Snackbar.Add("Couldn't delete comment: " + response.Message, Severity.Error);
+	// 	}
+	// 	else {
+	// 		Snackbar.Add("Comment deleted successfully", Severity.Success);
+	// 	}
+	// }
+
+
+
+	private async Task UpdateComment() {
+		var response = await CommentDataService.UpdateCommentAsync(CommentDto.CommentId, EditedComment);
+		if (!response.Success) {
+			Snackbar.Add("Couldn't update comment: " + response.GetErrorsString(), Severity.Error);
+		}
+		else {
+			Snackbar.Add("Comment updated successfully", Severity.Success);
+			CommentDto.Content = EditedComment;
+			CommentDto.LastModifiedDate = DateTime.Now;
+		}
+		isEditingComment = false;
+	}
+}

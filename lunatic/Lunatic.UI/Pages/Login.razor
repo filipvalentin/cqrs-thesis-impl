@@ -1,0 +1,54 @@
+﻿@page "/login"
+@using Lunatic.UI.Auth
+@using Lunatic.UI.Models.ViewModels
+@using MudBlazor
+@inject NavigationManager navigationManager
+@inject CustomStateProvider authStateProvider
+@inject ISnackbar Snackbar
+
+<PageTitle>Lunatic: Login</PageTitle>
+
+<MudPaper Elevation="0" Class="d-flex justify-center align-items-center flex-column" Style="height:100vh;">
+	<MudText Typo="Typo.h6" Class="mb-4">
+		Welcome back!
+	</MudText>
+	<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+		<DataAnnotationsValidator />
+		<MudCard Width="fit-content" Class="mx-auto">
+			<MudCardContent>
+				<MudTextField Label="Username" @bind-Value="model.Username" For="@(() => model.Username)" />
+				<MudTextField Label="Password" @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+			</MudCardContent>
+			<MudCardActions>
+				<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mx-auto">Login</MudButton>
+			</MudCardActions>
+		</MudCard>
+	</EditForm>
+
+	<MudText Typo="Typo.body2" Class="mt-4">
+		Don't have an account? <MudLink Href="/register">Sign up now!</MudLink>
+	</MudText>
+
+	<MudText Typo="Typo.body2">Forgot password? <MudLink Href="/forgot-password">Reset It!</MudLink></MudText>
+</MudPaper>
+
+
+@code {
+	LoginModel model = new LoginModel();
+
+	string? error { get; set; }
+
+	async Task OnValidSubmit() {
+		error = null;
+		try {
+
+			await authStateProvider.Login(model);
+			
+			navigationManager.NavigateTo("/");
+		}
+		catch (Exception e) {
+			// error = e.Message;
+			Snackbar.Add("Login failed. Please try again.", Severity.Error);
+		}
+	}
+}

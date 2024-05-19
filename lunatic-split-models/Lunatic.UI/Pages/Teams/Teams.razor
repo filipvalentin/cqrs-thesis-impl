@@ -1,0 +1,110 @@
+﻿@page "/teams"
+@using MudBlazor
+@using Lunatic.UI.Pages.Teams.TeamsPageTemplates
+@using Lunatic.UI.Contracts
+@using Lunatic.UI.Models.ViewModels
+@using Lunatic.UI.Models.Dtos
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+
+<style>
+	.custom-toolbar {
+		background-color: #98db;
+		color: #ffffff;
+	}
+</style>
+
+<PageTitle>My Teams</PageTitle>
+
+<MudPaper Class="p-2 d-flex flex-column align-center " Elevation="0" Height="100%">
+
+	<MudPaper Class="d-flex flex-column flex-grow-1 mud-background-gray mx-auto" Width="100%" MaxWidth="50em">
+
+		<MudToolBar Class="custom-toolbar rounded-top" Dense="true">
+			<MudText Typo="Typo.h6">Your teams</MudText>
+			<MudSpacer />
+			<MudButton @onclick="OpenCreateTeamModal" Variant="Variant.Filled" Color="Color.Primary">
+				new team
+			</MudButton>
+		</MudToolBar>
+
+		<MudPaper Class="d-flex flex-column gap-2 bg-transparent p-2" Elevation="0">
+			@if (UserTeams != null) {
+				@if (UserTeams.Any()) {
+					@foreach (var teamDto in UserTeams) {
+						<TeamsPageTeamCard Team="@teamDto" CurrentUser="@CurrentUserId" />
+					}
+				}
+				else {
+					<MudCard>
+						<MudCardContent>
+							<MudText Typo="Typo.body2">No teams to show!</MudText>
+						</MudCardContent>
+					</MudCard>
+				}
+			}
+			else {
+				<MudCard>
+					<MudCardContent>
+						<MudSkeleton Width="100px" Height="20px" />
+						<MudSkeleton Width="400px" Height="20px" />
+						<MudSkeleton Width="200px" Height="20px" />
+					</MudCardContent>
+				</MudCard>
+			}
+		</MudPaper>
+	</MudPaper>
+</MudPaper>
+
+@code {
+	private List<TeamDto>? UserTeams { get; set; } = null;
+	[Inject] private ITeamDataService TeamsService { get; set; } = null!;
+	[Inject] private IUserDataService UserDataService { get; set; } = null!;
+	private Guid CurrentUserId { get; set; } = Guid.Empty;
+}
+
+<style>
+	.my-custom-class {
+		backdrop-filter: blur(10px);
+	}
+</style>
+
+@functions {
+
+	protected override async Task OnParametersSetAsync() {
+		try {
+			CurrentUserId = new Guid(await localStorage.GetItemAsync<string>("userId"));
+		}
+		catch (Exception e) {
+			// Snackbar.Add($"Error loading your user id from localstorage! Error: {e.Message}", Severity.Error);
+			NavigationManager.NavigateTo("/login");
+		}
+		if (CurrentUserId == Guid.Empty)
+			return;
+
+		await LoadUserTeams();
+	}
+	// protected override async Task OnInitializedAsync() {
+	// 	if (CurrentUserId != Guid.Empty)
+	// 		return;
+	// 	await LoadUserTeams();
+	// }
+
+	private async Task LoadUserTeams() {
+		var result = await UserDataService.GetUserTeamsAsync(CurrentUserId);
+		if (!result.Success) {
+			Snackbar.Add($"Error loading your teams: {result.Message}", Severity.Error);
+			return;
+		}
+		var teams = result.GetValue("teams");
+		teams.ForEach(team => team.Description = team.Description.Substring(0, Math.Min(200, team.Description.Length)));
+		UserTeams = teams;
+	}
+	private void OpenCreateTeamModal() {
+		DialogOptions opts = new DialogOptions() { CloseOnEscapeKey = true, ClassBackground = "my-custom-class", MaxWidth=MaxWidth.Large };
+		DialogService.Show<TeamsPageCreateTeamDialog>("Create a new team", opts);
+	}
+}

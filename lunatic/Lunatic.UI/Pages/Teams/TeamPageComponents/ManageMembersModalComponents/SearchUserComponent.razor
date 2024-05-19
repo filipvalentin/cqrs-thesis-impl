@@ -1,0 +1,68 @@
+﻿@using MudBlazor
+@using Lunatic.UI.Contracts
+@using Lunatic.UI.Pages.Teams.TeamPageComponents.Shared
+@inject ISnackbar Snackbar
+
+<MudPaper Class="d-flex flex-row align-items-center m-2 p-1">
+	<MudAvatar>
+		<MudImage ObjectFit="ObjectFit.Cover" Src="@UserImageSrc" Width="40" Height="40" />
+	</MudAvatar>
+	<MudText>
+		@Username
+	</MudText>
+	<MudSpacer />
+	<MudButton OnClick="SendJoinTeamRequest" Disabled="@IsOwner">
+		Add
+	</MudButton>
+</MudPaper>
+
+@code {
+	[Parameter] public Guid TeamId { get; set; }
+	[Parameter] public Guid MemberId { get; set; }
+	[Parameter] public Guid TeamOwnerId { get; set; }
+	[Parameter] public bool IsOwner { get; set; } = false;
+	[Parameter] public List<Guid> MembersIdsRef { get; set; } = null!;
+	[Parameter] public EventCallback UpdateMemberList { get; set; }
+	[Parameter] public List<UserItem> UserItems { get; set; } = null!; // update list when adding
+																				// [Parameter] public EventCallback UpdateUserItems { get; set; }
+	[Parameter] public string Username { get; set; } = "";
+	[Parameter] public Guid UserId { get; set; }
+	private string UserImageSrc { get; set; } = "";
+
+	[Inject] public IUserDataService UserDataService { get; set; } = null!;
+	[Inject] public ITeamDataService TeamDataService { get; set; } = null!;
+	[Inject] public IImageService ImageService { get; set; } = null!;
+}
+
+@functions {
+
+	protected override async Task OnInitializedAsync() {
+
+		// var result = await UserDataService.GetUserByIdAsync(MemberId.ToString());
+		// var user = result.GetValue("user");
+		//get the avatar
+
+		IsOwner = TeamOwnerId == MemberId;
+
+		var response = await ImageService.GetUserImageAsync(UserId);
+		if (!response.Success) {
+			UserImageSrc = "/img/default-user.jpg";
+		}
+		UserImageSrc = System.Text.Encoding.UTF8.GetString(response.GetValue("image").ImageData);
+	}
+
+	private async Task SendJoinTeamRequest() {
+		var result = await TeamDataService.AddMemberToTeamAsync(MemberId, TeamId);
+		if (result.Success) {
+			Snackbar.Add($"{Username} added to team.", Severity.Success);
+
+			MembersIdsRef.Add(MemberId);    //visual update for not to make another request
+			UserItems.RemoveAll(x => x.UserId == MemberId);
+			// Task.Run(async () => await UpdateUserItems.InvokeAsync());
+			await Task.Run(async () => await UpdateMemberList.InvokeAsync());
+		}
+		else
+			Snackbar.Add($"Failed to add {Username} to team: {result.Message}", Severity.Error);
+	}
+
+}

@@ -1,0 +1,69 @@
+﻿@using Lunatic.UI.Contracts
+@using Lunatic.UI.Models.ViewModels
+@using Lunatic.UI.Models.Dtos
+@using MudBlazor
+@inject ISnackbar Snackbar
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<style>
+	.add-project-modal {
+		width: 40em;
+	}
+
+	@@media screen and (max-width: 40em) {
+		.add-project-modal {
+			width: 85vw;
+		}
+	}
+</style>
+
+<MudDialog DefaultFocus="DefaultFocus.FirstChild">
+	<DialogContent>
+		<MudPaper Elevation="0" Class="mt-n6 add-project-modal">
+			<MudTextField Label="Team Name"
+						  Variant="Variant.Outlined"
+						  @bind-Value="TeamViewModel.Name" />
+			<MudTextField Label="Team Description"
+						  Variant="Variant.Outlined"
+						  @bind-Value="TeamViewModel.Description" Lines="5" HelperText="Accepts Markdown" />
+			<MudText Typo="Typo.caption">*You can add the members once the team is created</MudText>
+		</MudPaper>
+	</DialogContent>
+	<DialogActions>
+		<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+		<MudButton Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+	</DialogActions>
+</MudDialog>
+
+@code {
+	[CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+	[Inject] ITeamDataService TeamDataService { get; set; } = null!;
+	[Inject] NavigationManager NavigationManager { get; set; } = null!;
+
+	// private bool MarkdownEnabled { get; set; } = false;
+
+	private TeamViewModel TeamViewModel { get; set; } = new TeamViewModel();
+
+}
+
+@functions {
+	private async Task Submit() {
+		if (string.IsNullOrWhiteSpace(TeamViewModel.Name)) {
+			Snackbar.Add("Team name cannot be empty", Severity.Error);
+			return;
+		}
+
+		TeamViewModel.UserId = new Guid(await localStorage.GetItemAsync<string>("userId"));
+		var result = await TeamDataService.CreateTeamAsync(TeamViewModel);
+		if (result.Success) {
+			Snackbar.Add("Team created successfully", Severity.Success);
+			MudDialog.Close(DialogResult.Ok(true));
+			NavigationManager.Refresh();
+		}
+		else {
+			Snackbar.Add($"Team creation failed {result.Message}", Severity.Error);
+		}
+
+	}
+	private void Cancel() => MudDialog.Cancel();
+}

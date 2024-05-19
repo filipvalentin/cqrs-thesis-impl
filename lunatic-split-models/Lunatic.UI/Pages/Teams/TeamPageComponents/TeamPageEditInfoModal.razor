@@ -1,0 +1,82 @@
+﻿@using MudBlazor
+@inject ISnackbar Snackbar
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@using Microsoft.AspNetCore.Components
+@using Lunatic.UI.Contracts
+@using Lunatic.UI.Models.ViewModels
+@using Lunatic.UI.Models.Dtos
+@using System.Text.Json
+@using Lunatic.UI.Pages.Teams.TeamPageComponents.Shared
+@using Lunatic.UI.Pages.Teams.TeamPageComponents.ManageMembersModalComponents
+
+<style>
+	.edit-info-toolbar {
+		background-color: #9271bd;
+		color: #ffffff;
+	}
+</style>
+
+<MudPaper Width="80vw" Height="80vh">
+	<MudPaper class="d-flex flex-column" style="height:100%">
+		<MudToolBar Class="edit-info-toolbar" Dense="true">
+			<MudText Typo="Typo.subtitle1">Edit team info</MudText>
+			<MudSpacer />
+			<MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+				<MudButton OnClick="SaveTeamInfo">SAVE</MudButton>
+				<MudButton OnClick="() => MudDialog.Cancel()">CANCEL</MudButton>
+			</MudButtonGroup>
+
+		</MudToolBar>
+		<MudPaper Class="d-flex flex-column p-2">
+			<MudTextField @bind-Value="TeamName" Label="Team name" Variant="Variant.Text">
+				@TeamName
+			</MudTextField>
+			<MudTextField @bind-Value="TeamDescription" Label="Team description" Variant="Variant.Filled" Lines="6">
+				@TeamDescription
+			</MudTextField>
+		</MudPaper>
+
+
+	</MudPaper>
+
+</MudPaper>
+
+@code {
+	[CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+	[Parameter] public string TeamId { get; set; } = null!;
+	[Parameter] public Guid OwnerId { get; set; } // can access this modal only if owner
+	[Parameter] public string TeamName { get; set; } = "";
+	[Parameter] public string TeamDescription { get; set; } = "";
+
+	[Inject] public ITeamDataService TeamDataService { get; set; } = null!;
+}
+
+
+@functions {
+
+	protected override async Task OnInitializedAsync() {
+		var currentUserId = await localStorage.GetItemAsync<Guid>("userId");
+
+		if (currentUserId != OwnerId) {
+			Snackbar.Add("You are not the owner of this team", Severity.Error);
+			MudDialog.Cancel();
+		}
+
+	}
+
+	private async void SaveTeamInfo() {
+		var result = await TeamDataService.UpdateTeamInfoAsync(new UpdateTeamInfoViewModel {
+				TeamId = TeamId,
+				Name = TeamName,
+				Description = TeamDescription
+			});
+
+		if (result.Success) {
+			Snackbar.Add("Team info updated", Severity.Success);
+			MudDialog.Close(DialogResult.Ok(true));
+		}
+		else
+			Snackbar.Add($"Failed to update team info: {string.Join(Environment.NewLine, result.ValidationErrors)}", Severity.Error);
+	}
+
+}

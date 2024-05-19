@@ -1,0 +1,777 @@
+﻿@page "/task/{taskId:guid}"
+@using MudBlazor
+@using Lunatic.UI.Contracts
+@using Lunatic.UI.Models.ViewModels
+@using Lunatic.UI.Models.Dtos
+@using Lunatic.UI.Models.Shared
+@using System.Text.Json
+@using TaskStatus = Lunatic.UI.Models.Shared.TaskStatus
+@using Markdig
+@using Lunatic.UI.Pages.SharedFunctions
+@using System.Text
+@using Lunatic.UI.Pages.TaskPage.TaskPageTemplates
+@inject ISnackbar Snackbar
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorageService
+
+<style>
+	.task-toolbar {
+		background-color: #7697a8;
+		color: #ffffff;
+		height: 40px;
+	}
+
+	.background {
+		background-color: #e4e6eb;
+	}
+
+	.custom-grid {
+		display: grid;
+		grid-template:
+			[row1-start] "description-discussion dashboard" [row1-end]
+			/ auto 30em;
+		grid-gap: 0.8em;
+	}
+
+	.description-discussion-div {
+		grid-area: description-discussion;
+		display: flex;
+		flex-direction: column;
+		gap: 0.8em;
+		margin-bottom: 10em;
+	}
+
+	.description-div, .comments-div {
+		grid-area: description-discussion;
+	}
+
+	.dashboard-div {
+		grid-area: dashboard;
+		height: fit-content;
+	}
+
+
+
+	@@media screen and (max-width: 1000px) {
+		.custom-grid {
+			grid-template:
+				[row1-start] "dashboard" [row1-end]
+				[row2-start] "description-discussion" [row2-end]
+				/ auto;
+		}
+
+		.comment-dates {
+			display: flex;
+			flex-direction: column;
+		}
+	}
+
+	.custom-header {
+		height: 2em;
+	}
+
+	.tags-div-inner {
+		border-radius: 20px;
+		background-color: #e9eff0;
+	}
+
+	.status-text {
+		font-size: 1.2em;
+		font-weight: bold;
+	}
+
+	.minipanel-width {
+		width: 50%;
+	}
+
+	.dashboard-minipanel {
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
+		padding-top: 0.3em;
+		padding-bottom: 0.3em;
+	}
+
+	.dashboard-minipanel-background {
+		background-color: #e9eff0;
+	}
+
+	.description-discussion-div a {
+		color: #0060B6 !important;
+	}
+
+
+	/* title display */
+	.display-if-not-fits {
+		display: none;
+	}
+
+	@@media screen and (max-width: 600px) {
+		.display-if-fits {
+			display: none;
+		}
+
+		.display-if-not-fits {
+			display: block;
+		}
+	}
+
+</style>
+
+<PageTitle>Task: @CurrentTask.Title</PageTitle>
+
+	<MudPaper Height="100%" Class="p-2 px-4 d-flex flex-column flex-grow-1 " Elevation="0">
+		@if (pageLoaded) {
+		<MudToolBar Class="task-toolbar rounded" Dense="true">
+			@* <MudText Typo="Typo.subtitle1">
+		@CurrentTask.Title
+		</MudText> *@
+			<MudBreadcrumbs Items="taskNameToolbarBreadcrumbsItems" Class="display-if-fits">
+				<ItemTemplate Context="item">
+					<MudLink Href="@item.Href" Underline="Underline.None" Color="Color.Inherit">
+						@item.Text
+					</MudLink>
+				</ItemTemplate>
+			</MudBreadcrumbs>
+
+			<MudText Class="display-if-not-fits">
+				@CurrentTask.Title
+			</MudText>
+
+			<MudSpacer />
+
+			<MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Inherit" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+				@* @*  if owner *@
+				<MudMenuItem OnClick="LaunchEditTaskModal">
+					Edit task
+				</MudMenuItem>
+
+				<MudMenuItem OnClick="LaunchDeleteTaskModal">
+					Delete task
+				</MudMenuItem>
+			</MudMenu>
+
+
+		</MudToolBar>
+
+
+		<MudPaper Elevation="0" Class="custom-grid mt-2 flex-grow-1">
+			<MudPaper Elevation="0" Class=" description-discussion-div">
+
+				<MudPaper Class="description-div mud-background-gray">
+
+					<MudToolBar Class="task-toolbar rounded-top" Dense="true">
+						Task Description
+					</MudToolBar>
+					<MudPaper Class="pt-2 pl-3 mud-background-gray" Elevation="0">
+						@if (!string.IsNullOrWhiteSpace(CurrentTask.Description)) {
+							@Functions.StringToHtml(CurrentTask.Description)
+						}
+						else {
+							<MudText Typo="Typo.body2" Class="text-black-50">
+								No description provided.
+							</MudText>
+						}
+					</MudPaper>
+
+
+					@if (CurrentTask.Tags.Count > 0) {
+						<MudPaper Class="d-inline-block p-2 pl-3 bg-transparent" Elevation="0">
+							<MudPaper Class="d-flex flex-row align-baseline tags-div-inner px-4" Elevation="0">
+								<MudText Class="mr-1">Tags</MudText>
+								@foreach (var tag in CurrentTask.Tags) {
+									<MudChip>@tag</MudChip>
+								}
+							</MudPaper>
+						</MudPaper>
+					}
+
+					<MudPaper Class="d-inline-block p-2 bg-transparent" Elevation="0">
+						<MudChip Size="Size.Small">
+							<MudText Typo="Typo.caption">Created by: @CreatedByUserChipText</MudText>
+							</MudChip>
+						</MudPaper>
+					</MudPaper>
+
+					<MudPaper Class="comments-div">
+						<MudToolBar Class="task-toolbar rounded-top" Dense="true">
+							<MudText Typo="Typo.subtitle1" Class="mr-3">
+								Conversation
+							</MudText>
+
+							<MudChip Size="Size.Small" Style="transform:translate(0, 1px)">
+								<MudText Style="color:white; font-size:1.08em">
+									@CurrentTask.CommentIds.Count
+							</MudText>
+
+						</MudChip>
+					</MudToolBar>
+					<MudPaper Class="d-flex flex-column">
+
+						<MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Start">
+							@foreach (var comment in Comments) {
+								<TaskPageCommentTimelineItem CommentDto="comment"
+															 CurrentUserId="CurrentUserId"
+															 LaunchDeleteCommentModal="LaunchDeleteCommentModal" />
+							}
+						</MudTimeline>
+
+						<MudDivider DividerType="DividerType.FullWidth" Class=" " Style="height:3px" />
+
+						<MudPaper Class="d-flex flex-row flex-grow-1 mt-2 ml-6" Elevation="0">
+
+							<MudAvatar>
+								<MudImage Src="@CurrentUserImageSrc" Width="45" Height="45" />
+							</MudAvatar>
+
+
+							<MudPaper Elevation="0" Class="d-flex flex-column flex-grow-1 px-3 pb-2">
+								<MudText Typo="Typo.subtitle1"><b>Add a comment</b> </MudText>
+								<MudTextField T="string"
+											  Class="flex-grow-1"
+											  Label="Add a your comment here..."
+											  AutoGrow="true"
+											  Lines="3"
+											  Variant="Variant.Outlined"
+											  @bind-Value="NewCommentString" />
+
+								<MudPaper Class="d-flex flex-row justify-content-end" Elevation="0">
+									<MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2" OnClick="AddComment">Comment</MudButton>
+								</MudPaper>
+
+							</MudPaper>
+
+						</MudPaper>
+					</MudPaper>
+				</MudPaper>
+
+			</MudPaper>
+
+			<MudPaper Class="dashboard-div">
+				<MudToolBar Class="task-toolbar rounded-top" Dense="true">
+					Task Dashboard
+				</MudToolBar>
+				<MudPaper Elevation="0" Class=" d-flex flex-column gap-1 mud-background-gray p-2 ">
+					<MudPaper Elevation="0" Class="d-flex flex-row rounded gap-1 bg-transparent">
+
+						<MudPaper Elevation="0" Class="dashboard-minipanel dashboard-minipanel-background minipanel-width">
+							<MudText Typo="Typo.subtitle1" Align="Align.Center">Status</MudText>
+							<MudText Align="Align.Center" Class="status-text">
+								@CurrentTaskStatus
+							</MudText>
+
+						</MudPaper>
+						<MudPaper Elevation="0" Class="dashboard-minipanel dashboard-minipanel-background minipanel-width">
+							<MudText Typo="Typo.subtitle1" Align="Align.Center">Priority</MudText>
+							<MudText Align="Align.Center" Class="status-text">
+								@CurrentTaskPriority
+							</MudText>
+						</MudPaper>
+					</MudPaper>
+
+					<MudPaper Elevation="0" Class="d-flex flex-row rounded gap-1 bg-transparent">
+						<MudPaper Elevation="0" Class="dashboard-minipanel dashboard-minipanel-background minipanel-width">
+							<MudText Typo="Typo.subtitle1" Align="Align.Center">Planned to start on</MudText>
+							<MudText Align="Align.Center" Class="status-text">
+								@CurrentTask.PlannedStartDate.ToString("dd/MM/yyyy")
+							</MudText>
+						</MudPaper>
+						<MudPaper Elevation="0" Class="dashboard-minipanel dashboard-minipanel-background minipanel-width">
+							<MudText Typo="Typo.subtitle1" Align="Align.Center">Planned to end on</MudText>
+							<MudText Align="Align.Center" Class="status-text">
+								@CurrentTask.PlannedEndDate.ToString("dd/MM/yyyy")
+							</MudText>
+						</MudPaper>
+
+					</MudPaper>
+
+					<MudPaper Elevation="0" Class="d-flex flex-row rounded gap-1 bg-transparent">
+						<MudPaper Elevation="0" Class="dashboard-minipanel dashboard-minipanel-background minipanel-width">
+							<MudText Typo="Typo.subtitle1" Align="Align.Center">Planned duration</MudText>
+							<MudText Align="Align.Center" Class="status-text">
+								@TaskPlannedDuration
+							</MudText>
+						</MudPaper>
+						<MudPaper Elevation="0" Class="dashboard-minipanel dashboard-minipanel-background minipanel-width">
+							<MudText Typo="Typo.subtitle1" Align="Align.Center">Predicted duration</MudText>
+							<MudText Align="Align.Center" Class="status-text">
+								@TaskPredictedDuration
+							</MudText>
+						</MudPaper>
+					</MudPaper>
+
+					<MudPaper Class="d-flex flex-row justify-content-center dashboard-minipanel-background" Elevation="0">
+						<MudPaper Elevation="0" Class="justify-center d-inline-block bg-transparent p-1">
+							<MudPaper Elevation="0" Class="py-1 d-flex flex-row rounded gap-2 dashboard-minipanel-background align-items-center">
+								<MudText>Mark task as</MudText>
+								<MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" Style="height:2.4em">
+									<MudButton Disabled="@isTaskStatusSelectedCreated" OnClick="SetTaskStatus">
+										@taskStatusButtonText
+									</MudButton>
+									@* Do we need the logic where if is created => in progress => done ? *@
+									<MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;" Dense="true">
+										<MudMenuItem OnClick="() => SetButtonText(0)">
+											<MudText Align="Align.Center" Typo="Typo.body2">IN PROGRESS</MudText>
+										</MudMenuItem>
+										<MudMenuItem OnClick="() => SetButtonText(1)">
+											<MudText Align="Align.Center" Typo="Typo.body2">DONE</MudText>
+										</MudMenuItem>
+									</MudMenu>
+								</MudButtonGroup>
+							</MudPaper>
+						</MudPaper>
+					</MudPaper>
+
+					<MudPaper Class="d-flex flex-column dashboard-minipanel-background pb-1" Elevation="0">
+						<MudText Typo="Typo.subtitle1" Align="Align.Center"><b>Assignees</b></MudText>
+						<MudPaper Class="d-flex flex-wrap justify-center bg-transparent" Elevation="0">
+							@if (CurrentTask.AssigneeIds.Count > 0) {
+								@foreach (var assignee in CurrentTask.AssigneeIds) {
+									<UserChip UserId="@assignee"></UserChip>
+								}
+							}
+							else {
+								<MudText Typo="Typo.body2" Align="Align.Center">No assignees yet!</MudText>
+							}
+						</MudPaper>
+					</MudPaper>
+				</MudPaper>
+			</MudPaper>
+
+
+
+		</MudPaper>
+		<MudPaper Class="pb-16" Elevation="0">
+			<MudText Align="Align.Center" Class="text-black-50">
+				Lunatic Project designed with love and care by @@LunaticTeam
+			</MudText>
+		</MudPaper>
+	}
+</MudPaper>
+
+@* EDIT TASK MODAL *@
+@* As much as I would like to modularize the modals, they are tightly coupled to the page in context,
+	since modifying the task involves modifying too the entity used in the task page, which would involve
+	a lot of passing around of references to lists and other variables, which is prone to erros and
+	potential page de-sync.
+*@
+<MudDialog @bind-IsVisible="isEditTaskModalVisible" Options="noEscapeModalOpts">
+	<TitleContent>
+		<MudText Typo="Typo.body1">
+			<MudIcon Icon="@Icons.Material.Filled.EditNote" Class="mr-3" /> Edit Task
+		</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudPaper Width="40em" Class="m-0 mt-n4 d-flex flex-column overflow-x-hidden" Elevation="0">
+			<MudTextField T="string"
+						  Label="Task title"
+						  HelperText="You can edit it later"
+						  Required="true"
+						  Immediate="true"
+						  @bind-Value="EditTaskViewModel.Title" />
+
+			<MudTextField T="string"
+						  Label="Task description"
+						  @bind-Value="EditTaskViewModel.Description"
+						  Lines="5"
+						  HelperText="Accepts Markdown" />
+
+
+			<MudDateRangePicker @bind-DateRange="EditTaskModalDateRange"
+								Label="Pick the planned start and end date"
+								DisableToolbar="true"
+								AutoClose="true" />
+
+			<MudPaper Class="d-flex flex-row align-end gap-3" Elevation="0">
+				<MudText>Priority</MudText>
+				<MudPaper Elevation="0" Width="6em">
+					<MudSelect T="string" Dense="true" @bind-Value="editTaskModalPriorityOption">
+						@foreach (var priority in priorityOptions) {
+							<MudSelectItem T="string" Value="@priority">@priority</MudSelectItem>
+						}
+					</MudSelect>
+				</MudPaper>
+			</MudPaper>
+
+			<MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))"
+					   MultiSelection="true"
+					   @bind-SelectedValues="EditTaskModalAssigneeOptions"
+					   T="string"
+					   Label="Asignees"
+					   AdornmentIcon="@Icons.Material.Filled.PersonAddAlt1"
+					   AdornmentColor="Color.Primary"
+					   AnchorOrigin="Origin.BottomCenter">
+
+				@foreach (var member in TeamMembers) {
+					<MudSelectItem T="string" Value="@member.Item2">@member.Item3 (@member.Item2)</MudSelectItem>
+				}
+			</MudSelect>
+
+			<MudTextField T="string"
+						  Label="Tags"
+						  @bind-Value="EditTaskModalTagsString"
+						  HelperText="Separate the tags using commas" />
+		</MudPaper>
+
+	</DialogContent>
+	<DialogActions>
+		<MudButton Variant="Variant.Filled"
+				   Color="Color.Primary"
+				   OnClick="EditTaskAsync" Class="px-10">SAVE</MudButton>
+
+		<MudButton Variant="Variant.Filled"
+				   Color="Color.Default"
+				   OnClick="()=>{isEditTaskModalVisible=false;
+								EditTaskModalAssigneeOptions = new HashSet<string>();}">Cancel</MudButton>
+	</DialogActions>
+</MudDialog>
+
+@* DELETE TASK MODAL *@
+<MudDialog @bind-IsVisible="isOpenDeleteTaskModal" Options="noEscapeModalOpts">
+	<TitleContent>
+		<MudText Typo="Typo.body1">
+			<MudIcon Icon="@Icons.Material.Filled.AddCard" Class="mr-3" /> Delete Section
+		</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudPaper Width="30em" Class="m-0 mt-n2" Elevation="0">
+			<MudText Typo="Typo.body1">
+				Are you sure you want to delete the task <b>@CurrentTask.Title</b>?<br />
+			</MudText>
+			@* <MudText Typo="Typo.body2">All tasks in this section will be deleted.</MudText> *@
+			<MudAlert Severity="Severity.Warning" Class="pl-0">
+				This action is irreversible!
+			</MudAlert>
+		</MudPaper>
+	</DialogContent>
+	<DialogActions>
+		<MudButton Variant="Variant.Filled"
+				   Color="Color.Primary"
+				   OnClick="DeleteTask">Delete</MudButton>
+		<MudButton Variant="Variant.Filled"
+				   Color="Color.Default"
+				   OnClick="()=>{isOpenDeleteTaskModal=false;}">Cancel</MudButton>
+	</DialogActions>
+</MudDialog>
+
+@* DELETE COMMENT MODAL *@
+<MudDialog @bind-IsVisible="isOpenDeleteCommentModal" Options="noEscapeModalOpts">
+	<TitleContent>
+		<MudText Typo="Typo.body1">
+			<MudIcon Icon="@Icons.Material.Filled.AddCard" Class="mr-3" /> Delete Section
+		</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudPaper Width="30em" Class="m-0 mt-n2" Elevation="0">
+			<MudText Typo="Typo.body1">
+				Are you sure you want to delete your comment? @CommentIdToDelete
+			</MudText>
+			<MudAlert Severity="Severity.Warning" Class="pl-0">
+				This action is irreversible!
+			</MudAlert>
+		</MudPaper>
+	</DialogContent>
+	<DialogActions>
+		<MudButton Variant="Variant.Filled"
+				   Color="Color.Primary"
+				   OnClick="()=>DeleteComment()">Delete</MudButton>
+		<MudButton Variant="Variant.Filled"
+				   Color="Color.Default"
+				   OnClick="()=>{isOpenDeleteCommentModal=false;}">Cancel</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+
+@code {
+
+	[Parameter] public Guid TaskId { get; set; }
+	private bool pageLoaded = false;
+	public Guid CurrentUserId { get; set; }
+	private string CurrentUserImageSrc { get; set; } = "";
+	private List<BreadcrumbItem> taskNameToolbarBreadcrumbsItems = new();
+
+	public TaskDto CurrentTask { get; set; } = new();
+	private List<CommentDto> Comments { get; set; } = new();
+	private DateRange _dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.AddDays(5).Date);
+	public string NewCommentString { get; set; } = "";
+	DateTime Datetime = DateTime.Now;
+	private string taskStatusButtonText = "CREATED";
+	private bool isTaskStatusSelectedCreated = true;
+	private string CurrentTaskStatus { get; set; } = "";
+	private string CurrentTaskPriority { get; set; } = "";
+	private string TaskPlannedDuration { get; set; } = "";
+	private string TaskPredictedDuration { get; set; } = "";
+	// private bool isTaskStatusInProgress = true;
+
+	private string CreatedByUserChipText { get; set; } = "";
+
+	private bool isOpenDeleteTaskModal = false;
+	private bool isOpenDeleteCommentModal = false;
+	private Guid CommentIdToDelete { get; set; }
+
+	private bool isEditTaskModalVisible = false;
+	private DateRange EditTaskModalDateRange { get; set; } = new();
+	private EditTaskViewModel EditTaskViewModel { get; set; } = new();
+	private string editTaskModalFirstSelectOption = "";
+	private IEnumerable<string> EditTaskModalAssigneeOptions { get; set; } = new HashSet<string>();
+	private static readonly string[] priorityOptions = { "Low", "Medium", "High" };
+	private string editTaskModalPriorityOption = "";
+	private string EditTaskModalTagsString { get; set; } = "";
+	private List<Tuple<Guid, string, string>> TeamMembers = new();
+
+	public DialogOptions noEscapeModalOpts = new() { DisableBackdropClick = true };
+
+	[Inject] public ITaskDataService TaskDataService { get; set; } = default!;
+	[Inject] public ITeamDataService TeamDataService { get; set; } = default!;
+	[Inject] public IProjectDataService ProjectDataService { get; set; } = default!;
+	[Inject] public ICommentDataService CommentDataService { get; set; } = default!;
+	[Inject] public NavigationManager NavigationManager { get; set; } = default!;
+	[Inject] public IImageService ImageService { get; set; } = default!;
+}
+
+
+
+@functions {
+
+	private string GetMultiSelectionText(List<string> selectedValues) {
+		if (selectedValues.Count == 0) {
+			return "No assignees selected";
+		}
+		return $"Assignee{(selectedValues.Count > 1 ? "s" : "")}: {string.Join(", ", selectedValues.Select(x => x))}";
+	}
+
+
+
+	private async Task RetrieveComments() {
+		CommentDto[] comments = await Task.WhenAll(
+			CurrentTask.CommentIds.Select(
+				async guid => {
+					var response = await CommentDataService.GetCommentByIdAsync(guid);
+					if (!response.Success)
+						return new();
+					return response.GetValue("comment");
+				}));
+		Comments = comments.OrderBy(comment => comment!.CreatedDate).ToList();
+	}
+
+	private async Task SetUpBreadcrumbsTitleAndGetMembers() {
+		var projectResponse = await ProjectDataService.GetProjectByIdAsync(CurrentTask.ProjectId);
+		if (!projectResponse.Success) {
+			return;
+		}
+		var project = projectResponse.GetValue("project");
+
+
+		var teamResponse = await TeamDataService.GetTeamByIdAsync(project.TeamId);
+		if (!teamResponse.Success) {
+			return;
+		}
+		var team = teamResponse.GetValue("team");
+		taskNameToolbarBreadcrumbsItems.Add(new BreadcrumbItem(team.Name, href: $"/team/{team.TeamId}"));
+		taskNameToolbarBreadcrumbsItems.Add(new BreadcrumbItem(project.Title, href: $"/project/{project.ProjectId}"));
+		taskNameToolbarBreadcrumbsItems.Add(new BreadcrumbItem(CurrentTask.Title, href: null));
+
+		var usersResponse = await TeamDataService.GetTeamMembersAsync(project.TeamId);
+		if (!usersResponse.Success) {
+			return;
+		}
+		var users = usersResponse.GetValue("members");
+		TeamMembers = users.Select(x => new Tuple<Guid, string, string>(x.UserId, x.Username, x.FirstName + " " + x.LastName)).ToList();
+
+		var ownerDto = users.First(member => member.UserId == CurrentTask.CreatedByUserId);
+		CreatedByUserChipText = ownerDto.FirstName + " " + ownerDto.LastName + " (@" + ownerDto.Username + ")";
+	}
+
+	protected override async Task OnInitializedAsync() {
+
+
+		var response = await TaskDataService.GetTaskByIdAsync(TaskId);
+		if (!response.Success) {
+			return;
+		}
+		CurrentTask = response.GetValue("task");
+
+
+		CurrentTaskStatus = CurrentTask.Status switch {
+			TaskStatus.DONE => "Done",
+			TaskStatus.IN_PROGRESS => "In progress",
+			TaskStatus.CREATED => "Created",
+			_ => "",
+		};
+
+		CurrentTaskPriority = CurrentTask.Priority switch {
+			TaskPriority.HIGH => "High",
+			TaskPriority.MEDIUM => "Medium",
+			TaskPriority.LOW => "Low",
+			_ => "",
+		};
+
+		TaskPlannedDuration = Functions.DaysToNaturalLanguage(CurrentTask.PlannedEndDate.Subtract(CurrentTask.PlannedStartDate).Days);
+
+		var response2 = await TaskDataService.GetTaskPredictedDurationAsync(TaskId);
+		if (!response2.Success) {
+			Snackbar.Add($"Failed to get task prediction duration: {response2.GetErrorsString()}", Severity.Error);
+			TaskPredictedDuration = "unknown";
+		}
+		else {
+			TaskPredictedDuration = Functions.DaysToNaturalLanguage((int)response2.GetValue("duration"));
+		}
+
+
+		try {
+			CurrentUserId = await LocalStorageService.GetItemAsync<Guid>("userId");
+		}
+		catch (Exception e) {
+			Snackbar.Add($"Error loading your user id from localstorage. Perhaps you are not logged in. Error: {e.Message}", Severity.Error);
+			NavigationManager.NavigateTo("/login");
+		}
+
+		pageLoaded = true;
+
+		await Task.WhenAll(SetUpBreadcrumbsTitleAndGetMembers(), RetrieveComments());
+
+		var userId = TeamMembers.First(member => member.Item1 == CurrentUserId).Item1;
+		var imgResponse = await ImageService.GetUserImageAsync(userId);
+		if (!imgResponse.Success) {
+			CurrentUserImageSrc = "/img/default-user.jpg";
+		}
+		CurrentUserImageSrc = System.Text.Encoding.UTF8.GetString(imgResponse.GetValue("image").ImageData);
+
+		// var ownerDto = members.First(member => member.UserId == OwnerId);
+		// OwnerDescriptionText = $"<b>{ownerDto.FirstName} {ownerDto.LastName}</b> (@{ownerDto.Username})";
+	}
+
+	private async Task AddComment() {
+		if (NewCommentString == "") {
+			return;
+		}
+
+		var response = await TaskDataService.AddCommentAsync(TaskId, CurrentUserId, NewCommentString);
+		if (!response.Success) {
+			Snackbar.Add($"Failed to add comment: {response.GetErrorsString()}", Severity.Error);
+			return;
+		}
+		var comment = response.GetValue("comment");
+
+		Comments.Add(comment);
+		NewCommentString = "";
+		StateHasChanged();
+		Snackbar.Add("Comment added!", Severity.Success);
+	}
+
+	private void SetButtonText(int id) {
+		isTaskStatusSelectedCreated = false;
+		switch (id) {
+			case 0:
+				taskStatusButtonText = "IN PROGRESS";
+				break;
+			case 1:
+				taskStatusButtonText = "DONE";
+				break;
+		}
+	}
+
+	private async Task SetTaskStatus() {
+		TaskStatus taskStatus = taskStatusButtonText switch {
+			"IN PROGRESS" => TaskStatus.IN_PROGRESS,
+			"DONE" => TaskStatus.DONE,
+			_ => TaskStatus.CREATED
+		};
+
+		var response = await TaskDataService.UpdateTaskStatusAsync(TaskId, taskStatus);
+		if (!response.Success) {
+			Snackbar.Add($"Failed to update task status: {response.GetErrorsString()}", Severity.Error);
+			return;
+		}
+		CurrentTask.Status = taskStatus;
+		CurrentTaskStatus = CurrentTask.Status switch {
+			TaskStatus.DONE => "Done",
+			TaskStatus.IN_PROGRESS => "In progress",
+			TaskStatus.CREATED => "Created",
+			_ => "",
+		};
+
+		Snackbar.Add("Task status changed!", Severity.Success);
+	}
+
+	private void LaunchEditTaskModal() {
+		isEditTaskModalVisible = true;
+		EditTaskViewModel.TaskId = TaskId;
+		EditTaskViewModel.Title = CurrentTask.Title;
+		EditTaskViewModel.Description = CurrentTask.Description;
+		EditTaskModalTagsString = string.Join(", ", CurrentTask.Tags);
+		EditTaskModalAssigneeOptions = new HashSet<string>(TeamMembers.Where(
+			member => CurrentTask.AssigneeIds.Contains(member.Item1)).Select(member => member.Item2));
+		// EditTaskViewModel.Tags = new(CurrentTask.Tags);
+		// EditTaskViewModel.AssigneeIds = new(CurrentTask.AssigneeIds);
+		EditTaskViewModel.Priority = CurrentTask.Priority;
+		EditTaskModalDateRange = new DateRange(CurrentTask.PlannedStartDate, CurrentTask.PlannedEndDate);
+
+	}
+
+	private async Task EditTaskAsync() {
+		isEditTaskModalVisible = false;
+
+		if (EditTaskModalDateRange.Start == null || EditTaskModalDateRange.End == null) {
+			Snackbar.Add("Please select a date range", Severity.Error);
+			return;
+		}
+		EditTaskViewModel.PlannedStartDate = EditTaskModalDateRange.Start ?? new();
+		EditTaskViewModel.PlannedEndDate = EditTaskModalDateRange.Start ?? new();
+		EditTaskViewModel.Tags = EditTaskModalTagsString.Split(',').Select(x => x.Trim()).ToList();
+		EditTaskViewModel.AssigneeIds = TeamMembers.Where(member => EditTaskModalAssigneeOptions.Contains(member.Item2)).Select(member => member.Item1).ToList();
+		EditTaskViewModel.Priority = editTaskModalPriorityOption switch {
+			"Low" => TaskPriority.LOW,
+			"Medium" => TaskPriority.MEDIUM,
+			"High" => TaskPriority.HIGH,
+			_ => TaskPriority.LOW
+		};
+		// EditTaskViewModel.Status = CurrentTask.Status;
+
+		var response = await TaskDataService.EditTaskInfoAsync(TaskId, EditTaskViewModel);
+		if (!response.Success) {
+			Snackbar.Add($"Failed to update task: {response.GetErrorsString()}", Severity.Error);
+			return;
+		}
+		CurrentTask = response.GetValue("task");
+		Snackbar.Add("Task updated!", Severity.Success);
+	}
+
+	private void LaunchDeleteTaskModal() {
+		isOpenDeleteTaskModal = true;
+	}
+
+	private async Task DeleteTask() {
+		//check if owner or admin
+		var result = await ProjectDataService.DeleteTaskAsync(CurrentTask.ProjectId, TaskId);
+		if (result.Success) {
+			Snackbar.Add($"Task {CurrentTask.Title} deleted successfuly", Severity.Success);
+			NavigationManager.NavigateTo("/project/" + CurrentTask.ProjectId);
+			return;
+		}
+		else {
+			Snackbar.Add($"Failed to delete task {result.Message}", Severity.Error);
+		}
+		isOpenDeleteTaskModal = false;
+	}
+
+	private void LaunchDeleteCommentModal(Guid commentIdToDelete) {
+		isOpenDeleteCommentModal = true;
+		CommentIdToDelete = commentIdToDelete;
+
+	}
+	//this needs to stay here because it's a hassle to pass around references to lists and to update the UI accordingly
+	private async Task DeleteComment() {
+
+		var result = await TaskDataService.DeleteCommentAsync(TaskId, CommentIdToDelete);
+		if (result.Success) {
+			Snackbar.Add($"Comment deleted successfuly", Severity.Success);
+		}
+		CurrentTask.CommentIds.Remove(CommentIdToDelete);
+
+		Snackbar.Add($"Comment deleted successfuly", Severity.Success);
+		StateHasChanged();
+
+		isOpenDeleteCommentModal = false;
+	}
+}
