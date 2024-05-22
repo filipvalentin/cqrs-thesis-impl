@@ -12,7 +12,6 @@ namespace Lunatic.Application.Models.ReadModels.Tasks {
 		public TaskPriority Priority { get; set; }
 		public TaskStatus Status { get; set; }
 		public List<string> Tags { get; set; }
-		public List<CommentReadModel> Comments { get; set; }
 		public List<Guid> AssigneeIds { get; set; }
 		public DateTime PlannedStartDate { get; set; }
 		public DateTime PlannedEndDate { get; set; }
