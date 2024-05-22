@@ -5,7 +5,7 @@ using Lunatic.Infrastructure.Data;
 namespace Lunatic.Infrastructure.ReadServices {
 	public class GenericReadService<T> : IGenericReadService<T> where T : class {
 
-		private readonly LunaticReadContext context;
+		protected readonly LunaticReadContext context;
 
 		public GenericReadService(LunaticReadContext context) {
 			this.context = context;

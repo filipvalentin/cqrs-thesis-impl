@@ -4,7 +4,6 @@ using Lunatic.Application.Features.Projects.Commands.CreateProjectTask;
 using Lunatic.Application.Features.Projects.Commands.CreateTaskSectionCard;
 using Lunatic.Application.Features.Projects.Commands.DeleteTask;
 using Lunatic.Application.Features.Projects.Queries.GetAllTaskSections;
-using Lunatic.Application.Features.Tasks.Queries.GetByIdTask;
 using Lunatic.Domain.Entities;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
@@ -239,7 +238,7 @@ namespace Tests.Lunatic.API.Controllers {
 
 			response.EnsureSuccessStatusCode();
 			var responseString = await response.Content.ReadAsStringAsync();
-			var result = JsonConvert.DeserializeObject<GetByIdProjectTaskQueryResponse>(responseString);
+			var result = JsonConvert.DeserializeObject<GetByIdCompoundTaskQueryResponse>(responseString);
 
 			// Then
 			result?.Success.Should().BeTrue();
@@ -251,7 +250,7 @@ namespace Tests.Lunatic.API.Controllers {
 			var response = await Client.GetAsync(RequestUri + "/tasks/" + Seed.RandomGuid);
 
 			var responseString = await response.Content.ReadAsStringAsync();
-			var result = JsonConvert.DeserializeObject<GetByIdProjectTaskQueryResponse>(responseString);
+			var result = JsonConvert.DeserializeObject<GetByIdCompoundTaskQueryResponse>(responseString);
 
 			// Then
 			response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);

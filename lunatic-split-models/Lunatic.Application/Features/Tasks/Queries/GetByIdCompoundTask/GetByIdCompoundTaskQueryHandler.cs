@@ -1,33 +1,31 @@
-
-using Lunatic.Application.Persistence;
 using Lunatic.Application.Features.Tasks.Payload;
 using MediatR;
 
 
-namespace Lunatic.Application.Features.Tasks.Queries.GetByIdTask {
-	public class GetByIdProjectTaskQueryHandler : IRequestHandler<GetByIdProjectTaskQuery, GetByIdProjectTaskQueryResponse> {
+namespace Lunatic.Application.Features.Tasks.Queries.GetByIdCompoundTask {
+	public class GetByIdCompoundTaskQueryHandler : IRequestHandler<GetByIdCompoundTaskQuery, GetByIdCompoundTaskQueryResponse> {
 		private readonly ITaskReadService taskReadService;
 
-		public GetByIdProjectTaskQueryHandler(ITaskReadService taskReadService) {
+		public GetByIdCompoundTaskQueryHandler(ITaskReadService taskReadService) {
 			this.taskReadService = taskReadService;
 		}
 
 
-		public async Task<GetByIdProjectTaskQueryResponse> Handle(GetByIdProjectTaskQuery request, CancellationToken cancellationToken) {
+		public async Task<GetByIdCompoundTaskQueryResponse> Handle(GetByIdCompoundTaskQuery request, CancellationToken cancellationToken) {
 
-			var result = await taskReadService.GetByIdAsync(request.TaskId);
+			var result = await taskReadService.GetCompoundTaskByIdAsync(request.TaskId);
 
 			if (!result.IsSuccess) {
-				return new GetByIdProjectTaskQueryResponse {
+				return new GetByIdCompoundTaskQueryResponse {
 					Success = false,
 					ValidationErrors = new List<string> { result.Error }
 				};
 			}
 			var taskReadModel = result.Value;
 
-			return new GetByIdProjectTaskQueryResponse {
+			return new GetByIdCompoundTaskQueryResponse {
 				Success = true,
-				Task = new TaskDto {
+				Task = new CompoundTaskDto {
 					CreatedByUserId = taskReadModel.CreatedByUserId,
 					TaskId = taskReadModel.Id,
 					ProjectId = taskReadModel.ProjectId,
@@ -37,7 +35,7 @@ namespace Lunatic.Application.Features.Tasks.Queries.GetByIdTask {
 					Priority = taskReadModel.Priority,
 					Status = taskReadModel.Status,
 					Tags = taskReadModel.Tags,
-					CommentIds = taskReadModel.CommentIds,
+					Comments = taskReadModel.Comments,
 					AssigneeIds = taskReadModel.AssigneeIds,
 					PlannedStartDate = taskReadModel.PlannedStartDate,
 					PlannedEndDate = taskReadModel.PlannedEndDate,

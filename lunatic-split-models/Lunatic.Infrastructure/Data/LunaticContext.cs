@@ -1,4 +1,3 @@
-
 using Lunatic.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Task = Lunatic.Domain.Entities.Task;

@@ -5,6 +5,7 @@ using Lunatic.Application.Features.Tasks.Commands.UpdateTask;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTaskSectionCardLocation;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTasksSection;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTaskStatus;
+using Lunatic.Application.Features.Tasks.Queries.GetByIdCompoundTask;
 using Lunatic.Application.Features.Tasks.Queries.GetByIdTask;
 using Lunatic.Application.Features.Tasks.Queries.GetPredictedTaskTime;
 using Microsoft.AspNetCore.Mvc;
@@ -70,10 +71,24 @@ namespace Lunatic.API.Controllers {
 
 		[HttpGet("{taskId}")]
 		[Produces("application/json")]
-		[ProducesResponseType<GetByIdProjectTaskQueryResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<GetByIdProjectTaskQueryResponse>(StatusCodes.Status404NotFound)]
+		[ProducesResponseType<GetByIdTaskQueryResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<GetByIdTaskQueryResponse>(StatusCodes.Status404NotFound)]
 		public async Task<IActionResult> GetByIdTask(Guid taskId) {
-			var result = await Mediator.Send(new GetByIdProjectTaskQuery {
+			var result = await Mediator.Send(new GetByIdTaskQuery {
+				TaskId = taskId
+			});
+			if (!result.Success) {
+				return NotFound(result);
+			}
+			return Ok(result);
+		}
+
+		[HttpGet("compound/{taskId}")]
+		[Produces("application/json")]
+		[ProducesResponseType<GetByIdCompoundTaskQueryResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<GetByIdCompoundTaskQueryResponse>(StatusCodes.Status404NotFound)]
+		public async Task<IActionResult> GetByIdCompoundTask(Guid taskId) {//TODO: check taskId nonnull
+			var result = await Mediator.Send(new GetByIdCompoundTaskQuery {
 				TaskId = taskId
 			});
 			if (!result.Success) {

@@ -1,5 +1,4 @@
 ﻿using Lunatic.Application.Features.Teams.Payload;
-using Lunatic.Domain.Utils;
 using MediatR;
 
 
