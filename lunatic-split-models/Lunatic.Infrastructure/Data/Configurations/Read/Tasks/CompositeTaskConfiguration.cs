@@ -17,7 +17,6 @@ namespace Lunatic.Infrastructure.Data.Configurations.Read.Tasks {
 			builder.Property(t => t.Priority).HasColumnName(nameof(CompositeTaskReadModel.Priority));
 			builder.Property(t => t.Tags).HasColumnName(nameof(CompositeTaskReadModel.Tags));
 			builder.Property(t => t.Status).HasColumnName(nameof(CompositeTaskReadModel.Status));
-			builder.Property(t => t.Comments).HasColumnName(nameof(CompositeTaskReadModel.Comments));
 			builder.Property(t => t.AssigneeIds).HasColumnName(nameof(CompositeTaskReadModel.AssigneeIds));
 			builder.Property(t => t.PlannedStartDate).HasColumnName(nameof(CompositeTaskReadModel.PlannedStartDate));
 			builder.Property(t => t.PlannedEndDate).HasColumnName(nameof(CompositeTaskReadModel.PlannedEndDate));
