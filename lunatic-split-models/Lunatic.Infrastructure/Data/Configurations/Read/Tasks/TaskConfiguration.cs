@@ -8,24 +8,21 @@ namespace Lunatic.Infrastructure.Data.Configurations.Read.Tasks {
 			builder.ToTable("Tasks");
 
 			builder.HasKey(t => t.Id);
-			builder.Property(t => t.ProjectId).HasColumnName("ProjectId");
-			builder.Property(t => t.CreatedByUserId).HasColumnName("CreatedByUserId");
-			builder.Property(t => t.TaskSectionCard).HasColumnName("TaskSectionCard");
-			builder.Property(t => t.Title).HasColumnName("Title");
-			builder.Property(t => t.Description).HasColumnName("Description");
-			builder.Property(t => t.Priority).HasColumnName("Priority");
-			builder.Property(t => t.Status).HasColumnName("Status");
-			builder.Property(t => t.CommentIds).HasColumnName("CommentIds");
-			builder.Property(t => t.AssigneeIds).HasColumnName("AssigneeIds");
-			builder.Property(t => t.Tags).HasColumnName("Tags");
-			builder.Property(t => t.PlannedStartDate).HasColumnName("PlannedStartDate");
-			builder.Property(t => t.PlannedEndDate).HasColumnName("PlannedEndDate");
-			builder.Property(t => t.StartedDate).HasColumnName("StartedDate");
-			builder.Property(t => t.EndedDate).HasColumnName("EndedDate");
 
-			//builder.HasOne<TaskReadModel>()
-			//.WithOne()
-			//.HasForeignKey<TaskReadModel>(t => t.Id);
+			builder.Property(t => t.ProjectId).HasColumnName(nameof(TaskReadModel.ProjectId));
+			builder.Property(t => t.CreatedByUserId).HasColumnName(nameof(TaskReadModel.CreatedByUserId));
+			builder.Property(t => t.Title).HasColumnName(nameof(TaskReadModel.Title));
+			builder.Property(t => t.Description).HasColumnName(nameof(TaskReadModel.Description));
+			builder.Property(t => t.TaskSectionCard).HasColumnName(nameof(TaskReadModel.TaskSectionCard));
+			builder.Property(t => t.Priority).HasColumnName(nameof(TaskReadModel.Priority));
+			builder.Property(t => t.Tags).HasColumnName(nameof(TaskReadModel.Tags));
+			builder.Property(t => t.Status).HasColumnName(nameof(TaskReadModel.Status));
+			builder.Property(t => t.CommentIds).HasColumnName(nameof(TaskReadModel.CommentIds));
+			builder.Property(t => t.AssigneeIds).HasColumnName(nameof(TaskReadModel.AssigneeIds));
+			builder.Property(t => t.PlannedStartDate).HasColumnName(nameof(TaskReadModel.PlannedStartDate));
+			builder.Property(t => t.PlannedEndDate).HasColumnName(nameof(TaskReadModel.PlannedEndDate));
+			builder.Property(t => t.StartedDate).HasColumnName(nameof(TaskReadModel.StartedDate));
+			builder.Property(t => t.EndedDate).HasColumnName(nameof(TaskReadModel.EndedDate));
 		}
 	}
 }
