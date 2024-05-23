@@ -1,4 +1,5 @@
 ﻿using Lunatic.Application.Models.ReadModels.Tasks;
+using Lunatic.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,6 +15,10 @@ namespace Lunatic.Infrastructure.Data.Configurations.Read.Tasks {
 			builder.Property(t => t.Description).HasColumnName("Description");
 			builder.Property(t => t.Priority).HasColumnName("Priority");
 			builder.Property(t => t.Tags).HasColumnName("Tags");
+
+			builder.HasOne<TaskReadModel>()
+				.WithOne()
+				.HasForeignKey<TaskDescriptionReadModel>(t => t.Id);
 		}
 	}
 }

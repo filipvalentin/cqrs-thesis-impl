@@ -84,7 +84,7 @@ namespace Lunatic.API.Controllers {
 			return Ok(result);
 		}
 
-		[HttpGet("{taskId}/compound")]
+		[HttpGet("{taskId}/full")]
 		[Produces("application/json")]
 		[ProducesResponseType<GetByIdCompositeTaskQueryResponse>(StatusCodes.Status200OK)]
 		[ProducesResponseType<GetByIdCompositeTaskQueryResponse>(StatusCodes.Status404NotFound)]

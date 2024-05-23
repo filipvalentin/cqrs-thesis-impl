@@ -25,12 +25,15 @@ namespace Lunatic.Infrastructure.Data.Configurations.Read.Tasks {
 
 
 			builder.HasMany(t => t.Comments)
-				   .WithOne()
-				   .HasForeignKey("TaskId");
+				.WithOne()
+				.HasForeignKey("TaskId");
 
 			builder.HasOne<TaskReadModel>()
-			 .WithOne()
-			 .HasForeignKey<CompositeTaskReadModel>(t => t.Id);
+				.WithOne()
+				.HasForeignKey<CompositeTaskReadModel>(t => t.Id);
+
+			builder.Navigation(t => t.Comments)
+				.AutoInclude();
 		}
 	}
 }

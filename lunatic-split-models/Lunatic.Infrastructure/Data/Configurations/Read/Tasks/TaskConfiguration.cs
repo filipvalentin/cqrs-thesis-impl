@@ -22,6 +22,10 @@ namespace Lunatic.Infrastructure.Data.Configurations.Read.Tasks {
 			builder.Property(t => t.PlannedEndDate).HasColumnName("PlannedEndDate");
 			builder.Property(t => t.StartedDate).HasColumnName("StartedDate");
 			builder.Property(t => t.EndedDate).HasColumnName("EndedDate");
+
+			//builder.HasOne<TaskReadModel>()
+			//.WithOne()
+			//.HasForeignKey<TaskReadModel>(t => t.Id);
 		}
 	}
 }

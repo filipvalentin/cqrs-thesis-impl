@@ -2,6 +2,7 @@
 using Lunatic.Application.Models.ReadModels.Tasks;
 using Lunatic.Domain.Utils;
 using Lunatic.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lunatic.Infrastructure.ReadServices {
 	public sealed class TaskReadService : GenericReadService<TaskReadModel>, ITaskReadService {
@@ -11,6 +12,8 @@ namespace Lunatic.Infrastructure.ReadServices {
 
 		public async Task<Result<CompositeTaskReadModel>> GetCompositeTaskByIdAsync(Guid taskId) {
 			var result = await context.CompoundTaskReadModel.FindAsync(taskId);
+			//.Include(t => t.Comments)
+			//.FirstOrDefaultAsync(t => t.Id == taskId);
 			if (result == null) {
 				return Result<CompositeTaskReadModel>.Failure($"Entity with id {taskId} not found");
 			}
