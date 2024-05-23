@@ -1,17 +1,12 @@
 using Lunatic.Application.Models.ReadModels.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace Lunatic.Infrastructure.Data
-{
-    public class LunaticReadContext : DbContext {
-        public LunaticReadContext(DbContextOptions<LunaticReadContext> options) : base(options) {}
+namespace Lunatic.Infrastructure.Data {
+	public class LunaticReadContext : DbContext {
+		public LunaticReadContext(DbContextOptions<LunaticReadContext> options) : base(options) { }
 
-		public DbSet<CompoundTaskReadModel> CompoundTaskReadModel { get; set; }
-		//public DbSet<TaskReadModel> Tasks { get; set; }
-		//public DbSet<ProjectReadModel> Projects { get; set; }
-		//public DbSet<TeamReadModel> Teams { get; set; }
-		//public DbSet<User> Users { get; set; }
-		//public DbSet<Image> Images { get; set; }
+		public DbSet<CompositeTaskReadModel> CompoundTaskReadModel { get; set; }
+		public DbSet<TaskDescriptionReadModel> TaskDescriptionReadModel { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			modelBuilder.ApplyConfigurationsFromAssembly(

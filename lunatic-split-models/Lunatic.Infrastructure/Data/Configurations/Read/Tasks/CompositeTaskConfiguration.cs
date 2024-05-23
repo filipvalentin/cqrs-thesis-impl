@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Lunatic.Infrastructure.Data.Configurations.Read.Tasks {
-	internal sealed class CompoundTaskConfiguration : IEntityTypeConfiguration<CompoundTaskReadModel> {
-		public void Configure(EntityTypeBuilder<CompoundTaskReadModel> builder) {
+	internal sealed class CompositeTaskConfiguration : IEntityTypeConfiguration<CompositeTaskReadModel> {
+		public void Configure(EntityTypeBuilder<CompositeTaskReadModel> builder) {
 			builder.ToTable("Tasks");
 
 			builder.HasKey(t => t.Id);
@@ -30,7 +30,7 @@ namespace Lunatic.Infrastructure.Data.Configurations.Read.Tasks {
 
 			builder.HasOne<TaskReadModel>()
 			 .WithOne()
-			 .HasForeignKey<CompoundTaskReadModel>(t => t.Id);
+			 .HasForeignKey<CompositeTaskReadModel>(t => t.Id);
 		}
 	}
 }

@@ -5,6 +5,8 @@ using Lunatic.Domain.Utils;
 namespace Lunatic.Application.Features.Tasks
 {
     public interface ITaskReadService : IGenericReadService<TaskReadModel> {
-		Task<Result<CompoundTaskReadModel>> GetCompoundTaskByIdAsync(Guid taskId);
+		Task<Result<CompositeTaskReadModel>> GetCompositeTaskByIdAsync(Guid taskId);
+		Task<Result<TaskDescriptionReadModel>> GetTaskDescriptionByIdAsync(Guid taskId);
+
 	}
 }

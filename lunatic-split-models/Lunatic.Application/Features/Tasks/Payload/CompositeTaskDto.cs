@@ -5,7 +5,7 @@ using TaskStatus = Lunatic.Domain.Entities.TaskStatus;
 
 
 namespace Lunatic.Application.Features.Tasks.Payload {
-    public class CompoundTaskDto {
+    public class CompositeTaskDto {
         public Guid CreatedByUserId { get; set; } = default!;
         public Guid TaskId { get; set; } = default!;
         public Guid ProjectId { get; set; } = default!;

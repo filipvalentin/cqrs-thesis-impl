@@ -5,8 +5,9 @@ using Lunatic.Application.Features.Tasks.Commands.UpdateTask;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTaskSectionCardLocation;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTasksSection;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTaskStatus;
-using Lunatic.Application.Features.Tasks.Queries.GetByIdCompoundTask;
+using Lunatic.Application.Features.Tasks.Queries.GetByIdCompositeTask;
 using Lunatic.Application.Features.Tasks.Queries.GetByIdTask;
+using Lunatic.Application.Features.Tasks.Queries.GetByIdTaskDescription;
 using Lunatic.Application.Features.Tasks.Queries.GetPredictedTaskTime;
 using Microsoft.AspNetCore.Mvc;
 
@@ -83,12 +84,25 @@ namespace Lunatic.API.Controllers {
 			return Ok(result);
 		}
 
-		[HttpGet("compound/{taskId}")]
+		[HttpGet("{taskId}/compound")]
 		[Produces("application/json")]
-		[ProducesResponseType<GetByIdCompoundTaskQueryResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<GetByIdCompoundTaskQueryResponse>(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> GetByIdCompoundTask(Guid taskId) {//TODO: check taskId nonnull
-			var result = await Mediator.Send(new GetByIdCompoundTaskQuery {
+		[ProducesResponseType<GetByIdCompositeTaskQueryResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<GetByIdCompositeTaskQueryResponse>(StatusCodes.Status404NotFound)]
+		public async Task<IActionResult> GetByIdCompositeTask(Guid taskId) {//TODO: check taskId nonnull
+			var result = await Mediator.Send(new GetByIdCompositeTaskQuery {
+				TaskId = taskId
+			});
+			if (!result.Success) {
+				return NotFound(result);
+			}
+			return Ok(result);
+		}
+		[HttpGet("{taskId}/description")]
+		[Produces("application/json")]
+		[ProducesResponseType<GetByIdTaskDescriptionQueryResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<GetByIdTaskDescriptionQueryResponse>(StatusCodes.Status404NotFound)]
+		public async Task<IActionResult> GetByIdTaskDescription(Guid taskId) {//TODO: check taskId nonnull
+			var result = await Mediator.Send(new GetByIdTaskDescriptionQuery {
 				TaskId = taskId
 			});
 			if (!result.Success) {

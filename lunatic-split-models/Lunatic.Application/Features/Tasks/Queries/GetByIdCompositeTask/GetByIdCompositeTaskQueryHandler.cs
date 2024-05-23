@@ -2,30 +2,30 @@ using Lunatic.Application.Features.Tasks.Payload;
 using MediatR;
 
 
-namespace Lunatic.Application.Features.Tasks.Queries.GetByIdCompoundTask {
-	public class GetByIdCompoundTaskQueryHandler : IRequestHandler<GetByIdCompoundTaskQuery, GetByIdCompoundTaskQueryResponse> {
+namespace Lunatic.Application.Features.Tasks.Queries.GetByIdCompositeTask {
+	public class GetByIdCompositeTaskQueryHandler : IRequestHandler<GetByIdCompositeTaskQuery, GetByIdCompositeTaskQueryResponse> {
 		private readonly ITaskReadService taskReadService;
 
-		public GetByIdCompoundTaskQueryHandler(ITaskReadService taskReadService) {
+		public GetByIdCompositeTaskQueryHandler(ITaskReadService taskReadService) {
 			this.taskReadService = taskReadService;
 		}
 
 
-		public async Task<GetByIdCompoundTaskQueryResponse> Handle(GetByIdCompoundTaskQuery request, CancellationToken cancellationToken) {
+		public async Task<GetByIdCompositeTaskQueryResponse> Handle(GetByIdCompositeTaskQuery request, CancellationToken cancellationToken) {
 
-			var result = await taskReadService.GetCompoundTaskByIdAsync(request.TaskId);
+			var result = await taskReadService.GetCompositeTaskByIdAsync(request.TaskId);
 
 			if (!result.IsSuccess) {
-				return new GetByIdCompoundTaskQueryResponse {
+				return new GetByIdCompositeTaskQueryResponse {
 					Success = false,
 					ValidationErrors = new List<string> { result.Error }
 				};
 			}
 			var taskReadModel = result.Value;
 
-			return new GetByIdCompoundTaskQueryResponse {
+			return new GetByIdCompositeTaskQueryResponse {
 				Success = true,
-				Task = new CompoundTaskDto {
+				Task = new CompositeTaskDto {
 					CreatedByUserId = taskReadModel.CreatedByUserId,
 					TaskId = taskReadModel.Id,
 					ProjectId = taskReadModel.ProjectId,

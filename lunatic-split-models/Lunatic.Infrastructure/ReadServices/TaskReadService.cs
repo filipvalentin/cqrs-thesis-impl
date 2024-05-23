@@ -9,12 +9,20 @@ namespace Lunatic.Infrastructure.ReadServices {
 		public TaskReadService(LunaticReadContext context) : base(context) {
 		}
 
-		public async Task<Result<CompoundTaskReadModel>> GetCompoundTaskByIdAsync(Guid taskId) {
-			var result = context.CompoundTaskReadModel.FindAsync(taskId);
-			if (result.Result == null) {
-				return Result<CompoundTaskReadModel>.Failure($"Entity with id {taskId} not found");
+		public async Task<Result<CompositeTaskReadModel>> GetCompositeTaskByIdAsync(Guid taskId) {
+			var result = await context.CompoundTaskReadModel.FindAsync(taskId);
+			if (result == null) {
+				return Result<CompositeTaskReadModel>.Failure($"Entity with id {taskId} not found");
 			}
-			return Result<CompoundTaskReadModel>.Success(result.Result);
+			return Result<CompositeTaskReadModel>.Success(result);
+		}
+
+		public async Task<Result<TaskDescriptionReadModel>> GetTaskDescriptionByIdAsync(Guid taskId) {
+			var result = await context.TaskDescriptionReadModel.FindAsync(taskId);
+			if (result == null) {
+				return Result<TaskDescriptionReadModel>.Failure($"Entity with id {taskId} not found");
+			}
+			return Result<TaskDescriptionReadModel>.Success(result);
 		}
 	}
 }
