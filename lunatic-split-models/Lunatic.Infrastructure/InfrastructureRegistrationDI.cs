@@ -1,4 +1,3 @@
-
 using Lunatic.Application.Contracts;
 using Lunatic.Application.Contracts.Interfaces;
 using Lunatic.Application.Features.Comments;
@@ -14,12 +13,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-
 namespace Lunatic.Infrastructure {
 	public static class InfrastructureRegistrationDI {
-		public static IServiceCollection AddInfrastructureToDI(
-			this IServiceCollection services,
-			IConfiguration configuration) {
+		public static IServiceCollection AddInfrastructureToDI(this IServiceCollection services, IConfiguration configuration) {
+
 			services.AddDbContext<LunaticContext>(
 				options => options.UseNpgsql(
 						configuration.GetConnectionString("LunaticConnection"),
@@ -29,6 +26,13 @@ namespace Lunatic.Infrastructure {
 				options => options.UseNpgsql(
 						configuration.GetConnectionString("LunaticReadConnection"),
 						builder => builder.MigrationsAssembly(typeof(LunaticReadContext).Assembly.FullName))
+				.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+				);
+
+			services.AddDbContext<LunaticMLContext>(
+				options => options.UseSqlServer(
+						configuration.GetConnectionString("LunaticMLConnection"),
+						builder => builder.MigrationsAssembly(typeof(LunaticMLContext).Assembly.FullName))
 				.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
 				);
 
@@ -42,10 +46,11 @@ namespace Lunatic.Infrastructure {
 			services.AddScoped<IEmailService, EmailService>();
 
 			services.AddScoped(typeof(IGenericReadService<>), typeof(GenericReadService<>));
-			services.AddScoped<ITeamReadService, TeamReadService>(); 
-			services.AddScoped<ITaskReadService, TaskReadService>(); 
+			services.AddScoped<ITeamReadService, TeamReadService>();
+			services.AddScoped<ITaskReadService, TaskReadService>();
 			services.AddScoped<IProjectReadService, ProjectReadService>();
 			services.AddScoped<ICommentReadService, CommentReadService>();
+			services.AddScoped<IMLDataStorageService, MLDataStorageService>();
 
 			return services;
 		}

@@ -626,6 +626,13 @@
 			NavigationManager.NavigateTo("/login");
 		}
 
+		taskStatusButtonText = CurrentTask.Status switch {
+			TaskStatus.DONE => "DONE",
+			TaskStatus.IN_PROGRESS => "IN PROGRESS",
+			TaskStatus.CREATED => "CREATED",
+			_ => "CREATED",
+		};
+
 		pageLoaded = true;
 
 		await Task.WhenAll(SetUpBreadcrumbsTitleAndGetMembers(), RetrieveComments());

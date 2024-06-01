@@ -1,5 +1,4 @@
 ﻿using Lunatic.Application.Models.ReadModels.Tasks;
-using Lunatic.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

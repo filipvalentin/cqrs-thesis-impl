@@ -1,0 +1,381 @@
+﻿{
+  "Scenario": "Classification",
+  "DataSource": {
+    "Type": "TabularFile",
+    "Version": 1,
+    "FilePath": "E:\\labs\\lunatic\\lunatic-api\\Lunatic.ML\\DaysPrediction\\Dataset.csv",
+    "Delimiter": ",",
+    "DecimalMarker": ".",
+    "HasHeader": true,
+    "ColumnProperties": [
+      {
+        "ColumnName": "Duration(Days)",
+        "ColumnPurpose": "Label",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "People Assigned",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "Task Id",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "Description (characters)",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "Comments per task",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "Comment average length",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "Priority",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      }
+    ]
+  },
+  "Environment": {
+    "Type": "LocalCPU",
+    "Version": 1
+  },
+  "RunHistory": {
+    "Version": 3,
+    "Type": "Result",
+    "Trials": [
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestOva",
+        "Score": 0.122348661686897,
+        "RuntimeInSeconds": 23.617,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ],
+            "InputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "OutputColumnName": "Duration(Days)",
+            "InputColumnName": "Duration(Days)",
+            "AddKeyValueAnnotationsAsText": false
+          },
+          "e3": {
+            "NumberOfTrees": 49,
+            "NumberOfLeaves": 154,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "Duration(Days)",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "OutputColumnName": "PredictedLabel",
+            "InputColumnName": "PredictedLabel"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestOva",
+        "Score": 0.1047420634920635,
+        "RuntimeInSeconds": 13.714,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ],
+            "InputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "OutputColumnName": "Duration(Days)",
+            "InputColumnName": "Duration(Days)",
+            "AddKeyValueAnnotationsAsText": false
+          },
+          "e3": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 32,
+            "FeatureFraction": 0.9836076,
+            "LabelColumnName": "Duration(Days)",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "OutputColumnName": "PredictedLabel",
+            "InputColumnName": "PredictedLabel"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestOva",
+        "Score": 0.10265873015873017,
+        "RuntimeInSeconds": 10.638,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ],
+            "InputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "OutputColumnName": "Duration(Days)",
+            "InputColumnName": "Duration(Days)",
+            "AddKeyValueAnnotationsAsText": false
+          },
+          "e3": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "Duration(Days)",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "OutputColumnName": "PredictedLabel",
+            "InputColumnName": "PredictedLabel"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestOva",
+        "Score": 0.10265873015873017,
+        "RuntimeInSeconds": 21.33,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ],
+            "InputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "OutputColumnName": "Duration(Days)",
+            "InputColumnName": "Duration(Days)",
+            "AddKeyValueAnnotationsAsText": false
+          },
+          "e3": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 131,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "Duration(Days)",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "OutputColumnName": "PredictedLabel",
+            "InputColumnName": "PredictedLabel"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestOva",
+        "Score": 0.091699735449735462,
+        "RuntimeInSeconds": 12.391,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ],
+            "InputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "People Assigned",
+              "Task Id",
+              "Description (characters)",
+              "Comments per task",
+              "Comment average length",
+              "Priority"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "OutputColumnName": "Duration(Days)",
+            "InputColumnName": "Duration(Days)",
+            "AddKeyValueAnnotationsAsText": false
+          },
+          "e3": {
+            "NumberOfTrees": 8,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "Duration(Days)",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "OutputColumnName": "PredictedLabel",
+            "InputColumnName": "PredictedLabel"
+          }
+        }
+      }
+    ],
+    "Estimators": {
+      "e0": "ReplaceMissingValues",
+      "e1": "Concatenate",
+      "e2": "MapValueToKey",
+      "e3": "FastForestOva",
+      "e4": "MapKeyToValue"
+    },
+    "Schema": "e0 * e1 * e2 * e3 * e4",
+    "MetricName": "MacroAccuracy",
+    "ModelFilePath": "E:\\labs\\cqrs-thesis-impl\\lunatic-split-models\\Lunatic.ML\\DaysToCompleteTaskPrediction\\DaysToCompleteTaskPrediction.mlnet"
+  },
+  "Type": "TrainingConfig",
+  "Version": 4,
+  "TrainingOption": {
+    "Version": 1,
+    "Type": "ClassificationTrainingOption",
+    "TrainingTime": 100,
+    "OptimizeMetric": "MacroAccuracy",
+    "LabelColumn": "Duration(Days)",
+    "AvailableTrainers": [
+      "FASTFOREST"
+    ],
+    "ValidationOption": {
+      "Version": 0,
+      "Type": "CrossValidationValidationOption",
+      "NumberOfFolds": 3
+    }
+  }
+}

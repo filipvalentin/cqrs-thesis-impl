@@ -2,7 +2,6 @@
 using Lunatic.Application.Models.ReadModels.Tasks;
 using Lunatic.Domain.Utils;
 using Lunatic.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace Lunatic.Infrastructure.ReadServices {
 	public sealed class TaskReadService : GenericReadService<TaskReadModel>, ITaskReadService {

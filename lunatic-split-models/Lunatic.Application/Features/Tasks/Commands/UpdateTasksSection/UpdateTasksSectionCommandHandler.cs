@@ -1,6 +1,7 @@
 
 using Lunatic.Application.Features.Projects.Payload;
 using Lunatic.Application.Persistence;
+using Lunatic.Domain.DomainEvents;
 using MediatR;
 
 

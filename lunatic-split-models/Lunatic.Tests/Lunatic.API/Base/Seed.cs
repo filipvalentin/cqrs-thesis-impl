@@ -12,7 +12,7 @@ namespace Tests.Lunatic.API.Base
         public static List<Project> Projects  = new List<Project>();
         public static List<Task> Tasks = new List<Task>();
         public static List<Comment> Comments = new List<Comment>();
-        public static List<CommentEmote> CommentEmotes = new List<CommentEmote>();
+
         public static string RandomGuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
         public static string TaskSection = "Todo";
         public static string RandomTaskSection = "RandomSection";
@@ -26,8 +26,7 @@ namespace Tests.Lunatic.API.Base
             context.Teams.RemoveRange(context.Teams);
             context.Projects.RemoveRange(context.Projects);
             context.Tasks.RemoveRange(context.Tasks);
-            context.Comments.RemoveRange(context.Comments);
-            context.CommentEmotes.RemoveRange(context.CommentEmotes);
+			context.Comments.RemoveRange(context.Comments);
 
             var users = new List<User> {
                 User.Create("userFirstName", "userLastName", "user@email.com", "user", "Password123#", Role.USER).Value,
@@ -35,25 +34,25 @@ namespace Tests.Lunatic.API.Base
             };
 
             var teams = new List<Team> {
-                Team.Create(users.First().UserId, "userName", "userDescription").Value,
-                Team.Create(users.Last().UserId, "adminName", "adminDescription").Value,
+                Team.Create(users.First().Id, "userName", "userDescription").Value,
+                Team.Create(users.Last().Id, "adminName", "adminDescription").Value,
             };
-            teams.First().AddMember(users.Last());
+            teams.First().AddMember(users.Last().Id);
 
             var projects = new List<Project> {
-                Project.Create(users.First().UserId, teams.First().TeamId, "userTitle", "userDescription").Value,
-                Project.Create(users.Last().UserId, teams.First().TeamId, "adminTitle", "adminDescription").Value,
-                Project.Create(users.Last().UserId, teams.First().TeamId, "adminTitle1", "adminDescription1").Value,
+                Project.Create(users.First().Id, teams.First().Id, "userTitle", "userDescription").Value,
+                Project.Create(users.Last().Id, teams.First().Id, "adminTitle", "adminDescription").Value,
+                Project.Create(users.Last().Id, teams.First().Id, "adminTitle1", "adminDescription1").Value,
             };
             foreach (var project in projects) {
-                project.AddTaskSection(TaskSection);
-                teams.First().AddProject(project);
+                project.AddTaskSectionCard(TaskSection);
+                teams.First().AddProject(project.Id);
             }
 
             var tasks = new List<Task> {
-                Task.Create(users.First().UserId, projects.First().ProjectId, "Todo", "userTitle", "userDescription", TaskPriority.LOW, DateTime.UtcNow, DateTime.UtcNow).Value,
-                Task.Create(users.First().UserId, projects.First().ProjectId, "Todo", "userTitle", "userDescription", TaskPriority.MEDIUM, DateTime.UtcNow, DateTime.UtcNow).Value,
-                Task.Create(users.Last().UserId, projects.First().ProjectId, "Todo", "adminTitle", "adminDescription", TaskPriority.HIGH, DateTime.UtcNow, DateTime.UtcNow).Value,
+                Task.Create(users.First().Id, projects.First().Id, "Todo", "userTitle", "userDescription", TaskPriority.LOW, DateTime.UtcNow, DateTime.UtcNow).Value,
+                Task.Create(users.First().Id, projects.First().Id, "Todo", "userTitle", "userDescription", TaskPriority.MEDIUM, DateTime.UtcNow, DateTime.UtcNow).Value,
+                Task.Create(users.Last().Id, projects.First().Id, "Todo", "adminTitle", "adminDescription", TaskPriority.HIGH, DateTime.UtcNow, DateTime.UtcNow).Value,
             };
             foreach (var task in tasks) {
                 projects.First().AddTask(task);
@@ -62,27 +61,23 @@ namespace Tests.Lunatic.API.Base
             tasks.First().AddTag(TaskTag);
 
             var comments = new List<Comment> {
-                Comment.Create(users.Last().UserId, tasks.First().TaskId, "adminContent").Value
+                Comment.Create(users.Last().Id, tasks.First().Id, "adminContent").Value
             };
             tasks.First().AddComment(comments.First());
 
-            var commentEmotes = new List<CommentEmote> {
-                CommentEmote.Create(users.First().UserId, comments.First().CommentId, Emote.CRY).Value
-            };
-            comments.First().AddEmote(commentEmotes.First());
 
             Users = users;
             Teams = teams;
             Projects = projects;
             Tasks = tasks;
             Comments = comments;
-            CommentEmotes = commentEmotes;
+
             context.Users.AddRange(users);
             context.Teams.AddRange(teams);
             context.Projects.AddRange(projects);
             context.Tasks.AddRange(tasks);
             context.Comments.AddRange(comments);
-            context.CommentEmotes.AddRange(commentEmotes);
+
             context.SaveChanges();
             Thread.Sleep(690);
         }

@@ -1,5 +1,4 @@
 ﻿using Lunatic.Domain.Entities;
-using TaskStatus = Lunatic.Domain.Entities.TaskStatus;
 
 namespace Lunatic.Application.Models.ReadModels.Tasks {
 	public class TaskDescriptionReadModel {

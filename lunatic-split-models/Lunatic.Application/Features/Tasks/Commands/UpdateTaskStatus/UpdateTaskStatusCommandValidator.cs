@@ -5,11 +5,11 @@ using FluentValidation;
 
 namespace Lunatic.Application.Features.Tasks.Commands.UpdateTaskStatus
 {
-    internal class UpdateProjectTaskStatusCommandValidator : AbstractValidator<UpdateTaskStatusCommand>
+    internal class UpdateTaskStatusCommandValidator : AbstractValidator<UpdateTaskStatusCommand>
     {
         private readonly ITaskRepository taskRepository;
 
-        public UpdateProjectTaskStatusCommandValidator(ITaskRepository taskRepository)
+        public UpdateTaskStatusCommandValidator(ITaskRepository taskRepository)
         {
             this.taskRepository = taskRepository;
 

@@ -1,13 +1,10 @@
-
 using Lunatic.Application.Persistence;
 using Lunatic.Domain.Utils;
 using Lunatic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-
-namespace Lunatic.Infrastructure.Repositories
-{
-    public class BaseRepository<T> : IAsyncRepository<T> where T : class {
+namespace Lunatic.Infrastructure.Repositories {
+	public class BaseRepository<T> : IAsyncRepository<T> where T : class {
 		protected readonly LunaticContext context;
 
 		public BaseRepository(LunaticContext context) {
@@ -61,4 +58,3 @@ namespace Lunatic.Infrastructure.Repositories
 	}
 
 }
-
