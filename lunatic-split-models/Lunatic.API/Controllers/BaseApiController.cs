@@ -8,7 +8,6 @@ namespace Lunatic.API.Controllers {
 	[ApiController]
 	public class BaseApiController : ControllerBase {
 		private ISender mediator = null!;
-
 		protected ISender Mediator => mediator ??= HttpContext.RequestServices.GetRequiredService<ISender>();
 	}
 }

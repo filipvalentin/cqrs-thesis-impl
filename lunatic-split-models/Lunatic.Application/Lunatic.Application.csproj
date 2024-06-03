@@ -17,4 +17,8 @@
     <ProjectReference Include="..\Lunatic.Domain\Lunatic.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Tasks\DTOs\" />
+  </ItemGroup>
+
 </Project>

@@ -1,10 +1,11 @@
-﻿using Lunatic.Application.Features.Tasks;
+﻿using Lunatic.Application.Features.Tasks.Interfaces;
 using Lunatic.Application.Models.ReadModels.Tasks;
 using Lunatic.Domain.Utils;
 using Lunatic.Infrastructure.Data;
 
-namespace Lunatic.Infrastructure.ReadServices {
-	public sealed class TaskReadService : GenericReadService<TaskReadModel>, ITaskReadService {
+namespace Lunatic.Infrastructure.ReadServices
+{
+    public sealed class TaskReadService : GenericReadService<TaskReadModel>, ITaskReadService {
 
 		public TaskReadService(LunaticReadContext context) : base(context) {
 		}

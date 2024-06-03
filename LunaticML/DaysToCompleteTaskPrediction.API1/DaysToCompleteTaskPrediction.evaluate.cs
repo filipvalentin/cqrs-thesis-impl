@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Lunatic_ML
+namespace DaysToCompleteTaskPrediction_API1
 {
     public partial class DaysToCompleteTaskPrediction
     {

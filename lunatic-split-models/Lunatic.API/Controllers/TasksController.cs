@@ -1,4 +1,5 @@
 
+using Lunatic.API.Interfaces;
 using Lunatic.Application.Features.Tasks.Commands.CreateComment;
 using Lunatic.Application.Features.Tasks.Commands.DeleteComment;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTask;
@@ -13,6 +14,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Lunatic.API.Controllers {
 	public class TasksController : BaseApiController {
+		IDayConversionService _dayConversionService;
+
+		public TasksController(IDayConversionService dayConversionService) {
+			_dayConversionService = dayConversionService;
+		}
+
 		[HttpPost("{taskId}/comments")]
 		[Produces("application/json")]
 		[ProducesResponseType<CreateCommentCommandResponse>(StatusCodes.Status201Created)]
@@ -147,87 +154,6 @@ namespace Lunatic.API.Controllers {
 			return Ok(result);
 		}
 
-		//[HttpGet("{taskId}/comments")]
-		//[Produces("application/json")]
-		//[ProducesResponseType<GetAllTaskCommentsQueryResponse>(StatusCodes.Status200OK)]
-		//[ProducesResponseType<GetAllTaskCommentsQueryResponse>(StatusCodes.Status404NotFound)]
-		//public async Task<IActionResult> GetAllComments(Guid taskId) {
-		//	var result = await Mediator.Send(new GetAllTaskCommentsQuery(taskId));
-		//	if (!result.Success) {
-		//		return NotFound(result);
-		//	}
-		//	return Ok(result);
-		//}
-
-		//[HttpPost("{taskId}/assignees")]
-		//[Produces("application/json")]
-		//[ProducesResponseType<AddTaskAssigneeCommandResponse>(StatusCodes.Status200OK)]
-		//[ProducesResponseType<AddTaskAssigneeCommandResponse>(StatusCodes.Status400BadRequest)]
-		//public async Task<IActionResult> AddAssignee(Guid taskId, AddTaskAssigneeCommand command) {
-		//	if (taskId != command.TaskId) {
-		//		return BadRequest(new AddTaskAssigneeCommandResponse {
-		//			Success = false,
-		//			ValidationErrors = new List<string> { "The task Id Path and task Id Body must be equal." }
-		//		});
-		//	}
-
-		//	var result = await Mediator.Send(command);
-		//	if (!result.Success) {
-		//		return BadRequest(result);
-		//	}
-		//	return Ok(result);
-		//}
-
-		//[HttpDelete("{taskId}/assignees/{userId}")]
-		//[Produces("application/json")]
-		//[ProducesResponseType<DeleteTaskAssigneeCommandResponse>(StatusCodes.Status200OK)]
-		//[ProducesResponseType<DeleteTaskAssigneeCommandResponse>(StatusCodes.Status400BadRequest)]
-		//public async Task<IActionResult> DeleteAssignee(Guid taskId, Guid userId) {
-		//	var deleteTaskAssigneeCommand = new DeleteTaskAssigneeCommand() {
-		//		TaskId = taskId,
-		//		UserId = userId
-		//	};
-		//	var result = await Mediator.Send(deleteTaskAssigneeCommand);
-		//	if (!result.Success) {
-		//		return BadRequest(result);
-		//	}
-		//	return Ok(result);
-		//}
-
-		//[HttpPost("{taskId}/tags")]
-		//[Produces("application/json")]
-		//[ProducesResponseType<AddTaskTagCommandResponse>(StatusCodes.Status200OK)]
-		//[ProducesResponseType<AddTaskTagCommandResponse>(StatusCodes.Status400BadRequest)]
-		//public async Task<IActionResult> AddTag(Guid taskId, AddTaskTagCommand command) {
-		//	if (taskId != command.TaskId) {
-		//		return BadRequest(new AddTaskTagCommandResponse {
-		//			Success = false,
-		//			ValidationErrors = new List<string> { "The task Id Path and task Id Body must be equal." }
-		//		});
-		//	}
-
-		//	var result = await Mediator.Send(command);
-		//	if (!result.Success) {
-		//		return BadRequest(result);
-		//	}
-		//	return Ok(result);
-		//}
-
-		//[HttpDelete("{taskId}/tags/{tag}")]
-		//[Produces("application/json")]
-		//[ProducesResponseType<DeleteTaskTagCommandResponse>(StatusCodes.Status200OK)]
-		//[ProducesResponseType<DeleteTaskTagCommandResponse>(StatusCodes.Status400BadRequest)]
-		//public async Task<IActionResult> DeleteTag(Guid taskId, string tag) {
-		//	var deleteTaskTagCommand = new DeleteTaskTagCommand() {
-		//		TaskId = taskId,
-		//		Tag = tag
-		//	};
-		//	var result = await Mediator.Send(deleteTaskTagCommand);
-		//	if (!result.Success) {
-		//		return BadRequest(result);
-		//	}
-		//	return Ok(result);
-		//}
 
 		[HttpGet("{taskId}/prediction")]
 		[Produces("application/json")]
@@ -242,6 +168,15 @@ namespace Lunatic.API.Controllers {
 			if (!result.Success) {
 				return BadRequest(result);
 			}
+			return Ok(result);
+		}
+
+		[HttpGet("convertDays/{number}")]
+		[Produces("application/json")]
+		[ProducesResponseType<GetPredictedTaskTimeCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<GetPredictedTaskTimeCommandResponse>(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> ConvertDays(int number) {
+			var result = _dayConversionService.ConvertToString(number);
 			return Ok(result);
 		}
 	}

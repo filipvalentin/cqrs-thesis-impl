@@ -2,10 +2,11 @@ using Lunatic.Application.Contracts;
 using Lunatic.Application.Contracts.Interfaces;
 using Lunatic.Application.Features.Comments;
 using Lunatic.Application.Features.Projects;
-using Lunatic.Application.Features.Tasks;
+using Lunatic.Application.Features.Tasks.Interfaces;
 using Lunatic.Application.Features.Teams;
 using Lunatic.Application.Persistence;
 using Lunatic.Infrastructure.Data;
+using Lunatic.Infrastructure.Providers;
 using Lunatic.Infrastructure.ReadServices;
 using Lunatic.Infrastructure.Repositories;
 using Lunatic.Infrastructure.Services;
@@ -13,8 +14,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lunatic.Infrastructure {
-	public static class InfrastructureRegistrationDI {
+namespace Lunatic.Infrastructure
+{
+    public static class InfrastructureRegistrationDI {
 		public static IServiceCollection AddInfrastructureToDI(this IServiceCollection services, IConfiguration configuration) {
 
 			services.AddDbContext<LunaticContext>(
@@ -51,6 +53,7 @@ namespace Lunatic.Infrastructure {
 			services.AddScoped<IProjectReadService, ProjectReadService>();
 			services.AddScoped<ICommentReadService, CommentReadService>();
 			services.AddScoped<IMLDataStorageService, MLDataStorageService>();
+			services.AddScoped<IMLDataProvider, MLDataProvider>();
 
 			return services;
 		}

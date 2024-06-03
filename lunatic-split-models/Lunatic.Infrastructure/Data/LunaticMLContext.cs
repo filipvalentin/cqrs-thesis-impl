@@ -10,7 +10,7 @@ namespace Lunatic.Infrastructure.Data {
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			modelBuilder.Entity<DaysToCompleteTaskEntry>(
 				builder => {
-					builder.HasKey(e => e.TaskId);
+					builder.HasNoKey();// (e => e.TaskId);
 				});
 		}
 	}

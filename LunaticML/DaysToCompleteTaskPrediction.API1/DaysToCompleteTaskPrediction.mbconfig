@@ -1,0 +1,391 @@
+﻿{
+  "Scenario": "Classification",
+  "DataSource": {
+    "Type": "SQL",
+    "Version": 1,
+    "ColumnProperties": [
+      {
+        "ColumnName": "TaskId",
+        "ColumnPurpose": "Ignore",
+        "ColumnDataFormat": "String",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "AssigneesCount",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "DescriptionLength",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "CommentsCount",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "AverageCommentLength",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "Priority",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "DaysTookToComplete",
+        "ColumnPurpose": "Label",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 5
+      },
+      {
+        "ColumnName": "ExpectedDaysToComplete",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 5
+      }
+    ],
+    "ConnectionString": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CQRSLunaticML;Integrated Security=True",
+    "CommandString": "SELECT CAST([AssigneesCount] as REAL), CAST([DescriptionLength] as REAL), CAST([CommentsCount] as REAL), CAST([AverageCommentLength] as REAL), CAST([Priority] as REAL), CAST([DaysTookToComplete] as REAL), CAST([ExpectedDaysToComplete] as REAL) FROM [dbo].[DaysToCompleteTaskEntries]",
+    "DatabaseName": "CQRSLunaticML",
+    "SelectedTableDbo": "dbo",
+    "TableName": "DaysToCompleteTaskEntries"
+  },
+  "Environment": {
+    "Type": "LocalCPU",
+    "Version": 1
+  },
+  "RunHistory": {
+    "Version": 3,
+    "Type": "Result",
+    "Trials": [
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestOva",
+        "Score": 0.31369691280485884,
+        "RuntimeInSeconds": 21.956,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ],
+            "InputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "OutputColumnName": "DaysTookToComplete",
+            "InputColumnName": "DaysTookToComplete",
+            "AddKeyValueAnnotationsAsText": false
+          },
+          "e3": {
+            "NumberOfTrees": 17,
+            "NumberOfLeaves": 32,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "DaysTookToComplete",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "OutputColumnName": "PredictedLabel",
+            "InputColumnName": "PredictedLabel"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestOva",
+        "Score": 0.3125682991837414,
+        "RuntimeInSeconds": 19.65,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ],
+            "InputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "OutputColumnName": "DaysTookToComplete",
+            "InputColumnName": "DaysTookToComplete",
+            "AddKeyValueAnnotationsAsText": false
+          },
+          "e3": {
+            "NumberOfTrees": 36,
+            "NumberOfLeaves": 7,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "DaysTookToComplete",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "OutputColumnName": "PredictedLabel",
+            "InputColumnName": "PredictedLabel"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestOva",
+        "Score": 0.3104094799447123,
+        "RuntimeInSeconds": 26.073,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ],
+            "InputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "OutputColumnName": "DaysTookToComplete",
+            "InputColumnName": "DaysTookToComplete",
+            "AddKeyValueAnnotationsAsText": false
+          },
+          "e3": {
+            "NumberOfTrees": 73,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 0.7190785,
+            "LabelColumnName": "DaysTookToComplete",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "OutputColumnName": "PredictedLabel",
+            "InputColumnName": "PredictedLabel"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestOva",
+        "Score": 0.29998692095393747,
+        "RuntimeInSeconds": 13.246,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ],
+            "InputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "OutputColumnName": "DaysTookToComplete",
+            "InputColumnName": "DaysTookToComplete",
+            "AddKeyValueAnnotationsAsText": false
+          },
+          "e3": {
+            "NumberOfTrees": 10,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 0.973698139,
+            "LabelColumnName": "DaysTookToComplete",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "OutputColumnName": "PredictedLabel",
+            "InputColumnName": "PredictedLabel"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestOva",
+        "Score": 0.26372035828932383,
+        "RuntimeInSeconds": 11.152,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ],
+            "InputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "AssigneesCount",
+              "DescriptionLength",
+              "CommentsCount",
+              "AverageCommentLength",
+              "Priority",
+              "ExpectedDaysToComplete"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "OutputColumnName": "DaysTookToComplete",
+            "InputColumnName": "DaysTookToComplete",
+            "AddKeyValueAnnotationsAsText": false
+          },
+          "e3": {
+            "NumberOfTrees": 5,
+            "NumberOfLeaves": 8,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "DaysTookToComplete",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "OutputColumnName": "PredictedLabel",
+            "InputColumnName": "PredictedLabel"
+          }
+        }
+      }
+    ],
+    "Estimators": {
+      "e0": "ReplaceMissingValues",
+      "e1": "Concatenate",
+      "e2": "MapValueToKey",
+      "e3": "FastForestOva",
+      "e4": "MapKeyToValue"
+    },
+    "Schema": "e0 * e1 * e2 * e3 * e4",
+    "MetricName": "MacroAccuracy",
+    "ModelFilePath": "E:\\labs\\cqrs-thesis-impl\\LunaticML\\DaysToCompleteTaskPrediction.API\\DaysToCompleteTaskPrediction.mlnet"
+  },
+  "Type": "TrainingConfig",
+  "Version": 5,
+  "TrainingOption": {
+    "Version": 2,
+    "Subsampling": false,
+    "Type": "ClassificationTrainingOption",
+    "TrainingTime": 200,
+    "OptimizeMetric": "MacroAccuracy",
+    "LabelColumn": "DaysTookToComplete",
+    "AvailableTrainers": [
+      "FASTFOREST"
+    ],
+    "ValidationOption": {
+      "Version": 0,
+      "Type": "CrossValidationValidationOption",
+      "NumberOfFolds": 5
+    }
+  }
+}

@@ -1,4 +1,5 @@
-﻿using Lunatic.Application.Persistence;
+﻿using Lunatic.Application.Features.Tasks.Interfaces;
+using Lunatic.Application.Persistence;
 using Lunatic.Domain.DomainEvents;
 using Lunatic.Domain.Entities;
 using Lunatic.Domain.MLModel;
@@ -45,13 +46,14 @@ namespace Lunatic.Application.Features.Tasks.Events {
 
 			await mlDataStorageService.AddEntryAsync(
 				new DaysToCompleteTaskEntry {
-					TaskId = task.Id,
+					TaskId = task.Id.ToString(),
 					AssigneesCount = task.AssigneeIds.Count,
 					DescriptionLength = task.Description.Length,
 					CommentsCount = comments.Count,
-					AverageCommentLength =
-						comments.Count > 0 ? comments.Average(comment => comment.Content.Length) : 0,
-					Priority = task.Priority
+					AverageCommentLength = comments.Count > 0 ? comments.Average(comment => comment.Content.Length) : 0,
+					Priority = task.Priority,
+					ExpectedDaysToComplete = (task.PlannedEndDate - task.PlannedStartDate).Days,
+					DaysTookToComplete = (task.EndedDate!.Value - task.StartedDate!.Value).Days
 				}
 			);
 		}

@@ -1,3 +1,4 @@
+using Lunatic.API.Interfaces;
 using Lunatic.API.Services;
 using Lunatic.Application;
 using Lunatic.Application.Contracts.Interfaces;
@@ -21,6 +22,7 @@ builder.Services.AddInfrastrutureIdentityToDI(builder.Configuration);
 builder.Services.AddApplicationServices();
 //builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<IDayConversionService, DayConversionService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
