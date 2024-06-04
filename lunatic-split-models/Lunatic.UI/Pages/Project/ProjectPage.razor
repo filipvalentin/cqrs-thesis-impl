@@ -721,7 +721,7 @@
 		CreateTaskDto.UserId = CurrentUserId;
 		CreateTaskDto.ProjectId = ProjectId;
 		CreateTaskDto.Section = addTaskModalFirstSelectOption;
-		CreateTaskDto.Tags = AddTaskModalTagsString.Split(',').Select(x => x.Trim()).ToList();
+		CreateTaskDto.Tags = AddTaskModalTagsString.Split(',').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToList();
 		CreateTaskDto.Priority = addTaskModalPriorityOption switch {
 			"Low" => TaskPriority.LOW,
 			"Medium" => TaskPriority.MEDIUM,
