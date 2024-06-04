@@ -1,6 +1,8 @@
 ﻿using Lunatic.Application.Features.Tasks.Interfaces;
+using Lunatic.Application.Models;
 using Lunatic.Domain.MLModel;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,11 +12,11 @@ using System.Threading.Tasks;
 
 namespace Lunatic.Infrastructure.Providers {
 	internal class MLDataProvider : IMLDataProvider {
-		IConfiguration configuration;
-		string Url { get; init; }
-		public MLDataProvider(IConfiguration configuration) {
-			this.configuration = configuration;
-			Url = "https://localhost:52375/predict";//$"{configuration.GetSection("MLAPI:Url")}/predict";
+		private readonly IOptions<MLAPISettings> options;
+		public string Url { get; init; }
+		public MLDataProvider(IOptions<MLAPISettings> options) {
+			this.options = options;
+			Url = $"{options.Value.MLAPIAddress}/predict";
 		}
 
 		public async Task<int> GetTaskPrediction(DaysToCompleteTaskEntry payload) {

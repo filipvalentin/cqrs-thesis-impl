@@ -175,7 +175,7 @@ namespace Lunatic.API.Controllers {
 		[Produces("application/json")]
 		[ProducesResponseType<GetPredictedTaskTimeCommandResponse>(StatusCodes.Status200OK)]
 		[ProducesResponseType<GetPredictedTaskTimeCommandResponse>(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> ConvertDays(int number) {
+		public IActionResult ConvertDays(int number) {
 			var result = _dayConversionService.ConvertToString(number);
 			return Ok(result);
 		}

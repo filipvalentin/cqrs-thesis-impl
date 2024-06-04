@@ -17,6 +17,7 @@ builder.Services.AddCors(options => {
 });
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<MLAPISettings>(builder.Configuration.GetSection("MLAPISettings"));
 builder.Services.AddInfrastructureToDI(builder.Configuration);
 builder.Services.AddInfrastrutureIdentityToDI(builder.Configuration);
 builder.Services.AddApplicationServices();
