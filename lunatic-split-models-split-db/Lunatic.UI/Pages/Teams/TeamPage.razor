@@ -1,0 +1,592 @@
+﻿@page "/team/{teamId:guid}"
+@using MudBlazor
+@using Lunatic.UI.Contracts
+@using Lunatic.UI.Models.ViewModels
+@using Lunatic.UI.Models.Dtos
+@using Lunatic.UI.Pages.Teams.TeamPageComponents
+@using Lunatic.UI.Pages.Teams.TeamPageComponents.Shared
+@using System.Timers
+@using Markdig
+@using Lunatic.UI.Pages.SharedFunctions
+@inject NavigationManager navigationManager
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<style>
+	.custom-toolbar {
+		background-color: #3498db;
+		color: #ffffff;
+	}
+
+	.my-custom-class {
+		backdrop-filter: blur(10px);
+	}
+
+
+	.display-if-not-fits {
+		display: none;
+	}
+
+	@@media screen and (max-width: 400px) {
+		.display-if-fits {
+			display: none;
+		}
+
+		.display-if-not-fits {
+			display: block;
+		}
+	}
+
+	.member-management-toolbar {
+		background-color: #8c6cc4;
+		color: #ffffff;
+		height: 3em;
+	}
+
+	.member-management-toolbar1 {
+		background-color: #a481c9;
+		color: #ffffff;
+		height: 3em;
+	}
+
+	.member-management-toolbar2 {
+		background-color: #9873c9;
+		color: #ffffff;
+		height: 3em;
+	}
+</style>
+
+<PageTitle>
+	Team: @TeamName
+</PageTitle>
+
+<MudPaper Height="100%" Class="p-2 d-flex flex-column flex-grow-1" Elevation="0">
+	@* <MudPaper > *@
+	<MudGrid Spacing="1" Class="flex-grow-1">
+
+		<MudItem xs="12" md="9" Class="d-flex flex-column flex-grow-1 overflow-y-auto">
+			<MudPaper Elevation="1" Class="d-flex flex-column flex-grow-1 overflow-y-auto">
+				<MudToolBar Class="custom-toolbar" Dense="true">
+					<MudText>@TeamName</MudText>
+						<MudIconButton Icon="@Icons.Material.Filled.ExpandCircleDown" aria-label="delete" OnClick="()=>{isOpenDescriptionPopover=!isOpenDescriptionPopover;}"></MudIconButton>
+						<MudPopover Open="isOpenDescriptionPopover"
+									OverflowBehavior="OverflowBehavior.FlipAlways"
+									AnchorOrigin="Origin.BottomLeft"
+									TransformOrigin="Origin.TopLeft"
+									Paper="false">
+							<MudPaper Outlined="true" Class="p-4 overflow-y-auto mud-background-gray" MaxHeight="60vh" MaxWidth="80vw" MinWidth="50vw" MinHeight="20vh">
+								<MudText><b>Team Description</b></MudText>
+								<MudDivider Style="height:3px" Class="mb-1" />
+								<MudText>
+									@Functions.StringToHtml(TeamDescription)
+							</MudText>
+							<MudDivider Style="height:2px" Class="mt-4 mb-1" />
+							Owner: @((MarkupString)OwnerDescriptionText)
+						</MudPaper>
+					</MudPopover>
+					<MudSpacer />
+					@* @if (ownerId==currentUserId) *@
+
+					<MudButton Class="display-if-fits" Variant="Variant.Filled" Color="Color.Secondary" OnClick="LaunchAddNewProjectModal">
+						NEW PROJECT
+					</MudButton>
+					<MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Inherit" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+						<MudMenuItem Class="display-if-not-fits" OnClick="LaunchAddNewProjectModal">
+							New Project
+						</MudMenuItem>
+						<MudMenuItem OnClick="LaunchEditTeamInfoModal">
+							Edit team info
+						</MudMenuItem>
+						@* if(isOwner){ *@
+						<MudMenuItem OnClick="LaunchDeleteTeamModal">
+							Delete team  @* leave team if non owner *@
+						</MudMenuItem>
+						@* else {
+						<MudMenuItem OnClick="LaunchDeleteTeamModal">
+						Leave team
+						</MudMenuItem>
+						} *@
+					</MudMenu>
+
+				</MudToolBar>
+
+				<MudPaper Height="100%" Class="p-2 d-flex flex-column gap-1 overflow-y-auto mud-background-gray" MaxHeight="calc(100vh - 8em)">
+					@if (ProjectIds != null) {
+						@if (ProjectIds.Any()) {
+							@foreach (var projectId in ProjectIds) {
+								<TeamPageProjectCard ProjectId="@projectId" OnCardClick="GoToProjectPage" />
+							}
+						}
+						else {
+							<MudCard>
+								<MudCardContent>
+									<MudText Typo="Typo.body2">No projects yet</MudText>
+								</MudCardContent>
+							</MudCard>
+						}
+
+					}
+					else {
+						<MudCard>
+							<MudCardContent>
+								<MudSkeleton Width="150px" Height="40px" />
+								<MudSkeleton />
+							</MudCardContent>
+						</MudCard>
+					}
+				</MudPaper>
+			</MudPaper>
+		</MudItem>
+		<MudItem xs="12" md="3" Class="d-flex flex-column flex-grow-1">
+			@* <MudPaper Height="100%"> *@
+			<MudPaper Class="d-flex flex-column flex-grow-1 mud-background-gray" MaxHeight="100%">
+				<MudToolBar Class="custom-toolbar rounded-top" Dense="true">
+					<MudText>Members</MudText>
+					<MudSpacer />
+					<MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Inherit" OnClick="LaunchAddMemberModal" />
+				</MudToolBar>
+
+				<MudPaper Class="d-flex flex-column flex-grow-1 overflow-y-auto bg-transparent p-2 gap-1" Elevation="0" MaxHeight="calc(100vh - 8em)">
+					@* <MudList Clickable="true" Class="flex-grow-1 overflow-y-auto overflow-x-hidden px-2"> *@
+
+					@if (MemberDtos != null) {
+						@foreach (var member in MemberDtos) {
+							<TeamPageUserListItem User="@member" />
+						}
+					}
+					else {
+						<MudListItem>
+							<MudPaper Elevation="0" Class="d-flex flex-row">
+								<MudSkeleton SkeletonType="SkeletonType.Circle" Width="40px" Height="40px" />
+								<MudSkeleton Width="150px" Height="40px" />
+							</MudPaper>
+						</MudListItem>
+					}
+					@* </MudList> *@
+
+				</MudPaper>
+			</MudPaper>
+		</MudItem>
+	</MudGrid>
+</MudPaper>
+@* </MudPaper> *@
+
+<style>
+	.manage-members-modal {
+		width: 80em;
+	}
+
+	@@media screen and (max-width: 80em) {
+		.manage-members-modal {
+			width: 90vw;
+		}
+	}
+
+	.inner-modal-div {
+		display: flex;
+		flex-direction: row;
+	}
+
+	@@media screen and (max-width: 45em) {
+		.manage-members-modal {
+			width: 90vw;
+		}
+
+		.inner-modal-div {
+			flex-direction: column;
+		}
+	}
+</style>
+
+<MudDialog @bind-IsVisible="isVisibleManageMembersModal" ClassContent="p-0" DisableSidePadding="true" Options="dialogOptions">
+	<DialogContent>
+		<MudPaper Height="80vh" Class="manage-members-modal m-0 overflow-x-hidden d-flex flex-column">
+
+			<MudToolBar Class="member-management-toolbar z-10" Dense="true">
+				<MudText Typo="Typo.subtitle1">Manage members of team <b>@TeamName</b></MudText>
+				<MudSpacer />
+				<MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" OnClick="@(() => {isVisibleManageMembersModal=false;})" />
+			</MudToolBar>
+
+
+			<MudPaper Class="inner-modal-div flex-grow-1" Elevation="0" Height="calc(80vh - 2em)">
+
+				<MudPaper Elevation="0" MinWidth="25em" Class="d-flex flex-column flex-grow-0 mud-background-gray">
+					<MudToolBar Class="member-management-toolbar1 text" Dense="true">Add Members</MudToolBar>
+					<MudPaper Class="d-flex flex-column flex-grow-1 bg-transparent ">
+						<MudTextField Class="flex-grow-0 pt-1 m-2" @bind-Value="@searchValue" OnKeyUp="OnKeyUpSearchBar"
+									  Variant="Variant.Filled" Margin="Margin.Dense"
+									  Label="Search by username"
+									  Immediate="true">
+						</MudTextField>
+
+						<MudPaper Class="d-flex flex-column flex-grow-1 overflow-y-auto p-2 gap-1 bg-transparent" Elevation="0" MinHeight="10em">
+							@foreach (var searchResult in SearchUserItems) {
+								<MudPaper Class="d-flex flex-row gap-1 align-items-center p-1">
+									<MudSkeleton SkeletonType="SkeletonType.Circle" Width="40px" Height="40px" />
+									<MudPaper Elevation="0" Class="d-fle	x flex-column">
+										<MudText>
+											@searchResult.Username
+										</MudText>
+										<MudText Typo="Typo.caption">
+											@searchResult.FirstName @searchResult.LastName
+										</MudText>
+									</MudPaper>
+									<MudSpacer />
+									<MudButton OnClick="()=>AddUserToTeamAsync(searchResult)" Variant="Variant.Filled" Size="Size.Small">
+										Add
+									</MudButton>
+								</MudPaper>
+							}
+						</MudPaper>
+					</MudPaper>
+				</MudPaper>
+
+
+				<MudPaper Class=" d-flex flex-column flex-grow-1 m-0 " Height="calc(80vh - 3.1em)">
+
+					<MudPaper Elevation="0">
+
+						<MudToolBar Class="member-management-toolbar2" Dense="true">Manage members</MudToolBar>
+
+					</MudPaper>
+
+					<MudPaper Class="d-flex flex-column flex-grow-1 p-2 gap-1 overflow-y-auto mud-background-gray">
+						@foreach (var member in MemberDtos) {
+							<MudPaper Class="d-flex flex-row gap-1 align-items-center p-1">
+								<MudAvatar>
+									<MudImage ObjectFit="ObjectFit.Cover" Src="" Width="40" Height="40" />
+								</MudAvatar>
+								<MudText>
+									@member.FirstName @member.LastName
+								</MudText>
+								<MudText Class="text-black-50">
+									(@member.Username)
+								</MudText>
+								<MudSpacer />
+								<MudButton OnClick="()=>RemoveMember(member)" Disabled="CurrentUserId == member.UserId"
+										   Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small">
+									Remove
+								</MudButton>
+							</MudPaper>
+						}
+					</MudPaper>
+
+				</MudPaper>
+
+
+
+			</MudPaper>
+		</MudPaper>
+	</DialogContent>
+</MudDialog>
+
+
+@* DELETE TEAM MODAL *@
+<MudDialog @bind-IsVisible="isVisibleDeleteTeamModal" Options="noEscapedialogOptions">
+	<TitleContent>
+		<MudText Typo="Typo.body1">
+			<MudIcon Icon="@Icons.Material.Filled.Delete" Class="mr-3" /> Are you sure you want to delete this team?
+		</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudPaper Elevation="0">
+			<MudPaper Width="30em" Class="m-0" Elevation="0">
+				<MudText Typo="Typo.body1">
+					Are you sure you want to delete the team <b>@TeamName</b>?
+				</MudText>
+				<MudAlert Severity="Severity.Warning" Class="pl-0">
+					All projects and corresponding tasks will be deleted!
+				</MudAlert>
+			</MudPaper>
+		</MudPaper>
+	</DialogContent>
+	<DialogActions>
+		<MudButton Variant="Variant.Filled" OnClick="SubmitDeleteTeam" Color="Color.Primary">Yes</MudButton>
+		<MudButton Variant="Variant.Filled" OnClick="@(()=>isVisibleDeleteTeamModal = false)">No</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+@* EDIT TEAM INFO MODAL*@
+<MudDialog @bind-IsVisible="isVisibleEditTeamInfoModal" Options="noEscapeModalOpts">
+	<TitleContent>
+		<MudText Typo="Typo.body1">
+			<MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" /> Edit Project Info
+		</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudPaper Width="40em" Class="m-0 mt-n4 d-flex flex-column overflow-x-hidden" Elevation="0">
+			<MudTextField T="string"
+						  Label="Project name"
+						  Required="true"
+						  @bind-Value="EditTeamInfoViewModel.Name" />
+
+			<MudTextField T="string"
+						  Label="Project description"
+						  @bind-Value="EditTeamInfoViewModel.Description"
+						  Lines="8"
+						  HelperText="Accepts Markdown" />
+		</MudPaper>
+	</DialogContent>
+	<DialogActions>
+		<MudButton Variant="Variant.Filled"
+				   Color="Color.Primary"
+				   OnClick="EditTeamInfoAsync" Class="px-8">Edit</MudButton>
+
+		<MudButton Variant="Variant.Filled"
+				   Color="Color.Default"
+				   OnClick="()=>{isVisibleEditTeamInfoModal=false;}">Cancel</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+@code {
+	[Parameter] public Guid TeamId { get; set; }
+
+	public string TeamName { get; set; } = "";
+	public string TeamDescription { get; set; } = "";
+	public Guid OwnerId { get; set; }
+	public Guid CurrentUserId { get; set; }
+	// public List<Guid>? MembersIds { get; set; } = null;
+	private List<Guid>? ProjectIds { get; set; } = null;
+
+	private string OwnerDescriptionText { get; set; } = "";
+
+	private bool isOpenDescriptionPopover = false;
+
+	private bool isVisibleEditTeamInfoModal = false;
+	private EditTeamInfoViewModel EditTeamInfoViewModel = new();
+	private bool isVisibleDeleteTeamModal = false;
+
+	private DialogOptions dialogOptions = new() { DisableBackdropClick = true, MaxWidth = MaxWidth.Large, CloseButton = false, NoHeader = true };
+	private DialogOptions noEscapedialogOptions = new() { DisableBackdropClick = true, MaxWidth = MaxWidth.Large };
+	private List<UserDto> MemberDtos { get; set; } = new();
+	private List<Tuple<Guid, string>> MembersImages { get; set; } = new();
+	private List<Tuple<Guid, string>> SearchUserImages { get; set; } = new();
+
+	private bool isVisibleManageMembersModal = false;
+	private string searchValue = "";
+	// private List<string> EmptyList = new List<string>();
+	private Timer? timer;
+	private bool timerActive = false;
+	private List<UserDto> SearchUserItems { get; set; } = new();
+
+	public DialogOptions noEscapeModalOpts = new() { DisableBackdropClick = true };
+	[Inject] public ITeamDataService TeamDataService { get; set; } = null!;
+	[Inject] IUserDataService UserDataService { get; set; } = null!;
+	[Inject] IImageService ImageService { get; set; } = null!;
+}
+
+
+@functions {
+
+	private async Task<string> GetUserImageSrc(Guid userId) {
+		var response = await ImageService.GetUserImageAsync(userId);
+		if (!response.Success) {
+			return "/img/default-user.jpg";
+		}
+		return System.Text.Encoding.UTF8.GetString(response.GetValue("image").ImageData);
+	}
+
+	private void LaunchDeleteTeamModal() {
+		isVisibleDeleteTeamModal = true;
+	}
+
+	private bool IsOwner() {
+		if (CurrentUserId == OwnerId) {
+			return true;
+		}
+
+		Snackbar.Add($"You are not the owner of this team. (You shouldn't have had access to this function!)", Severity.Error);
+		return false;
+	}
+
+	private async Task SubmitDeleteTeam() {
+		if (!IsOwner()) {
+			return;
+		}
+
+		var result = await TeamDataService.DeleteTeamAsync(TeamId);
+		if (result.Success) {
+			Snackbar.Add($"Team {TeamName} deleted successfuly", Severity.Success);
+			isVisibleDeleteTeamModal = false;
+			navigationManager.NavigateTo("/teams");
+		}
+		else {
+			Snackbar.Add($"Failed to delete team {result.Message}", Severity.Error);
+		}
+
+	}
+
+
+	protected override async Task OnParametersSetAsync() {
+
+		var result = await TeamDataService.GetTeamByIdAsync(TeamId);
+		if (!result.Success) {
+			Snackbar.Add($"Error loading team: {result.Message}", Severity.Error);
+			navigationManager.NavigateTo("/teams");
+		}
+		var team = result.GetValue("team");
+		// Console.WriteLine(JsonSerializer.Serialize(team));
+		TeamName = team.Name;
+		TeamDescription = team.Description;
+		OwnerId = team.OwnerId;
+		// MembersIds = team.MemberIds;
+		ProjectIds = team.ProjectIds;
+
+		UserDto[] users = await Task.WhenAll(
+					team.MemberIds.Select(async userId => {
+						var response = await UserDataService.GetUserByIdAsync(userId);
+						if (!response.Success)
+							return new();
+						return response.GetValue("user"); //TODO check this when images are added
+					}));
+		MemberDtos.AddRange(users);
+
+		var ownerDto = MemberDtos.First(member => member.UserId == OwnerId);
+		OwnerDescriptionText = $"<b>{ownerDto.FirstName} {ownerDto.LastName}</b> (@{ownerDto.Username})";
+	}
+
+	public void GoToProjectPage(Guid projectId) {
+		navigationManager.NavigateTo("/project/" + projectId);
+	}
+	public void GoToUserPage(string userId) {
+		navigationManager.NavigateTo("/profile/" + userId);
+	}
+
+	public void LaunchAddMemberModal() {
+		// DialogParameters parameters = new DialogParameters();
+		// parameters.Add("OwnerId", OwnerId);
+		// parameters.Add("MembersIds", MembersIds);
+		// parameters.Add("TeamId", TeamId); //todo dropshadow
+		// DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true, ClassBackground = "my-custom-class", NoHeader = true, MaxWidth = MaxWidth.ExtraExtraLarge, DisableBackdropClick = true };
+		// DialogService.Show<TeamPageManageMembersModal>(null, parameters, closeOnEscapeKey);
+		isVisibleManageMembersModal = true;
+	}
+	public void LaunchEditTeamInfoModal() {
+		// DialogParameters parameters = new DialogParameters();
+		// parameters.Add("OwnerId", OwnerId);
+		// parameters.Add("TeamId", TeamId);
+		// parameters.Add("TeamName", TeamName);
+		// parameters.Add("TeamDescription", TeamDescription);
+		// DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true, ClassBackground = "my-custom-class", NoHeader = true, MaxWidth = MaxWidth.ExtraExtraLarge };
+		// DialogService.Show<TeamPageEditInfoModal>(null, parameters, closeOnEscapeKey);
+		isVisibleEditTeamInfoModal = true;
+		EditTeamInfoViewModel.TeamId = TeamId;
+		EditTeamInfoViewModel.Name = TeamName;
+		EditTeamInfoViewModel.Description = TeamDescription;
+	}
+	public void LaunchAddNewProjectModal() {
+		DialogParameters parameters = new DialogParameters();
+		parameters.Add("OwnerId", OwnerId);
+		parameters.Add("TeamId", TeamId);
+		parameters.Add("ProjectIds", ProjectIds);
+		// parameters.Add("UpdateProjectList", );
+		DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true, ClassBackground = "my-custom-class", MaxWidth = MaxWidth.Large };
+		DialogService.Show<TeamPageAddNewProjectModal>("Add new project", parameters, closeOnEscapeKey);
+	}
+
+	private async Task EditTeamInfoAsync() {
+		var result = await TeamDataService.EditTeamInfoAsync(TeamId, EditTeamInfoViewModel);
+
+		if (result.Success) {
+			Snackbar.Add($"Team info edited successfuly", Severity.Success);
+			TeamName = EditTeamInfoViewModel.Name;
+			TeamDescription = EditTeamInfoViewModel.Description;
+		}
+		else {
+			Snackbar.Add($"Failed to edit team info {result.GetErrorsString()}", Severity.Error);
+		}
+
+		isVisibleEditTeamInfoModal = false;
+	}
+	// public void LaunchDeleteTeamModal() {
+	// 	DialogParameters parameters = new DialogParameters();
+	// 	parameters.Add("OwnerId", OwnerId);
+	// 	parameters.Add("TeamId", TeamId);
+	// 	DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true, ClassBackground = "my-custom-class", NoHeader = true, MaxWidth = MaxWidth.Small };
+	// 	DialogService.Show<TeamPageDeleteTeamModal>(null, parameters, closeOnEscapeKey);
+	// }
+
+	public void OnKeyUpSearchBar(KeyboardEventArgs e) {
+
+		if (e.Key.Length > 1)
+			return;
+
+		if (timer == null) {
+			timer = new Timer();
+			timer.Interval = 250;
+			timer.Elapsed += new ElapsedEventHandler(SearchUsers);
+			timer.AutoReset = false;
+			timer.Start();
+		}
+		else {
+			timer.Stop();
+			timer.Start();
+		}
+	}
+
+	public async void SearchUsers(object? sender, ElapsedEventArgs e) {
+		if (searchValue.Length <= 2)
+			return;
+
+		var result = await UserDataService.GetUsersByUsernamePartialMatchAsync(searchValue);
+
+		if (result == null) {
+			Snackbar.Add($"Failed to search users", Severity.Error);
+			return;
+		}
+
+		SearchUserItems.Clear();
+
+		UserDto[] users = await Task.WhenAll(
+					result.Select(async user => {
+						var response = await UserDataService.GetUserByIdAsync(user.UserId);
+						if (!response.Success)
+							return new();
+						return response.GetValue("user"); //TODO check this when images are added
+					}));
+
+		var MemberDtosIds = MemberDtos.Select(memberDto => memberDto.UserId);
+		SearchUserItems.AddRange(users.Where(user => !MemberDtosIds.Contains(user.UserId)));
+
+		// SearchUserImages.Clear();
+		// var a = SearchUserItems.Select(async item => await GetUserImageSrc(item.Username));
+
+		// SearchUserImages.AddRange(SearchUserItems.Select(async item => {
+		// 	var imgSrc = await GetUserImageSrc(item.Username); return new Tuple<Guid, string>(item.UserId, imgSrc))}));
+
+	StateHasChanged();
+	}
+
+
+	private async Task AddUserToTeamAsync(UserDto userDto) {
+
+	var result = await TeamDataService.AddMemberToTeamAsync(userDto.UserId, TeamId);
+
+	if (result.Success) {
+		Snackbar.Add($"{userDto.Username} added to team.", Severity.Success);
+
+		SearchUserItems.RemoveAll(x => x.UserId == userDto.UserId);
+		MemberDtos.Add(userDto);
+		// StateHasChanged();
+	}
+	else
+		Snackbar.Add($"Failed to add {userDto.Username} to team: {result.GetErrorsString()}", Severity.Error);
+	}
+
+	private async Task RemoveMember(UserDto member) {
+	var result = await TeamDataService.RemoveMemberFromTeamAsync(member.UserId, TeamId);
+	if (result.Success) {
+		Snackbar.Add($"Member {member.Username} removed from team.", Severity.Success);
+
+		MemberDtos.Remove(member);
+		// StateHasChanged();
+	}
+	else
+		Snackbar.Add($"Failed to remove member {member.Username} from team.", Severity.Error);
+	}
+
+}

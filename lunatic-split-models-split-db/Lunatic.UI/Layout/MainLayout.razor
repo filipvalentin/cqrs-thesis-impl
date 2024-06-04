@@ -1,0 +1,207 @@
+﻿@inherits LayoutComponentBase
+@using Blazored.LocalStorage
+@using Lunatic.UI.Contracts
+@using Lunatic.UI.Auth
+@using MudBlazor
+@inject NavigationManager NavigationManager
+@* @inject CustomStateProvider AuthStateProvider *@
+@inject ITokenService TokenService
+@inject ILocalStorageService LocalStorageService
+@inject ISnackbar Snackbar
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorageService
+@inject CustomStateProvider authStateProvider
+
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<style>
+	@@font-face {
+		font-family: 'tektur';
+		src: url('fonts/Tektur-VariableFont_wdth,wght.ttf');
+	}
+
+	.logo {
+		font-family: tektur;
+		font-weight: 700;
+		font-size: 1.5em;
+	}
+</style>
+
+@*color scheme not yet in place*@
+<MudLayout>
+	<MudAppBar Color="Color.Dark" Class="app-bar" Fixed="true" Dense="true">
+		@* <MudButton Color="Color.Inherit" OnClick="@(()=>NavigationManager.NavigateTo("/home"))">Lunatic</MudButton> *@
+
+		@if (@LoggedIn) {
+			<MudText Class="logo" @onclick="GoToTeams" Style="cursor: pointer"> Lunatic</MudText>
+			@* <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" /> *@
+			@* <MudButton OnClick="GoToTeams" Class="ml-6" Variant="Variant.Filled" Color="Color.Info"> My Teams</MudButton> *@
+		}
+		else {
+			<MudText Class="logo"> Lunatic</MudText>
+		}
+		<MudSpacer />
+		@if (@LoggedIn) {
+			<MudMenu FullWidth="true" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Dense="true">
+				<ActivatorContent>
+					<MudPaper Elevation="0" Class="bg-transparent d-flex flex-row justify-end" MinWidth="10em">
+						<MudChip Size="Size.Large">
+							<AvatarContent>
+								<MudAvatar>
+									<MudImage Src="@UserImageSrc"></MudImage>
+								</MudAvatar>
+							</AvatarContent>
+							<ChildContent>
+								<MudText Typo="Typo.body2" Color="Color.Info">
+									@Name
+								</MudText>
+							</ChildContent>
+						</MudChip>
+					</MudPaper>
+				</ActivatorContent>
+				<ChildContent>
+					@* <MudMenuItem OnAction="@(()=>NavigationManager.NavigateTo($"/profile/{UserId}"))">Profile</MudMenuItem> *@
+					<MudMenuItem OnAction="@(()=>NavigationManager.NavigateTo($"/account-settings"))">Account settings</MudMenuItem>
+					@* <MudMenuItem OnAction="@(()=>NavigationManager.NavigateTo("/logout"))">Sign Out</MudMenuItem> *@
+					<MudMenuItem OnAction="@(()=>Logout())">Sign out</MudMenuItem>
+				</ChildContent>
+			</MudMenu>
+		}
+		else {
+			if (pageLoaded) {
+				<MudButton Color="Color.Inherit" OnClick="GoToLogin">Login</MudButton>
+			}
+		}
+	</MudAppBar>
+
+
+	<MudMainContent Class="overflow-y-auto overflow-x-hidden" style="height: 100vh;">
+		@Body
+	</MudMainContent>
+
+</MudLayout>
+
+@code {
+	private bool LoggedIn { get; set; } = false;
+	private string? RegisterUri { get; set; }
+	private string? LoginUri { get; set; }
+	private string? ResetPasswordUri { get; set; }
+	private string? Token { get; set; }
+
+	private string UserImageSrc { get; set; } = "";
+
+	private bool pageLoaded = false;
+
+	private bool UserDataLoadedFlag { get; set; } = false;
+	private string? Name { get; set; }
+	private Guid UserId { get; set; } = default;
+
+	[Inject] IUserDataService UserDataService { get; set; } = null!;
+	[Inject] IImageService ImageService { get; set; } = null!;
+}
+
+@functions {
+
+	private async Task DisplayUserChip(Guid userId) {
+		if (!UserDataLoadedFlag && UserId != default) {
+
+			var response = await ImageService.GetUserImageAsync(userId);
+			if (!response.Success) {
+				UserImageSrc = "/images/default-user.png";				
+			}
+			else{
+				UserImageSrc = System.Text.Encoding.UTF8.GetString(response.GetValue("image").ImageData);
+			}
+
+
+			UserDataLoadedFlag = true;
+		}
+	}
+
+	//https://learn.microsoft.com/en-us/aspnet/core/blazor/components/lifecycle?view=aspnetcore-8.0
+	//OnInitializedAsync is called after OnParametersSetAsync
+	// protected override async Task OnInitializedAsync() {
+	// }
+
+	private void RedirectPageContext(string uri) {
+		if (!uri.Equals(RegisterUri, StringComparison.OrdinalIgnoreCase) &&
+			!uri.Equals(LoginUri, StringComparison.OrdinalIgnoreCase) &&
+			!uri.Equals(ResetPasswordUri, StringComparison.OrdinalIgnoreCase)) {
+			Snackbar.Add($"You are not logged in!", Severity.Warning);
+			NavigationManager.NavigateTo("/login");
+		}
+		//Snackbar.Add($"You are not logged in!", Severity.Warning);
+	}
+
+	protected override async Task OnParametersSetAsync() {
+		if (Token == null) {
+			try {
+				Token = await TokenService.GetTokenAsync();
+			}
+			catch (Exception e) {
+				// Snackbar.Add($"Error loading your JWT from localstorage, it's not my fault! Error: {e.Message}", Severity.Error);
+				// NavigationManager.NavigateTo("/login");
+			}
+		}
+		if (UserId == default) {
+			try {
+				UserId = await LocalStorageService.GetItemAsync<Guid>("userId");
+			}
+			catch (Exception e) {
+				// Snackbar.Add($"Error loading your user id from localstorage, it's not my fault! Error: {e.Message}", Severity.Error);
+				// NavigationManager.NavigateTo("/login");
+			}
+		}
+
+		if (RegisterUri == null)
+			RegisterUri = NavigationManager.ToAbsoluteUri("/register").ToString();
+		if (LoginUri == null)
+			LoginUri = NavigationManager.ToAbsoluteUri("/login").ToString();
+		if (ResetPasswordUri == null)
+			ResetPasswordUri = NavigationManager.ToAbsoluteUri("/reset-password").ToString();
+
+
+		string uri = NavigationManager.Uri;
+
+		if (Token == null || UserId == default) {
+			LoggedIn = false;
+			// Snackbar.Add($"You are not logged in!", Severity.Warning);
+			RedirectPageContext(uri);
+		}
+		else {
+
+			var response = await UserDataService.GetUserByIdAsync(UserId);
+			if (!response.Success) {
+				//Snackbar.Add($"Couldn't get user data: {response.GetErrorsString()}", Severity.Error);				 //or there is a problem with the server
+
+				RedirectPageContext(uri);
+				return;
+			}
+			var userData = response.GetValue("user");
+			Name = userData.FirstName + " " + userData.LastName;
+
+			LoggedIn = true;
+			await DisplayUserChip(userData.UserId);
+		}
+		pageLoaded = true;
+	}
+
+	public void GoToTeams() {
+		NavigationManager.NavigateTo("/teams");
+	}
+	public void GoToLogin() {
+		NavigationManager.NavigateTo("/login");
+	}
+	public async void Logout() {
+		try {
+			LoggedIn = false;
+			await authStateProvider.Logout();
+			NavigationManager.NavigateTo("/login");
+		}
+		catch (Exception e) {
+			Snackbar.Add($"Error logging out: {e.Message}", Severity.Error);
+		}
+	}
+}

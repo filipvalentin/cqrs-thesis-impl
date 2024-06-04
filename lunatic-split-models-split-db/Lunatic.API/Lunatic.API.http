@@ -1,0 +1,6 @@
+@Lunatic.API_HostAddress = http://localhost:5234
+
+GET {{Lunatic.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

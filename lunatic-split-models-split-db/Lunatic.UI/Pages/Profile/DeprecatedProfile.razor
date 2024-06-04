@@ -1,0 +1,92 @@
+﻿@page "/profile/{userId}"
+@using Lunatic.UI.Contracts
+@using Lunatic.UI.Models.ViewModels
+@using Lunatic.UI.Models.Dtos
+@using MudBlazor
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+
+<PageTitle>@UserProfileDto.Username's profile</PageTitle>
+
+<MudPaper Height="100%" Class="pa-8 d-flex flex-column flex-grow-1 align-center" MinHeight="25em" Elevation="0">
+	<MudPaper Class="d-flex flex-column align-center mud-background-gray pt-2">
+		<MudText Typo="Typo.h6">
+			@UserProfileDto.Username's profile
+		</MudText>
+
+		<MudPaper Class="d-flex flex-row p-4 gap-4 bg-transparent" Elevation="0">
+			<MudAvatar Style="height:10em; width:10em">
+				<MudImage ObjectFit="ObjectFit.Cover" Src="images/dog.jpg" Width="200" Height="200"></MudImage>
+			</MudAvatar>
+			<MudPaper Elevation="0" Class="d-flex flex-column gap-2 bg-transparent" MinWidth="20em">
+				<MudText Typo="Typo.h4" Color="Color.Info">
+					@UserProfileDto.LastName @UserProfileDto.FirstName
+				</MudText>
+
+				<MudText Typo="Typo.body2" Color="Color.Dark">
+					@UserProfileDto.Username
+				</MudText>
+
+				<MudDivider DividerType="DividerType.FullWidth" Class="flex-grow-0" Style="height:4px" />
+
+				<MudText Typo="Typo.h6">
+					Contact info
+				</MudText>
+
+				<MudText Typo="Typo.body2" Color="Color.Dark">
+					@UserProfileDto.Email
+				</MudText>
+
+			</MudPaper>
+		</MudPaper>
+	</MudPaper>
+</MudPaper>
+
+
+@code {
+
+	[Parameter] public string UserId { get; set; }
+
+	private bool isLoggedIn { get; set; } = false;
+
+	private Guid CurrentUserId { get; set; } = Guid.Empty;
+	private UserProfileDto UserProfileDto { get; set; } = new UserProfileDto();
+
+	[Inject] public IUserDataService userDataService { get; set; } = null!;
+}
+
+@functions {
+	protected override async Task OnInitializedAsync() {
+
+		// var userData = await userDataService.GetUserByIdAsync(UserId);
+		// if(!userData.Success) {
+		// 	Snackbar.Add("Couldn't load user: " + userData.GetErrorsString(), Severity.Error);
+		// 	return;
+		// }
+		// UserProfileDto = userData.GetValue("user");
+
+		// try {
+		// 	JWT = await localStorage.GetItemAsync<Guid>("token");
+		// }
+		// catch (Exception e) {
+		// 	Snackbar.Add($"Error loading your user id from localstorage! Error: {e.Message}", Severity.Error);
+		// }
+
+		//verify somehow that the JWT is valid
+
+		UserProfileDto.Username = "test";
+		UserProfileDto.FirstName = "test";
+		UserProfileDto.LastName = "test";
+		UserProfileDto.Email = "test";
+
+	}
+
+	public void LaunchEditProfileModal() {
+		// DialogParameters parameters = new DialogParameters();
+		// parameters.Add("UserModel", UserProfileDto);
+		// DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = true };
+		// DialogService.Show<UpdateUserDialog>("Edit profile", parameters, closeOnEscapeKey);
+	}
+}

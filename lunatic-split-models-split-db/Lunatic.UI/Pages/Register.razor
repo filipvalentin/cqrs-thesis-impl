@@ -1,0 +1,69 @@
+﻿@page "/register"
+@using Lunatic.UI.Auth
+@using Lunatic.UI.Models.ViewModels
+@using MudBlazor
+@inject NavigationManager navigationManager
+@inject CustomStateProvider authStateProvider
+@inject ISnackbar Snackbar
+
+<PageTitle>Lunatic: Register</PageTitle>
+
+<MudPaper Elevation="0" Height="100%" Class="p-2 d-flex flex-column flex-grow-1 ">
+	<MudPaper Class="d-flex flex-column justify-center align-center" Elevation="0" MinHeight="35em" Height="calc(100vh - 4em)">
+
+
+		<MudPaper Class="d-flex flex-column align-center" Elevation="0" Height="40em">
+			<MudText Typo="Typo.h6">
+				Welcome to our platform!
+			</MudText><MudText Typo="Typo.h6">
+				Please register to continue.
+			</MudText>
+
+			<EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+				<DataAnnotationsValidator />
+				<MudCard Class="mx-auto my-auto">
+					<MudCardContent Class="d-inline-flex gap-5">
+						<MudTextField Label="First Name" @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
+						<MudTextField Label="Last Name" @bind-Value="model.LastName" For="@(() => model.LastName)" />
+					</MudCardContent>
+					<MudCardContent>
+						<MudTextField Label="Username" @bind-Value="model.Username" For="@(() => model.Username)" />
+						<MudTextField Label="Email" @bind-Value="model.Email" For="@(() => model.Email)" />
+					</MudCardContent>
+					<MudCardContent Class="d-inline-flex gap-5">
+						<MudTextField Label="Password" HelperText="Choose a strong password" @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+						<MudTextField Label="Confirm Password" HelperText="Confirm password" @bind-Value="ConfirmPassword" For="@(() => ConfirmPassword)" InputType="InputType.Password" />
+					</MudCardContent>
+					<MudCardActions>
+						<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mx-auto">Register</MudButton>
+					</MudCardActions>
+				</MudCard>
+			</EditForm>
+
+			<MudText Class="text-black-50 mt-4">
+				Already have an account? <MudLink Href="/login">Login</MudLink>
+			</MudText>
+		</MudPaper>
+	</MudPaper>
+</MudPaper>
+
+@code {
+	RegisterModel model = new RegisterModel();
+	private string ConfirmPassword { get; set; } = "";
+
+	async Task OnValidSubmit() {
+		if (model.Password != ConfirmPassword) {
+			Snackbar.Add("Passwords do not match", Severity.Error);
+			return;
+		}
+
+		try {
+			await authStateProvider.Register(model);
+			Snackbar.Add("Account created successfully", Severity.Success);
+			navigationManager.NavigateTo("/login");
+		}
+		catch (Exception e) {
+			Snackbar.Add($"Error creating account: {e.Message}", Severity.Error);
+		}
+	}
+}

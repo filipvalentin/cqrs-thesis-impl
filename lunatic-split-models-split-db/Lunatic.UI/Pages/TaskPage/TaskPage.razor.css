@@ -1,0 +1,39 @@
+.task-toolbar {
+	background-color: #EFAA57;
+	color: #ffffff;
+}
+
+.background {
+	background-color: #e4e6eb;
+}
+
+.custom-grid {
+	display: grid;
+	grid-template:
+		[row1-start] "description dashboard" [row1-end]
+		[row2-start] "comments dashboard" [row2-end]
+		/ auto 30em;
+	grid-gap: 1em;
+}
+
+.description-div {
+	grid-area: description;
+}
+
+.dashboard-div {
+	grid-area: dashboard;
+}
+
+.comments-div {
+	grid-area: comments;
+}
+
+@@media screen and (max-width: 600px) {
+	.custom-grid {
+		grid-template:
+			[row1-start] "dashboard" [row1-end]
+			[row2-start] "description" [row2-end]
+			[row3-start] "comments" [row3-end]
+			/ auto;
+	}
+}

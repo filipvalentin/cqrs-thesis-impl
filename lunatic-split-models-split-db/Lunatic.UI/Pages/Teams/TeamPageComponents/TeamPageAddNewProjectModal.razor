@@ -1,0 +1,106 @@
+﻿@using MudBlazor
+@using Microsoft.AspNetCore.Components
+@using Lunatic.UI.Contracts
+@using System.Text.Json
+@using Lunatic.UI.Pages.Teams.TeamPageComponents.Shared
+@using Lunatic.UI.Pages.Teams.TeamPageComponents.ManageMembersModalComponents
+@using Lunatic.UI.Models.ViewModels
+@using Lunatic.UI.Models.Dtos
+@inject ISnackbar Snackbar
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject NavigationManager NavigationManager
+<style>
+	.edit-info-toolbar {
+		background-color: #9271bd;
+		color: #ffffff;
+	}
+</style>
+
+
+@* <MudPaper Width="50em" Height="26em" Class="m-0">
+	<MudToolBar Dense="true" Class="edit-info-toolbar">
+		<MudText Typo="Typo.subtitle1">Add new project</MudText>
+		<MudSpacer />
+		<MudButtonGroup>
+			<MudButton Color="Color.Primary" OnClick="Submit">SUBMIT</MudButton>
+			<MudButton OnClick="@(() => {MudDialog.Cancel(); NavigationManager.Refresh();})">CANCEL</MudButton>
+		</MudButtonGroup>
+	</MudToolBar>
+	<MudPaper Class="p-2" Elevation="0">
+		<MudTextField Label="Project Name" @bind-Value="ProjectViewModel.Title" Required="true" />
+		<MudTextField Label="Project Description" @bind-Value="ProjectViewModel.Description" Lines="10" />
+	</MudPaper>
+
+</MudPaper> *@
+
+<style>
+	.add-project-modal {
+		width: 40em;
+	}
+
+	@@media screen and (max-width: 40em) {
+		.add-project-modal {
+			width: 85vw;
+		}
+	}
+</style>
+
+<MudDialog>
+	<DialogContent>
+		<MudPaper Class="add-project-modal" Elevation="0">
+			<MudTextField Variant="Variant.Outlined" Class="mt-n4" Label="Project Name" @bind-Value="ProjectViewModel.Title" />
+			<MudTextField Variant="Variant.Outlined" Label="Project Description" @bind-Value="ProjectViewModel.Description" Lines="10" />
+		</MudPaper>
+	</DialogContent>
+	<DialogActions>
+		<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">SUBMIT</MudButton>
+		<MudButton Variant="Variant.Filled" OnClick="@(() => MudDialog.Cancel())">CANCEL</MudButton>
+	</DialogActions>
+</MudDialog>
+
+@code {
+	[CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+	[Parameter] public Guid TeamId { get; set; }
+	[Parameter] public Guid OwnerId { get; set; } // can access this modal only if owner
+	[Parameter] public List<Guid> ProjectIds { get; set; } = null!;
+
+	private ProjectViewModel ProjectViewModel { get; set; } = new ProjectViewModel(); //TODO DTO
+
+	[Inject] public ITeamDataService TeamDataService { get; set; } = null!;
+}
+
+@functions {
+
+	protected override async Task OnInitializedAsync() {
+
+		try {
+			var currentUserId = await localStorage.GetItemAsync<Guid>("userId");
+
+			if (currentUserId != OwnerId) {
+				Snackbar.Add("You are not the owner of this team", Severity.Error);
+				MudDialog.Cancel();
+			}
+			ProjectViewModel.UserId = OwnerId;
+			ProjectViewModel.TeamId = TeamId;
+		}
+		catch (Exception e) {
+			Snackbar.Add($"Failed to get current user id: {e.Message}", Severity.Error);
+		}
+	}
+
+	public async Task Submit() {
+
+		var result = await TeamDataService.AddNewTeamProjectAsync(TeamId, ProjectViewModel);
+		if (result.Success) {
+			Snackbar.Add("Project created successfully", Severity.Success);
+			MudDialog.Close(DialogResult.Ok(true));
+
+			ProjectIds.Add(result.GetValue("project").ProjectId);
+			NavigationManager.Refresh();
+		}
+		else {
+			Snackbar.Add($"Project creation failed {result.Message}", Severity.Error);
+		}
+
+	}
+}

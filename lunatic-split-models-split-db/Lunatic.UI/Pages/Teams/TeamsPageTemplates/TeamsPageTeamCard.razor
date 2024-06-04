@@ -1,0 +1,83 @@
+﻿@using MudBlazor
+@using Lunatic.UI.Models.Dtos
+@inject NavigationManager navigationManager
+
+<style>
+	.hover-cursor {
+		cursor: pointer;
+	}
+</style>
+
+<MudPaper Class="d-flex flex-column p-2 hover-cursor" Height="fit-content" @onclick="CardClicked">
+
+	<MudText Typo="Typo.h6">
+		@Team.Name
+	</MudText>
+	<MudText Typo="Typo.body2" Class="overflow-scroll">
+		@Team.Description
+	</MudText>
+	<MudPaper Elevation="0" Class="d-flex flex-row">
+		<MudChip Size="Size.Small">
+			<MudIcon Icon="@Icons.Material.Filled.People" Class="mr-1" />
+			<MudText Style="font-size:1.1em" Class="mr-1">
+				@Team.MemberIds.Count
+			</MudText>
+			@if (@Team.MemberIds.Count == 1) {
+				<MudText Style="font-size:1.1em">
+					member
+				</MudText>
+			}
+			else {
+				<MudText Style="font-size:1.1em">
+					members
+				</MudText>
+			}
+			
+		</MudChip>
+		<MudChip Size="Size.Small">
+			<MudIcon Icon="@Icons.Material.Filled.Folder"Class="mr-1" />
+			<MudText Style="font-size:1.1em" Class="mr-1">
+				@Team.ProjectIds.Count
+			</MudText>
+			@if (@Team.ProjectIds.Count == 1) {
+				<MudText Style="font-size:1.1em">
+					project
+				</MudText>
+			}
+			else {
+				<MudText Style="font-size:1.1em">
+					projects
+				</MudText>
+			}
+
+		</MudChip>
+
+		<MudChip Size="Size.Small">
+			@if (CurrentUser == Team.OwnerId) {
+				<MudIcon Icon="@Icons.Material.Filled.Key" Class="mr-1" />
+				<MudText Style="font-size:1.1em">
+					You are the owner
+				</MudText>
+			}
+			else {
+				<MudIcon Icon="@Icons.Material.Filled.SupervisedUserCircle" Class="mr-1" />
+				<MudText Style="font-size:1.1em">
+					You are a member
+				</MudText>
+			}
+
+		</MudChip>
+	</MudPaper>
+
+
+</MudPaper>
+
+@code {
+	[Parameter] public TeamDto Team { get; set; } = null!;
+	[Parameter] public Guid CurrentUser { get; set; } = default!;
+
+
+	private void CardClicked() {
+		navigationManager.NavigateTo("/team/" + Team.TeamId);
+	}
+}
