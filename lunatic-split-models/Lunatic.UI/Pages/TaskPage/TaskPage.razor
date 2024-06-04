@@ -179,7 +179,6 @@
 						}
 					</MudPaper>
 
-					<MudText Class="mr-1">@CurrentTask.Tags.Count</MudText>
 					@if (CurrentTask.Tags.Count > 0) {
 						<MudPaper Class="d-inline-block p-2 pl-3 bg-transparent" Elevation="0">
 							<MudPaper Class="d-flex flex-row align-baseline tags-div-inner px-4" Elevation="0">
@@ -198,8 +197,9 @@
 					</MudPaper>
 				}
 				else {
-					
-					<MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100px" Height="40px" />
+					<MudPaper Class="p-2 mud-background-gray" Elevation="0">
+						<MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="200px" Height="20px" />
+					</MudPaper>
 				}
 			</MudPaper>
 
@@ -211,9 +211,10 @@
 
 					<MudChip Size="Size.Small" Style="transform:translate(0, 1px)">
 						<MudText Style="color:white; font-size:1.08em">
-							@CurrentTask.CommentIds.Count
+							@if (pageLoaded) {
+								@CurrentTask.CommentIds.Count
+							}
 						</MudText>
-
 					</MudChip>
 				</MudToolBar>
 				<MudPaper Class="d-flex flex-column">
@@ -318,7 +319,6 @@
 								<MudButton Disabled="@isTaskStatusSelectedCreated" OnClick="SetTaskStatus">
 									@taskStatusButtonText
 								</MudButton>
-								@* Do we need the logic where if is created => in progress => done ? *@
 								<MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;" Dense="true">
 									<MudMenuItem OnClick="() => SetButtonText(0)">
 										<MudText Align="Align.Center" Typo="Typo.body2">IN PROGRESS</MudText>
@@ -333,15 +333,29 @@
 				</MudPaper>
 
 				<MudPaper Class="d-flex flex-column dashboard-minipanel-background pb-1" Elevation="0">
-					<MudText Typo="Typo.subtitle1" Align="Align.Center"><b>Assignees</b></MudText>
+					<MudText Typo="Typo.subtitle1" Align="Align.Center">
+						<b>
+							@if (pageLoaded && CurrentTask.AssigneeIds.Count == 1) {
+								@("Assignee")
+							}
+							else {
+								@("Assignees")
+							}
+						</b>
+					</MudText>
 					<MudPaper Class="d-flex flex-wrap justify-center bg-transparent" Elevation="0">
-						@if (CurrentTask.AssigneeIds.Count > 0) {
-							@foreach (var assignee in CurrentTask.AssigneeIds) {
-								<UserChip UserId="@assignee"></UserChip>
+						@if (pageLoaded) {
+							@if (CurrentTask.AssigneeIds.Count > 0) {
+								@foreach (var assignee in CurrentTask.AssigneeIds) {
+									<UserChip UserId="@assignee"></UserChip>
+								}
+							}
+							else {
+								<MudText Typo="Typo.body2" Align="Align.Center">No assignees yet!</MudText>
 							}
 						}
 						else {
-							<MudText Typo="Typo.body2" Align="Align.Center">No assignees yet!</MudText>
+							@("Loading...")
 						}
 					</MudPaper>
 				</MudPaper>
@@ -690,26 +704,49 @@
 	}
 
 	private async Task SetTaskStatus() {
-		TaskStatus taskStatus = taskStatusButtonText switch {
+		TaskStatus selectedTaskStatus = taskStatusButtonText switch {
 			"IN PROGRESS" => TaskStatus.IN_PROGRESS,
 			"DONE" => TaskStatus.DONE,
 			_ => TaskStatus.CREATED
 		};
+		switch (selectedTaskStatus) {
+			case TaskStatus.IN_PROGRESS: {
+					var response = await TaskDataService.MarkTaskAsInProgress(TaskId);
+					if (!response.Success) {
+						Snackbar.Add($"Failed to update task status: {response.GetErrorsString()}", Severity.Error);
+						return;
+					}
+					CurrentTask.Status = selectedTaskStatus;
+					CurrentTaskStatus = CurrentTask.Status switch {
+						TaskStatus.DONE => "Done",
+						TaskStatus.IN_PROGRESS => "In progress",
+						TaskStatus.CREATED => "Created",
+						_ => "",
+					};
 
-		var response = await TaskDataService.UpdateTaskStatusAsync(TaskId, taskStatus);
-		if (!response.Success) {
-			Snackbar.Add($"Failed to update task status: {response.GetErrorsString()}", Severity.Error);
-			return;
+					Snackbar.Add("Task status changed!", Severity.Success);
+					break;
+				}
+			case TaskStatus.DONE: {
+					var response = await TaskDataService.MarkTaskAsDone(TaskId);
+					if (!response.Success) {
+						Snackbar.Add($"Failed to update task status: {response.GetErrorsString()}", Severity.Error);
+						return;
+					}
+					CurrentTask.Status = selectedTaskStatus;
+					CurrentTaskStatus = CurrentTask.Status switch {
+						TaskStatus.DONE => "Done",
+						TaskStatus.IN_PROGRESS => "In progress",
+						TaskStatus.CREATED => "Created",
+						_ => "",
+					};
+
+					Snackbar.Add("Task status changed!", Severity.Success);
+					break;
+				}
 		}
-		CurrentTask.Status = taskStatus;
-		CurrentTaskStatus = CurrentTask.Status switch {
-			TaskStatus.DONE => "Done",
-			TaskStatus.IN_PROGRESS => "In progress",
-			TaskStatus.CREATED => "Created",
-			_ => "",
-		};
 
-		Snackbar.Add("Task status changed!", Severity.Success);
+
 	}
 
 	private void LaunchEditTaskModal() {

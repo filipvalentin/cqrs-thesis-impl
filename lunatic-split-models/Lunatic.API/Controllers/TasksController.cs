@@ -118,13 +118,13 @@ namespace Lunatic.API.Controllers {
 			return Ok(result);
 		}
 
-		[HttpPut("{taskId}/status")]
+		[HttpPut("{taskId}/markDone")]
 		[Produces("application/json")]
-		[ProducesResponseType<UpdateTaskStatusCommandResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<UpdateTaskStatusCommandResponse>(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> UpdateStatus(Guid taskId, UpdateTaskStatusCommand command) {
+		[ProducesResponseType<MarkTaskAsDoneCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<MarkTaskAsDoneCommandResponse>(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> MarkTaskAsDone(Guid taskId, MarkTaskAsDoneCommand command) {
 			if (taskId != command.TaskId) {
-				return BadRequest(new UpdateTaskStatusCommandResponse {
+				return BadRequest(new MarkTaskAsDoneCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { "The task Id Path and task Id Body must be equal." }
 				});
@@ -137,6 +137,24 @@ namespace Lunatic.API.Controllers {
 			return Ok(result);
 		}
 
+		[HttpPut("{taskId}/markInProgress")]
+		[Produces("application/json")]
+		[ProducesResponseType<MarkTaskAsInProgressCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<MarkTaskAsInProgressCommandResponse>(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> MarkTaskAsInProgress(Guid taskId, MarkTaskAsInProgressCommand command) {
+			if (taskId != command.TaskId) {
+				return BadRequest(new MarkTaskAsDoneCommandResponse {
+					Success = false,
+					ValidationErrors = new List<string> { "The task Id Path and task Id Body must be equal." }
+				});
+			}
+
+			var result = await Mediator.Send(command);
+			if (!result.Success) {
+				return BadRequest(result);
+			}
+			return Ok(result);
+		}
 
 		[HttpDelete("{taskId}/comments/{commentId}")]
 		[Produces("application/json")]

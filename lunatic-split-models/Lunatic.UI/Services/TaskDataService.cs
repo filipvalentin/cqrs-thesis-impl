@@ -16,7 +16,8 @@ namespace Lunatic.UI.Services {
 		}
 
 		public async Task<ApiResponse<CommentDto>> AddCommentAsync(Guid taskId, Guid userId, string comment) {
-			var result = await httpClient.PostAsJsonAsync($"{RequestUri}/{taskId}/comments", new { TaskId = taskId, UserId = userId, Content = comment });
+			var result = await httpClient.PostAsJsonAsync($"{RequestUri}/{taskId}/comments",
+				new { TaskId = taskId, UserId = userId, Content = comment });
 			var response = await result.Content.ReadFromJsonAsync<ApiResponse<CommentDto>>();
 			response!.Success = result.IsSuccessStatusCode;
 			return response!;
@@ -51,13 +52,13 @@ namespace Lunatic.UI.Services {
 			return response!;
 		}
 
-		public async Task<ApiResponse> UpdateTaskStatusAsync(Guid taskId, Models.Shared.TaskStatus taskStatus) {
-			var result = await httpClient.PutAsJsonAsync($"{RequestUri}/{taskId}/status",
-				new { taskId = taskId, status = taskStatus });
-			var response = await result.Content.ReadFromJsonAsync<ApiResponse>();
-			response!.Success = result.IsSuccessStatusCode;
-			return response!;
-		}
+		//public async Task<ApiResponse> UpdateTaskStatusAsync(Guid taskId, Models.Shared.TaskStatus taskStatus) {
+		//	var result = await httpClient.PutAsJsonAsync($"{RequestUri}/{taskId}/status",
+		//		new { taskId = taskId, status = taskStatus });
+		//	var response = await result.Content.ReadFromJsonAsync<ApiResponse>();
+		//	response!.Success = result.IsSuccessStatusCode;
+		//	return response!;
+		//}
 
 		public async Task<ApiResponse> DeleteCommentAsync(Guid taskId, Guid commentId) {
 			var result = await httpClient.DeleteAsync($"{RequestUri} /{taskId}/comments/{commentId}");
@@ -69,6 +70,20 @@ namespace Lunatic.UI.Services {
 		public async Task<ApiResponse<decimal>> GetTaskPredictedDurationAsync(Guid taskId) {
 			var result = await httpClient.GetAsync($"{RequestUri}/{taskId}/prediction");
 			var response = await result.Content.ReadFromJsonAsync<ApiResponse<decimal>>();
+			response!.Success = result.IsSuccessStatusCode;
+			return response!;
+		}
+
+		public async Task<ApiResponse> MarkTaskAsDone(Guid taskId) {
+			var result = await httpClient.PutAsJsonAsync($"{RequestUri}/{taskId}/markDone", new { TaskId = taskId });
+			var response = await result.Content.ReadFromJsonAsync<ApiResponse>();
+			response!.Success = result.IsSuccessStatusCode;
+			return response!;
+		}
+
+		public async Task<ApiResponse> MarkTaskAsInProgress(Guid taskId) {
+			var result = await httpClient.PutAsJsonAsync($"{RequestUri}/{taskId}/markInProgress", new { TaskId = taskId });
+			var response = await result.Content.ReadFromJsonAsync<ApiResponse>();
 			response!.Success = result.IsSuccessStatusCode;
 			return response!;
 		}

@@ -9,8 +9,8 @@ namespace Lunatic.Infrastructure.Data {
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {
 			modelBuilder.Entity<DaysToCompleteTaskEntry>(
-				builder => {
-					builder.HasNoKey();// (e => e.TaskId);
+				builder => {//TODO: when migrating, uncomment hasNoKey
+					builder.HasKey(e => e.TaskId);//HasNoKey();
 				});
 		}
 	}

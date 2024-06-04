@@ -1,4 +1,5 @@
 ﻿using Lunatic.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lunatic.Domain.MLModel {
 	public class DaysToCompleteTaskEntry {

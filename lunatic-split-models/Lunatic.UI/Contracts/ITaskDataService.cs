@@ -8,7 +8,8 @@ namespace Lunatic.UI.Contracts {
 		Task<ApiResponse<TaskDto>> GetTaskByIdAsync(Guid taskId);
 		Task<ApiResponse<TaskDto>> EditTaskInfoAsync(Guid taskId, EditTaskViewModel task);
 		Task<ApiResponse> UpdateTaskSectionAsync(Guid taskId, string taskSection);
-		Task<ApiResponse> UpdateTaskStatusAsync(Guid taskId, Models.Shared.TaskStatus taskStatus);
+		Task<ApiResponse> MarkTaskAsDone(Guid taskId);
+		Task<ApiResponse> MarkTaskAsInProgress(Guid taskId);
 		Task<ApiResponse> DeleteCommentAsync(Guid taskId, Guid commentId);
 		Task<ApiResponse<decimal>> GetTaskPredictedDurationAsync(Guid taskId);
 	}
