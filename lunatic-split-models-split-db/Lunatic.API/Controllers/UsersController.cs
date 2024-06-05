@@ -63,13 +63,14 @@ namespace Lunatic.API.Controllers {
 		//    var result = await Mediator.Send(getAllUsersQuery);
 		//    return Ok(result);
 		//}
-		[HttpGet("usernames/{usernameMatch}")]
+		[HttpGet("usernames/{startingWith}")]
 		[Produces("application/json")]
 		[ProducesResponseType<GetUsernameMatchesQueryResponse>(StatusCodes.Status200OK)]
 		[ProducesResponseType<GetUsernameMatchesQueryResponse>(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> GetUsernameMatches(string usernameMatch) {
+		public async Task<IActionResult> GetUsernameMatches(string startingWith, [FromQuery] int take = 10) {
 			var getAllUsersQuery = new GetUsernameMatchesQuery {
-				UsernameMatch = usernameMatch
+				StartingWith = startingWith,
+				Take = take
 			};
 			var result = await Mediator.Send(getAllUsersQuery);
 			return Ok(result.Matches);

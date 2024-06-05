@@ -33,7 +33,7 @@ namespace Lunatic.Application.Features.Users.Commands.CreateUser {
 
 			await userRepository.AddAsync(user);
 
-			await publisher.Publish(new UserCreatedDomainEvent(user.Id));
+			await publisher.Publish(new UserCreatedDomainEvent(user.Id), cancellationToken);
 
 			return new CreateUserCommandResponse {
 				Success = true,

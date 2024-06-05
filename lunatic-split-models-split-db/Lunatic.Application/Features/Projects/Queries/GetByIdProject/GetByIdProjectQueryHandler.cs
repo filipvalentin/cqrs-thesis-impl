@@ -1,44 +1,23 @@
-
+using AutoMapper;
 using Lunatic.Application.Features.Projects.Payload;
-using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Application.Persistence.ReadSide;
 using MediatR;
 
-
-namespace Lunatic.Application.Features.Projects.Queries.GetByIdProject
-{
-    public class GetByIdProjectQueryHandler : IRequestHandler<GetByIdProjectQuery, GetByIdProjectQueryResponse> {
-		private readonly IProjectRepository projectRepository;
-
-		public GetByIdProjectQueryHandler(IProjectRepository projectRepository) {
+namespace Lunatic.Application.Features.Projects.Queries.GetByIdProject {
+	public class GetByIdProjectQueryHandler : IRequestHandler<GetByIdProjectQuery, GetByIdProjectQueryResponse> {
+		private readonly IProjectReadSideRepository projectRepository;
+		private readonly IMapper mapper;
+		public GetByIdProjectQueryHandler(IProjectReadSideRepository projectRepository, IMapper mapper) {
 			this.projectRepository = projectRepository;
+			this.mapper = mapper;
 		}
 
 		public async Task<GetByIdProjectQueryResponse> Handle(GetByIdProjectQuery request, CancellationToken cancellationToken) {
-			var validator = new GetByIdProjectQueryValidator(projectRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
-
-			if (!validatorResult.IsValid) {
-				return new GetByIdProjectQueryResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
-
-			var project = (await projectRepository.FindByIdAsync(request.ProjectId)).Value;
+			var project = await projectRepository.FindByIdAsync(request.ProjectId);
 
 			return new GetByIdProjectQueryResponse {
 				Success = true,
-				Project = new ProjectDto {
-					CreatedByUserId = project.CreatedByUserId,
-					ProjectId = project.Id,
-					TeamId = project.TeamId,
-
-					Title = project.Title,
-					Description = project.Description,
-
-					TaskSections = project.TaskSectionCards,
-					TaskIds = project.TaskIds,
-				}
+				Project = mapper.Map<ProjectDto>(project.Value)
 			};
 		}
 	}

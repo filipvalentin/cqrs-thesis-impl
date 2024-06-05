@@ -23,7 +23,7 @@ namespace Lunatic.Infrastructure.ReadSideRepositories {
 			return Result<T>.Success(result);
 		}
 
-		public async Task<Result> Update(Guid id, T updatedEntity) {
+		public async Task<Result> UpdateAsync(Guid id, T updatedEntity) {
 			var collection = context.GetCollection<T>();
 			var filter = Builders<T>.Filter.Eq("Id", id);
 			var result = await collection.ReplaceOneAsync(filter, updatedEntity);

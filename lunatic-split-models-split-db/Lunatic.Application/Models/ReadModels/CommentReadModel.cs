@@ -1,6 +1,6 @@
 ﻿namespace Lunatic.Application.Models.ReadModels {
 	public class CommentReadModel {
-		public Guid CommentId { get; set; }
+		public Guid Id { get; set; }
 		public Guid TaskId { get; set; }
 		public string Content { get; set; } = string.Empty;
 		public Guid CreatedByUserId { get; set; }

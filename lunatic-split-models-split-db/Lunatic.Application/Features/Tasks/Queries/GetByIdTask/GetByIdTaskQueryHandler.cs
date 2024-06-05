@@ -1,19 +1,21 @@
+using AutoMapper;
 using Lunatic.Application.Features.Tasks.Payload;
+using Lunatic.Application.Persistence.ReadSide.Task;
 using MediatR;
 
 
 namespace Lunatic.Application.Features.Tasks.Queries.GetByIdTask {
 	public class GetByIdTaskQueryHandler : IRequestHandler<GetByIdTaskQuery, GetByIdTaskQueryResponse> {
-		private readonly ITaskReadService taskReadService;
+		private readonly ITaskReadSideRepository taskReadService;
+		private readonly IMapper mapper;
 
-		public GetByIdTaskQueryHandler(ITaskReadService taskReadService) {
+		public GetByIdTaskQueryHandler(ITaskReadSideRepository taskReadService, IMapper mapper) {
 			this.taskReadService = taskReadService;
+			this.mapper = mapper;
 		}
 
-
 		public async Task<GetByIdTaskQueryResponse> Handle(GetByIdTaskQuery request, CancellationToken cancellationToken) {
-
-			var result = await taskReadService.GetByIdAsync(request.TaskId);
+			var result = await taskReadService.FindByIdAsync(request.TaskId);
 
 			if (!result.IsSuccess) {
 				return new GetByIdTaskQueryResponse {
@@ -21,27 +23,10 @@ namespace Lunatic.Application.Features.Tasks.Queries.GetByIdTask {
 					ValidationErrors = new List<string> { result.Error }
 				};
 			}
-			var taskReadModel = result.Value;
 
 			return new GetByIdTaskQueryResponse {
 				Success = true,
-				Task = new TaskDto {
-					CreatedByUserId = taskReadModel.CreatedByUserId,
-					TaskId = taskReadModel.Id,
-					ProjectId = taskReadModel.ProjectId,
-					Section = taskReadModel.TaskSectionCard,
-					Title = taskReadModel.Title,
-					Description = taskReadModel.Description,
-					Priority = taskReadModel.Priority,
-					Status = taskReadModel.Status,
-					Tags = taskReadModel.Tags,
-					CommentIds = taskReadModel.CommentIds,
-					AssigneeIds = taskReadModel.AssigneeIds,
-					PlannedStartDate = taskReadModel.PlannedStartDate,
-					PlannedEndDate = taskReadModel.PlannedEndDate,
-					StartedDate = taskReadModel.StartedDate,
-					EndedDate = taskReadModel.EndedDate,
-				}
+				Task = mapper.Map<TaskDto>(result.Value)
 			};
 		}
 	}

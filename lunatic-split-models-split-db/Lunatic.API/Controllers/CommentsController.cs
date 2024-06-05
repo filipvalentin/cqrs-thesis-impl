@@ -8,10 +8,10 @@ namespace Lunatic.API.Controllers {
 
 		[HttpGet("{commentId}")]
 		[Produces("application/json")]
-		[ProducesResponseType<GetByIdTaskCommentQueryResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<GetByIdTaskCommentQueryResponse>(StatusCodes.Status404NotFound)]
+		[ProducesResponseType<GetByIdCommentQueryResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<GetByIdCommentQueryResponse>(StatusCodes.Status404NotFound)]
 		public async Task<IActionResult> GetByIdComment(Guid commentId) {
-			var result = await Mediator.Send(new GetByIdTaskCommentQuery {
+			var result = await Mediator.Send(new GetByIdCommentQuery {
 				CommentId = commentId
 			});
 			if (!result.Success) {

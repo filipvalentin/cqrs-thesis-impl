@@ -23,7 +23,7 @@ namespace Lunatic.Application.Features.Tasks.Events {
 		}
 
 		public async Task Handle(TaskCompletedDomainEvent notification, CancellationToken cancellationToken) {
-			var taskResult = await taskRepository.FindByIdAsync(notification.TaskId);
+			var taskResult = await taskRepository.FindByIdAsync(notification.Id);
 
 			if (!taskResult.IsSuccess) {
 				return;

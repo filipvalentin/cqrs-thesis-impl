@@ -3,8 +3,8 @@ using Lunatic.Application.Models.ReadModels.Tasks;
 using Lunatic.Application.Persistence.ReadSide.Task;
 
 namespace Lunatic.Infrastructure.ReadSideRepositories.Task {
-	public class TaskReadSideRepository : BaseReadSideRepository<TaskReadModel>, ITaskReadSideRepository {
-		public TaskReadSideRepository(ILunaticReadContext context) : base(context) {
+	public class FlatTaskReadSideRepository : BaseReadSideRepository<FlatTaskReadModel>, IFlatTaskReadSideRepository {
+		public FlatTaskReadSideRepository(ILunaticReadContext context) : base(context) {
 		}
 	}
 }

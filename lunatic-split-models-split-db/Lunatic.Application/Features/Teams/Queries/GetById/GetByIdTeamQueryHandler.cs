@@ -1,4 +1,5 @@
-﻿using Lunatic.Application.Features.Teams.Payload;
+﻿using AutoMapper;
+using Lunatic.Application.Features.Teams.Payload;
 using Lunatic.Application.Persistence.ReadSide;
 using MediatR;
 
@@ -6,9 +7,11 @@ using MediatR;
 namespace Lunatic.Application.Features.Teams.Queries.GetById {
 	public class GetByIdTeamQueryHandler : IRequestHandler<GetByIdTeamQuery, GetByIdTeamQueryResponse> {
 		private readonly ITeamReadSideRepository teamRepository;
+		private readonly IMapper mapper;
 
-		public GetByIdTeamQueryHandler(ITeamReadSideRepository teamRepository) {
+		public GetByIdTeamQueryHandler(ITeamReadSideRepository teamRepository, IMapper mapper) {
 			this.teamRepository = teamRepository;
+			this.mapper = mapper;
 		}
 
 		public async Task<GetByIdTeamQueryResponse> Handle(GetByIdTeamQuery request, CancellationToken cancellationToken) {
@@ -21,18 +24,9 @@ namespace Lunatic.Application.Features.Teams.Queries.GetById {
                 };
             }
 
-			var teamReadModel = result.Value;
-
 			return new GetByIdTeamQueryResponse {
                 Success = true,
-                Team = new TeamDto {
-                    TeamId = teamReadModel.Id,
-                    OwnerId = teamReadModel.CreatedByUserId,
-                    Name = teamReadModel.Name,
-                    Description = teamReadModel.Description,
-                    MemberIds = teamReadModel.MemberIds,
-                    ProjectIds = teamReadModel.ProjectIds,
-                }
+                Team = mapper.Map<TeamDto>(result.Value)
             };
         }
     }

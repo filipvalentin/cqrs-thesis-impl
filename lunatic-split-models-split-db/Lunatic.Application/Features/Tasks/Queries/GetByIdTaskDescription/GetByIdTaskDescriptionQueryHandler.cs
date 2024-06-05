@@ -1,19 +1,21 @@
+using AutoMapper;
 using Lunatic.Application.Features.Tasks.Payload;
+using Lunatic.Application.Persistence.ReadSide.Task;
 using MediatR;
 
 
 namespace Lunatic.Application.Features.Tasks.Queries.GetByIdTaskDescription {
 	public class GetByIdTaskDescriptionQueryHandler : IRequestHandler<GetByIdTaskDescriptionQuery, GetByIdTaskDescriptionQueryResponse> {
-		private readonly ITaskReadService taskReadService;
+		private readonly ITaskDescriptionReadSideRepository taskDescriptionReadRepository;
+		private readonly IMapper mapper;
 
-		public GetByIdTaskDescriptionQueryHandler(ITaskReadService taskReadService) {
-			this.taskReadService = taskReadService;
+		public GetByIdTaskDescriptionQueryHandler(ITaskDescriptionReadSideRepository taskDescriptionReadRepository, IMapper mapper) {
+			this.taskDescriptionReadRepository = taskDescriptionReadRepository;
+			this.mapper = mapper;
 		}
 
-
 		public async Task<GetByIdTaskDescriptionQueryResponse> Handle(GetByIdTaskDescriptionQuery request, CancellationToken cancellationToken) {
-
-			var result = await taskReadService.GetTaskDescriptionByIdAsync(request.TaskId);
+			var result = await taskDescriptionReadRepository.FindByIdAsync(request.TaskId);
 
 			if (!result.IsSuccess) {
 				return new GetByIdTaskDescriptionQueryResponse {
@@ -21,18 +23,10 @@ namespace Lunatic.Application.Features.Tasks.Queries.GetByIdTaskDescription {
 					ValidationErrors = new List<string> { result.Error }
 				};
 			}
-			var taskDescriptionReadModel = result.Value;
 
 			return new GetByIdTaskDescriptionQueryResponse {
 				Success = true,
-				Task = new TaskDescriptionDto {
-					TaskId = taskDescriptionReadModel.Id,
-					Section = taskDescriptionReadModel.TaskSectionCard,
-					Title = taskDescriptionReadModel.Title,
-					Description = taskDescriptionReadModel.Description,
-					Priority = taskDescriptionReadModel.Priority,
-					Tags = taskDescriptionReadModel.Tags
-				}
+				Task = mapper.Map<TaskDescriptionDto>(result.Value)
 			};
 		}
 	}

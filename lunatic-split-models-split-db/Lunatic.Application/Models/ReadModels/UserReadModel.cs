@@ -2,7 +2,7 @@
 
 namespace Lunatic.Application.Models.ReadModels {
 	public class UserReadModel {
-		public Guid UserId { get; set; } = default!;
+		public Guid Id { get; set; } = default!;
 		public string FirstName { get; set; } = default!;
 		public string LastName { get; set; } = default!;
 		public string Email { get; set; } = default!;

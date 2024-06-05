@@ -5,9 +5,8 @@ using Lunatic.Domain.DomainEvents.Comment;
 using MediatR;
 
 
-namespace Lunatic.Application.Features.Comments.Commands.UpdateComment
-{
-    public class UpdateCommentCommandHandler : IRequestHandler<UpdateCommentCommand, UpdateTaskCommentCommandResponse> {
+namespace Lunatic.Application.Features.Comments.Commands.UpdateComment {
+	public class UpdateCommentCommandHandler : IRequestHandler<UpdateCommentCommand, UpdateTaskCommentCommandResponse> {
 		private readonly ICommentRepository commentRepository;
 		private readonly IMapper mapper;
 		private readonly IPublisher publisher;
@@ -37,7 +36,7 @@ namespace Lunatic.Application.Features.Comments.Commands.UpdateComment
 
 			var dbCommentResult = await commentRepository.UpdateAsync(comment);
 
-			if(!dbCommentResult.IsSuccess) {
+			if (!dbCommentResult.IsSuccess) {
 				return new UpdateTaskCommentCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { "Error updating comment" }

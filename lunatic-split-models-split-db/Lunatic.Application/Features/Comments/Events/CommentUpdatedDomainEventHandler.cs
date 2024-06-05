@@ -31,7 +31,7 @@ namespace Lunatic.Application.Features.Comments.Events {
 
 			var comment = commentResult.Value;
 
-			var commentReadResult = await commentReadRepository.Update(notification.Id, mapper.Map<CommentReadModel>(comment));
+			var commentReadResult = await commentReadRepository.UpdateAsync(notification.Id, mapper.Map<CommentReadModel>(comment));
 
 			if (!commentReadResult.IsSuccess) {
 				logger.LogError("Comment with id {Id} not found", notification.Id);

@@ -1,49 +1,42 @@
-
-using Lunatic.Domain.Entities;
 using Lunatic.Application.Features.Teams.Payload;
 using MediatR;
-using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Application.Persistence.ReadSide;
+using AutoMapper;
 
 
-namespace Lunatic.Application.Features.Users.Queries.GetAllUserTeams
-{
-    public class GetAllUserTeamsQueryHandler : IRequestHandler<GetAllUserTeamsQuery, GetAllUserTeamsQueryResponse> {
-        private readonly IUserRepository userRepository;
+namespace Lunatic.Application.Features.Users.Queries.GetAllUserTeams {
+	public class GetAllUserTeamsQueryHandler : IRequestHandler<GetAllUserTeamsQuery, GetAllUserTeamsQueryResponse> {
+		private readonly IUserReadSideRepository userRepository;
+		private readonly ITeamReadSideRepository teamRepository;
+		private readonly IMapper mapper;
 
-        private readonly ITeamRepository teamRepository;
+		public GetAllUserTeamsQueryHandler(IUserReadSideRepository userRepository, ITeamReadSideRepository teamRepository, IMapper mapper) {
+			this.userRepository = userRepository;
+			this.teamRepository = teamRepository;
+			this.mapper = mapper;
+		}
 
-        public GetAllUserTeamsQueryHandler(IUserRepository userRepository, ITeamRepository teamRepository) {
-            this.userRepository = userRepository;
-            this.teamRepository = teamRepository;
-        }
+		public async Task<GetAllUserTeamsQueryResponse> Handle(GetAllUserTeamsQuery request, CancellationToken cancellationToken) {
+			var userResult = await userRepository.FindByIdAsync(request.UserId);
+			if (!userResult.IsSuccess) {
+				return new GetAllUserTeamsQueryResponse {
+					Success = false,
+					ValidationErrors = new List<string> { "User not found" }
+				};
+			}
 
-        public async Task<GetAllUserTeamsQueryResponse> Handle(GetAllUserTeamsQuery request, CancellationToken cancellationToken) {
-            var userResult = await userRepository.FindByIdAsync(request.UserId);
-            if(!userResult.IsSuccess) {
-                return new GetAllUserTeamsQueryResponse {
-                    Success = false,
-                    ValidationErrors = new List<string> { "User not found" }
-                };
-            }
+			var user = userResult.Value;
 
-            GetAllUserTeamsQueryResponse response = new GetAllUserTeamsQueryResponse();
-            var teamIds = userResult.Value.TeamIds;
-            var teams = new List<Team>();
-            foreach (var teamId in teamIds) {
-                var team = (await teamRepository.FindByIdAsync(teamId)).Value;
-                teams.Add(team);
-            }
+			GetAllUserTeamsQueryResponse response = new () { Success = true };
 
-            response.Teams = teams.Select(team => new TeamDto {
-                TeamId = team.Id,
-				OwnerId = team.CreatedByUserId,
-                Name = team.Name,
-                Description = team.Description,
+			var teams = user.TeamIds.Select(async teamId => await teamRepository.FindByIdAsync(teamId)).ToList();
+			//foreach (var teamId in teamIds) {
+			//	var team = (await teamRepository.FindByIdAsync(teamId)).Value;
+			//	teams.Add(team);
+			//}
 
-                MemberIds = team.MemberIds,
-                ProjectIds = team.ProjectIds,
-            }).ToList();
-            return response;
-        }
-    }
+			response.Teams = teams.Select(team => mapper.Map<TeamDto>(team)).ToList();
+			return response;
+		}
+	}
 }

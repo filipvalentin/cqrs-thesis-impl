@@ -24,7 +24,7 @@ namespace Lunatic.Application.Features.Users.Commands.DeleteUser
                 };
             }
 
-			await publisher.Publish(new UserDeletedDomainEvent(request.UserId));
+			await publisher.Publish(new UserDeletedDomainEvent(request.UserId), cancellationToken);
 
             return new DeleteUserCommandResponse {
                 Success = true

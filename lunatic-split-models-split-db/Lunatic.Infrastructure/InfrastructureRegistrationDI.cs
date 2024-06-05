@@ -30,7 +30,7 @@ namespace Lunatic.Infrastructure
 			services.AddSingleton<ILunaticReadContext>(sp => {
 				var connectionString = configuration.GetConnectionString("MongoDb");
 				var databaseName = configuration["MongoDb:DatabaseName"];
-				return new LunaticReadContext(connectionString, databaseName);
+				return new LunaticReadContext(connectionString!, databaseName!);
 			});
 
 			services.AddDbContext<LunaticMLContext>(
@@ -52,9 +52,12 @@ namespace Lunatic.Infrastructure
 			services.AddScoped(typeof(IAsyncReadSideRepository<>), typeof(BaseReadSideRepository<>));
 			services.AddScoped<ITeamReadSideRepository, TeamReadSideRepository>();
 			services.AddScoped<ITaskReadSideRepository, TaskReadSideRepository>();
+			services.AddScoped<ITaskDescriptionReadSideRepository, TaskDescriptionReadSideRepository>();
+			services.AddScoped<IFlatTaskReadSideRepository, FlatTaskReadSideRepository>();
 			services.AddScoped<IProjectReadSideRepository, ProjectReadSideRepository>();
 			services.AddScoped<ICommentReadSideRepository, CommentReadSideRepository>();
 			services.AddScoped<IUserReadSideRepository, UserReadSideRepository>();
+			
 
 			//services.AddScoped<ITeamReadService, TeamReadService>();
 			//services.AddScoped<ITaskReadService, TaskReadService>();

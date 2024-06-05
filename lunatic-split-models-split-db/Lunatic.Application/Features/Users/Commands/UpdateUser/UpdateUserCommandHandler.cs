@@ -1,4 +1,5 @@
 ﻿using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Domain.DomainEvents.User;
 using MediatR;
 
 
@@ -6,12 +7,14 @@ namespace Lunatic.Application.Features.Users.Commands.UpdateUser
 {
     public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UpdateUserCommandResponse> {
         private readonly IUserRepository userRepository;
+		private readonly IPublisher publisher;
 
-        public UpdateUserCommandHandler(IUserRepository userRepository) {
-            this.userRepository = userRepository;
-        }
+		public UpdateUserCommandHandler(IUserRepository userRepository, IPublisher publisher) {
+			this.userRepository = userRepository;
+			this.publisher = publisher;
+		}
 
-        public async Task<UpdateUserCommandResponse> Handle(UpdateUserCommand request, CancellationToken cancellationToken) {
+		public async Task<UpdateUserCommandResponse> Handle(UpdateUserCommand request, CancellationToken cancellationToken) {
             var validator = new UpdateUserCommandValidator(userRepository);
             var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
@@ -34,11 +37,11 @@ namespace Lunatic.Application.Features.Users.Commands.UpdateUser
 
             var dbUserResult = await userRepository.UpdateAsync(userResult.Value);
 
-            return new UpdateUserCommandResponse {
-                Success = true
-            };
+			await publisher.Publish(new UserUpdatedDomainEvent(userResult.Value.Id), cancellationToken);
 
-
+			return new UpdateUserCommandResponse {
+				Success = true
+			};
         }
     }
 }
