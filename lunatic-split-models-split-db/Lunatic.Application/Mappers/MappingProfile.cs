@@ -18,21 +18,27 @@ namespace Lunatic.Application.Mappers {
 			CreateMap<User, UserReadModel>();
 
 			CreateMap<User, UserDto>();
-			CreateMap<Comment, CommentDto>().ForMember(t => t.AuthorId, opt => opt.MapFrom(src => src.CreatedByUserId));
+			CreateMap<Comment, CommentDto>()
+				.ForMember(t => t.AuthorId, opt => opt.MapFrom(src => src.CreatedByUserId));
 
 
-			CreateMap<TeamReadModel, TeamDto>();
+			CreateMap<TeamReadModel, TeamDto>()
+				.ForMember(t => t.TeamId, opt => opt.MapFrom(src => src.Id))
+				.ForMember(t => t.OwnerId, opt => opt.MapFrom(src => src.CreatedByUserId));
 			CreateMap<TaskDescriptionReadModel, TaskDescriptionDto>()
-				.ForMember(t => t.TaskId, opt => opt.MapFrom(src => src.Id));
+				.ForMember(t => t.TaskId, opt => opt.MapFrom(src => src.Id))
+				.ForMember(t => t.Section, opt => opt.MapFrom(src => src.TaskSectionCard));
 			CreateMap<TaskReadModel, TaskDto>()
-				.ForMember(t => t.TaskId, opt => opt.MapFrom(src => src.Id));
-			CreateMap<TaskReadModel, FlatTaskDto>()
+				.ForMember(t => t.TaskId, opt => opt.MapFrom(src => src.Id))
+				.ForMember(t => t.Section, opt => opt.MapFrom(src => src.TaskSectionCard));
+			CreateMap<FlatTaskReadModel, FlatTaskDto>()
 				.ForMember(t => t.TaskId, opt => opt.MapFrom(src => src.Id))
 				.ForMember(t => t.Section, opt => opt.MapFrom(src => src.TaskSectionCard));
 			CreateMap<ProjectReadModel, ProjectDto>()
 				.ForMember(t => t.ProjectId, opt => opt.MapFrom(src => src.Id));
 			CreateMap<CommentReadModel, CommentDto>()
-				.ForMember(t => t.CommentId, opt => opt.MapFrom(src => src.Id));
+				.ForMember(t => t.CommentId, opt => opt.MapFrom(src => src.Id))
+				.ForMember(t => t.AuthorId, opt => opt.MapFrom(src => src.CreatedByUserId));
 
 		}
 	}
