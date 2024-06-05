@@ -2,46 +2,43 @@
 using Lunatic.Application.Features.Users.Payload;
 using MediatR;
 using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Domain.DomainEvents.User;
+using AutoMapper;
 
 
-namespace Lunatic.Application.Features.Users.Commands.CreateUser
-{
-    public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, CreateUserCommandResponse> {
-        private readonly IUserRepository userRepository;
+namespace Lunatic.Application.Features.Users.Commands.CreateUser {
+	public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, CreateUserCommandResponse> {
+		private readonly IUserRepository userRepository;
+		private readonly IPublisher publisher;
+		private readonly IMapper mapper;
 
-        public CreateUserCommandHandler(IUserRepository userRepository) {
-            this.userRepository = userRepository;
-        }
+		public CreateUserCommandHandler(IUserRepository userRepository, IPublisher publisher, IMapper mapper) {
+			this.userRepository = userRepository;
+			this.publisher = publisher;
+			this.mapper = mapper;
+		}
 
-        public async Task<CreateUserCommandResponse> Handle(CreateUserCommand request, CancellationToken cancellationToken) {
-            var validator = new CreateUserCommandValidator(userRepository);
-            var validatorResult = await validator.ValidateAsync(request, cancellationToken);
+		public async Task<CreateUserCommandResponse> Handle(CreateUserCommand request, CancellationToken cancellationToken) {
+			var validator = new CreateUserCommandValidator(userRepository);
+			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
-            if(!validatorResult.IsValid) {
-                return new CreateUserCommandResponse {
-                    Success = false,
-                    ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-                };
-            }
+			if (!validatorResult.IsValid) {
+				return new CreateUserCommandResponse {
+					Success = false,
+					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
+				};
+			}
 
-            var user = User.Create(request.FirstName, request.LastName, request.Email, request.Username, request.Password, request.Role).Value;
+			var user = User.Create(request.FirstName, request.LastName, request.Email, request.Username, request.Password, request.Role).Value;
 
-            await userRepository.AddAsync(user);
+			await userRepository.AddAsync(user);
 
-            return new CreateUserCommandResponse {
-                Success = true,
-                User = new UserDto {
-                    UserId = user.Id,
+			await publisher.Publish(new UserCreatedDomainEvent(user.Id));
 
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Email = user.Email,
-                    Username = user.Username,
-                    Role = user.Role,
-
-                    TeamIds = user.TeamIds
-                }
-            };
-        }
-    }
+			return new CreateUserCommandResponse {
+				Success = true,
+				User = mapper.Map<UserDto>(user)
+			};
+		}
+	}
 }

@@ -5,18 +5,19 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Lunatic.Application.Features.Users.Events {
-	public class UserCreatedDomainEventHandler : INotificationHandler<UserCreatedDomainEvent> {
+	public class UserDeletedDomainEventHandler : INotificationHandler<UserDeletedDomainEvent> {
 		IUserReadSideRepository userReadRepository;
 		IUserRepository userWriteRepository;
-		ILogger<UserCreatedDomainEventHandler> logger;
+		ILogger<UserDeletedDomainEventHandler> logger;
 
-		public UserCreatedDomainEventHandler(IUserReadSideRepository userReadRepository, IUserRepository userWriteRepository, ILogger<UserCreatedDomainEventHandler> logger) {
+		public UserDeletedDomainEventHandler(IUserReadSideRepository userReadRepository, IUserRepository userWriteRepository, 
+			ILogger<UserDeletedDomainEventHandler> logger) {
 			this.userReadRepository = userReadRepository;
 			this.userWriteRepository = userWriteRepository;
 			this.logger = logger;
 		}
 
-		public async Task Handle(UserCreatedDomainEvent notification, CancellationToken cancellationToken) {
+		public async Task Handle(UserDeletedDomainEvent notification, CancellationToken cancellationToken) {
 			
 		}
 	}

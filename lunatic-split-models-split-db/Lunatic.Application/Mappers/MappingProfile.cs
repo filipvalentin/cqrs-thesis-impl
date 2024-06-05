@@ -12,6 +12,7 @@ namespace Lunatic.Application.Mappers {
 			CreateMap<Comment, CommentReadModel>();
 			CreateMap<Domain.Entities.Task, TaskReadModel>();
 			CreateMap<User, UserReadModel>();
+			CreateMap<User, UserDto>();
 
 			CreateMap<Comment, CommentDto>().ForMember(t=>t.AuthorId, opt => opt.MapFrom(src => src.CreatedByUserId));
 		}
