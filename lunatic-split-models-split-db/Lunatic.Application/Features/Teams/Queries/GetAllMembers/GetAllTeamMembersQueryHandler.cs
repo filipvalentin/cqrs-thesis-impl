@@ -3,13 +3,13 @@ using Lunatic.Domain.Entities;
 using Lunatic.Application.Features.Users.Payload;
 using MediatR;
 using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Application.Persistence.ReadSide;
 
 
 namespace Lunatic.Application.Features.Teams.Queries.GetAllMembers
 {
     public class GetAllTeamMembersQueryHandler : IRequestHandler<GetAllTeamMembersQuery, GetAllTeamMembersQueryResponse> {
-        private readonly ITeamRepository teamRepository;
-
+        private readonly ITeamReadSideRepository teamRepository;
         private readonly IUserRepository userRepository;
 
         public GetAllTeamMembersQueryHandler(ITeamRepository teamRepository, IUserRepository userRepository) {

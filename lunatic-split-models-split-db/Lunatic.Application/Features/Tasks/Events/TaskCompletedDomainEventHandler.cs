@@ -9,9 +9,7 @@ using Task = System.Threading.Tasks.Task;
 namespace Lunatic.Application.Features.Tasks.Events {
 	internal class TaskCompletedDomainEventHandler : INotificationHandler<TaskCompletedDomainEvent> {
 		private readonly IMLDataStorageService mlDataStorageService;
-
 		private readonly ITaskRepository taskRepository;
-
 		private readonly ICommentRepository commentRepository;
 
 		public TaskCompletedDomainEventHandler(

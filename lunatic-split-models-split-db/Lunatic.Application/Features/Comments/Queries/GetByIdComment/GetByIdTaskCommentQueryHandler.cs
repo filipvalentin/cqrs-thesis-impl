@@ -1,29 +1,19 @@
 
 using Lunatic.Application.Features.Comments.Payload;
-using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Application.Persistence.ReadSide;
 using MediatR;
 
 
-namespace Lunatic.Application.Features.Comments.Queries.GetByIdComment
-{
-    public class GetByIdTaskCommentQueryHandler : IRequestHandler<GetByIdTaskCommentQuery, GetByIdTaskCommentQueryResponse> {
-		private readonly ICommentRepository commentRepository;
+namespace Lunatic.Application.Features.Comments.Queries.GetByIdComment {
+	public class GetByIdTaskCommentQueryHandler : IRequestHandler<GetByIdTaskCommentQuery, GetByIdTaskCommentQueryResponse> {
+		private readonly ICommentReadSideRepository commentRepository;
 
-		public GetByIdTaskCommentQueryHandler(ICommentRepository commentRepository) {
+		public GetByIdTaskCommentQueryHandler(ICommentReadSideRepository commentRepository) {
 			this.commentRepository = commentRepository;
 		}
 
 		public async Task<GetByIdTaskCommentQueryResponse> Handle(GetByIdTaskCommentQuery request, CancellationToken cancellationToken) {
-			var validator = new GetByIdTaskCommentQueryValidator(commentRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
-
-			if (!validatorResult.IsValid) {
-				return new GetByIdTaskCommentQueryResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
-
+	
 			var comment = (await commentRepository.FindByIdAsync(request.CommentId)).Value;
 
 			return new GetByIdTaskCommentQueryResponse {

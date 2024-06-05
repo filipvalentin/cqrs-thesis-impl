@@ -6,7 +6,6 @@ namespace Lunatic.Domain.Entities {
 		private User(string firstName, string lastName, string email, string username, string password, Role role) {
 			Id = Guid.NewGuid();
 			RegisteredAt = DateTime.UtcNow;
-
 			FirstName = firstName;
 			LastName = lastName;
 			Email = email;

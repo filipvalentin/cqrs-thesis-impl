@@ -18,7 +18,5 @@ namespace Lunatic.Application.Models.ReadModels.Tasks {
 		public DateTime PlannedEndDate { get; set; }
 		public DateTime? StartedDate { get; set; }
 		public DateTime? EndedDate { get; set; }
-
-
 	}
 }

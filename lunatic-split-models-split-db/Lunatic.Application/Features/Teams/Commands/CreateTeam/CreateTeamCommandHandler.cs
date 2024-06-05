@@ -1,15 +1,13 @@
 ﻿
 using Lunatic.Application.Features.Teams.Payload;
 using Lunatic.Application.Persistence.WriteSide;
-using Lunatic.Domain.DomainEvents.Task;
 using Lunatic.Domain.DomainEvents.Team;
 using Lunatic.Domain.Entities;
 using MediatR;
 
 
-namespace Lunatic.Application.Features.Teams.Commands.CreateTeam
-{
-    public class CreateTeamCommandHandler : IRequestHandler<CreateTeamCommand, CreateTeamCommandResponse> {
+namespace Lunatic.Application.Features.Teams.Commands.CreateTeam {
+	public class CreateTeamCommandHandler : IRequestHandler<CreateTeamCommand, CreateTeamCommandResponse> {
 		private readonly ITeamRepository teamRepository;
 		private readonly IUserRepository userRepository;
 		private readonly IPublisher publisher;

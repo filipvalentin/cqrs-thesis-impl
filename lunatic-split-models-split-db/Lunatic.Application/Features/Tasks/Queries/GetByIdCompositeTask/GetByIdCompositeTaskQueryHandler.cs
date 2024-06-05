@@ -1,11 +1,9 @@
-using Lunatic.Application.Features.Tasks.Interfaces;
 using Lunatic.Application.Features.Tasks.Payload;
 using MediatR;
 
 
-namespace Lunatic.Application.Features.Tasks.Queries.GetByIdCompositeTask
-{
-    public class GetByIdCompositeTaskQueryHandler : IRequestHandler<GetByIdCompositeTaskQuery, GetByIdCompositeTaskQueryResponse> {
+namespace Lunatic.Application.Features.Tasks.Queries.GetByIdCompositeTask {
+	public class GetByIdCompositeTaskQueryHandler : IRequestHandler<GetByIdCompositeTaskQuery, GetByIdCompositeTaskQueryResponse> {
 		private readonly ITaskReadService taskReadService;
 
 		public GetByIdCompositeTaskQueryHandler(ITaskReadService taskReadService) {

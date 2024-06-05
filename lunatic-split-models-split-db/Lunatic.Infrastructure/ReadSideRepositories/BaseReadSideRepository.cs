@@ -5,15 +5,13 @@ using Lunatic.Domain.Utils;
 using MongoDB.Driver;
 
 namespace Lunatic.Infrastructure.ReadSideRepositories {
-	internal class BaseReadSideRepository<T> : IAsyncReadSideRepository<T> where T : class{
-
+	public class BaseReadSideRepository<T> : IAsyncReadSideRepository<T> where T : class{
 		protected readonly ILunaticReadContext context;
-
 		public BaseReadSideRepository(ILunaticReadContext context) {
 			this.context = context;
 		}
 
-		public async Task<Result<T>> GetByIdAsync(Guid id) {
+		public async Task<Result<T>> FindByIdAsync(Guid id) {
 			var collection = context.GetCollection<T>();
 			var filter = Builders<T>.Filter.Eq("Id", id);
 			var result = await collection.Find(filter).FirstOrDefaultAsync();

@@ -6,7 +6,6 @@ using Lunatic.Application.Features.Teams.Commands.DeleteTeamMember.cs;
 using Lunatic.Application.Features.Teams.Commands.DeleteTeamProject;
 using Lunatic.Application.Features.Teams.Commands.UpdateTeam;
 using Lunatic.Application.Features.Teams.Queries.GetAllMembers;
-using Lunatic.Application.Features.Teams.Queries.GetAllProjects;
 using Lunatic.Application.Features.Teams.Queries.GetById;
 using Microsoft.AspNetCore.Mvc;
 
@@ -132,17 +131,6 @@ namespace Lunatic.API.Controllers {
 			return Ok(result);
 		}
 
-		[HttpGet("{teamId}/projects")]
-		[Produces("application/json")]
-		[ProducesResponseType<GetAllTeamProjectsQueryResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<GetAllTeamProjectsQueryResponse>(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> GetAllProjects(Guid teamId) {
-			var result = await Mediator.Send(new GetAllTeamProjectsQuery(teamId));
-			if (!result.Success) {
-				return NotFound(result);
-			}
-			return Ok(result);
-		}
 
 
 		[HttpDelete("{teamId}/projects/{projectId}")]

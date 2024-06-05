@@ -58,7 +58,7 @@ namespace Lunatic.UI.Services {
 		public async Task<ApiResponse> AddMemberToTeamAsync(Guid memberId, Guid teamId) {
 			httpClient.DefaultRequestHeaders.Authorization
 				= new AuthenticationHeaderValue("Bearer", await tokenService.GetTokenAsync());
-			var result = await httpClient.PostAsJsonAsync($"{RequestUri}/{teamId}/members/",
+			var result = await httpClient.PostAsJsonAsync($"{RequestUri}/{teamId}/members",
 				new AddTeamMemberDto() {
 					UserId = memberId,
 					TeamId = teamId
@@ -71,7 +71,7 @@ namespace Lunatic.UI.Services {
 		public async Task<ApiResponse<ProjectDto>> AddNewTeamProjectAsync(Guid teamId, ProjectViewModel projectViewModel) {
 			httpClient.DefaultRequestHeaders.Authorization
 				= new AuthenticationHeaderValue("Bearer", await tokenService.GetTokenAsync());
-			var result = await httpClient.PostAsJsonAsync($"{RequestUri}/{teamId}/projects/", projectViewModel);
+			var result = await httpClient.PostAsJsonAsync($"{RequestUri}/{teamId}/projects", projectViewModel);
 			var response = await result.Content.ReadFromJsonAsync<ApiResponse<ProjectDto>>();
 			response!.Success = result.IsSuccessStatusCode;
 			return response!;

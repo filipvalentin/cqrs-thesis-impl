@@ -2,7 +2,7 @@
 using TaskStatus = Lunatic.Domain.Entities.TaskStatus;
 
 namespace Lunatic.Application.Models.ReadModels.Tasks {
-	public class CompositeTaskReadModel{
+	public class FlatTaskReadModel{
 		public Guid Id { get; set; }
 		public Guid ProjectId { get; set; }
 		public Guid CreatedByUserId { get; set; }

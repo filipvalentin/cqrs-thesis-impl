@@ -12,7 +12,7 @@ namespace Lunatic.Application.Features.Teams.Queries.GetById {
 		}
 
 		public async Task<GetByIdTeamQueryResponse> Handle(GetByIdTeamQuery request, CancellationToken cancellationToken) {
-            var result = await teamRepository.GetByIdAsync(request.TeamId);
+            var result = await teamRepository.FindByIdAsync(request.TeamId);
 
             if(!result.IsSuccess) {
                 return new GetByIdTeamQueryResponse {

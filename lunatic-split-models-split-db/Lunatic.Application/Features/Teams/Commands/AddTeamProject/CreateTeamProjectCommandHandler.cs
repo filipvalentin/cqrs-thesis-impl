@@ -1,72 +1,68 @@
 ﻿using Lunatic.Application.Features.Projects.Payload;
 using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Domain.DomainEvents.Project;
 using Lunatic.Domain.Entities;
 using MediatR;
 
 
-namespace Lunatic.Application.Features.Teams.Commands.AddTeamProject
-{
-    public class CreateTeamProjectCommandHandler : IRequestHandler<CreateTeamProjectCommand, CreateTeamProjectCommandResponse>
-    {
-        private readonly IProjectRepository projectRepository;
+namespace Lunatic.Application.Features.Teams.Commands.AddTeamProject {
+	public class CreateTeamProjectCommandHandler : IRequestHandler<CreateTeamProjectCommand, CreateTeamProjectCommandResponse> {
+		private readonly IProjectRepository projectRepository;
+		private readonly ITeamRepository teamRepository;
+		private readonly IUserRepository userRepository;
+		private readonly IPublisher publisher;
 
-        private readonly ITeamRepository teamRepository;
+		public CreateTeamProjectCommandHandler(IProjectRepository projectRepository, ITeamRepository teamRepository, 
+			IUserRepository userRepository, IPublisher publisher) {
+			this.projectRepository = projectRepository;
+			this.teamRepository = teamRepository;
+			this.userRepository = userRepository;
+			this.publisher = publisher;
+		}
 
-        private readonly IUserRepository userRepository;
+		public async Task<CreateTeamProjectCommandResponse> Handle(CreateTeamProjectCommand request, CancellationToken cancellationToken) {
+			var validator = new CreateTeamProjectCommandValidator(userRepository, teamRepository);
+			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
-        public CreateTeamProjectCommandHandler(IProjectRepository projectRepository, ITeamRepository teamRepository, IUserRepository userRepository)
-        {
-            this.projectRepository = projectRepository;
-            this.teamRepository = teamRepository;
-            this.userRepository = userRepository;
-        }
+			if (!validatorResult.IsValid) {
+				return new CreateTeamProjectCommandResponse {
+					Success = false,
+					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
+				};
+			}
 
-        public async Task<CreateTeamProjectCommandResponse> Handle(CreateTeamProjectCommand request, CancellationToken cancellationToken)
-        {
-            var validator = new CreateTeamProjectCommandValidator(userRepository, teamRepository);
-            var validatorResult = await validator.ValidateAsync(request, cancellationToken);
+			var projectResult = Project.Create(request.UserId, request.TeamId, request.Title, request.Description);
+			if (!projectResult.IsSuccess) {
+				return new CreateTeamProjectCommandResponse {
+					Success = false,
+					ValidationErrors = new List<string> { projectResult.Error }
+				};
+			}
 
-            if (!validatorResult.IsValid)
-            {
-                return new CreateTeamProjectCommandResponse
-                {
-                    Success = false,
-                    ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-                };
-            }
+			var project = projectResult.Value;
 
-            var projectResult = Project.Create(request.UserId, request.TeamId, request.Title, request.Description);
-            if (!projectResult.IsSuccess)
-            {
-                return new CreateTeamProjectCommandResponse
-                {
-                    Success = false,
-                    ValidationErrors = new List<string> { projectResult.Error }
-                };
-            }
+			var team = (await teamRepository.FindByIdAsync(request.TeamId)).Value;
+			team.AddProject(project.Id);
+			await teamRepository.UpdateAsync(team);
 
-            var team = (await teamRepository.FindByIdAsync(request.TeamId)).Value;
-            team.AddProject(projectResult.Value.Id);
-            await teamRepository.UpdateAsync(team);
+			await projectRepository.AddAsync(project);
 
-            await projectRepository.AddAsync(projectResult.Value);
+			await publisher.Publish(new ProjectCreatedDomainEvent(project.Id), cancellationToken);
 
-            return new CreateTeamProjectCommandResponse
-            {
-                Success = true,
-                Project = new ProjectDto
-                {
-                    CreatedByUserId = projectResult.Value.CreatedByUserId,
-                    ProjectId = projectResult.Value.Id,
-                    TeamId = projectResult.Value.TeamId,
+			return new CreateTeamProjectCommandResponse {
+				Success = true,
+				Project = new ProjectDto {
+					CreatedByUserId = project.CreatedByUserId,
+					ProjectId = project.Id,
+					TeamId = project.TeamId,
 
-                    Title = projectResult.Value.Title,
-                    Description = projectResult.Value.Description,
+					Title = project.Title,
+					Description = project.Description,
 
-                    TaskSections = projectResult.Value.TaskSectionCards,
-                    TaskIds = projectResult.Value.TaskIds,
-                }
-            };
-        }
-    }
+					TaskSections = project.TaskSectionCards,
+					TaskIds = project.TaskIds,
+				}
+			};
+		}
+	}
 }
