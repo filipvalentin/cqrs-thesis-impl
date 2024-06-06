@@ -12,11 +12,8 @@ namespace Lunatic.Application.Features.Tasks.Events {
 		private readonly ITaskRepository taskRepository;
 		private readonly ICommentRepository commentRepository;
 
-		public TaskCompletedDomainEventHandler(
-			IMLDataStorageService mlDataStorageService,
-			ITaskRepository taskRepository,
-			ICommentRepository commentRepository
-		) {
+		public TaskCompletedDomainEventHandler(IMLDataStorageService mlDataStorageService, ITaskRepository taskRepository,
+			ICommentRepository commentRepository) {
 			this.mlDataStorageService = mlDataStorageService;
 			this.taskRepository = taskRepository;
 			this.commentRepository = commentRepository;
@@ -40,7 +37,8 @@ namespace Lunatic.Application.Features.Tasks.Events {
 						}
 					)
 				)
-			).Where(comment => comment != null).Select(comment => comment!).ToList();
+			).Where(comment => comment != null)
+			.Select(comment => comment!).ToList();
 
 			await mlDataStorageService.AddEntryAsync(
 				new DaysToCompleteTaskEntry {

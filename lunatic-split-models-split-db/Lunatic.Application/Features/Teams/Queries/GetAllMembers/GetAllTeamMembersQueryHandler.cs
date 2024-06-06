@@ -1,8 +1,5 @@
-
-using Lunatic.Domain.Entities;
 using Lunatic.Application.Features.Users.Payload;
 using MediatR;
-using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Application.Persistence.ReadSide;
 using AutoMapper;
 

@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Lunatic.Application.Persistence.ReadSide;
-using Lunatic.Application.Persistence.WriteSide;
+﻿using Lunatic.Application.Persistence.ReadSide;
 using Lunatic.Domain.DomainEvents.User;
 using MediatR;
 using Microsoft.Extensions.Logging;
