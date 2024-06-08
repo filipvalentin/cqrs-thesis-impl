@@ -1,10 +1,10 @@
 
 using Lunatic.API.Interfaces;
+using Lunatic.Application.Features.Projects.Commands.RenameTaskSection;
 using Lunatic.Application.Features.Tasks.Commands.CreateComment;
 using Lunatic.Application.Features.Tasks.Commands.DeleteComment;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTask;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTaskSectionCardLocation;
-using Lunatic.Application.Features.Tasks.Commands.UpdateTasksSection;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTaskStatus;
 using Lunatic.Application.Features.Tasks.Queries.GetByIdCompositeTask;
 using Lunatic.Application.Features.Tasks.Queries.GetByIdTask;
@@ -12,8 +12,9 @@ using Lunatic.Application.Features.Tasks.Queries.GetByIdTaskDescription;
 using Lunatic.Application.Features.Tasks.Queries.GetPredictedTaskTime;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Lunatic.API.Controllers {
-	public class TasksController : BaseApiController {
+namespace Lunatic.API.Controllers
+{
+    public class TasksController : BaseApiController {
 		IDayConversionService _dayConversionService;
 
 		public TasksController(IDayConversionService dayConversionService) {
@@ -62,7 +63,7 @@ namespace Lunatic.API.Controllers {
 		[Produces("application/json")]
 		[ProducesResponseType<UpdateTaskSectionCommandResponse>(StatusCodes.Status200OK)]
 		[ProducesResponseType<UpdateTaskSectionCommandResponse>(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> UpdateSection(Guid taskId, UpdateTaskSectionCommand command) {
+		public async Task<IActionResult> UpdateSection(Guid taskId, RenameTaskSectionCardCommand command) {
 			if (taskId != command.ProjectId) {
 				return BadRequest(new UpdateTaskSectionCommandResponse {
 					Success = false,

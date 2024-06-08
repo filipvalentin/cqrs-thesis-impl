@@ -1,17 +1,16 @@
 ﻿using Lunatic.Application.Persistence.WriteSide;
 using MediatR;
 
-
-namespace Lunatic.Application.Features.Projects.Commands.DeleteTask
-{
-    public class DeleteTaskCommandHandler : IRequestHandler<DeleteProjectTaskCommand, DeleteTaskCommandResponse> {
+namespace Lunatic.Application.Features.Projects.Commands.DeleteTask {
+	public class DeleteTaskCommandHandler : IRequestHandler<DeleteProjectTaskCommand, DeleteTaskCommandResponse> {
 		private readonly IProjectRepository projectRepository;
-
 		private readonly ITaskRepository taskRepository;
+		private readonly IPublisher publisher;
 
-		public DeleteTaskCommandHandler(IProjectRepository projectRepository, ITaskRepository taskRepository) {
+		public DeleteTaskCommandHandler(IProjectRepository projectRepository, ITaskRepository taskRepository, IPublisher publisher) {
 			this.projectRepository = projectRepository;
 			this.taskRepository = taskRepository;
+			this.publisher = publisher;
 		}
 
 		public async Task<DeleteTaskCommandResponse> Handle(DeleteProjectTaskCommand request, CancellationToken cancellationToken) {

@@ -1,6 +1,9 @@
 
 using AutoMapper;
+using FluentValidation;
+using Lunatic.Application.Behaviors;
 using Lunatic.Application.Mappers;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -16,6 +19,9 @@ namespace Lunatic.Application {
 				mc.AddProfile(new MappingProfile());
 			});
 			services.AddSingleton(mapperConfig.CreateMapper());
+
+			services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
+			services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly(), includeInternalTypes: true);
 
 			return services;
 		}

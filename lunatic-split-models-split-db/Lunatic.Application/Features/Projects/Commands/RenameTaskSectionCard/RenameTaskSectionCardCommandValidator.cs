@@ -1,14 +1,11 @@
-
 using FluentValidation;
 using Lunatic.Application.Persistence.WriteSide;
 
-
-namespace Lunatic.Application.Features.Tasks.Commands.UpdateTasksSection
-{
-    internal class UpdateTasksSectionCommandValidator : AbstractValidator<UpdateTaskSectionCommand> {
+namespace Lunatic.Application.Features.Projects.Commands.RenameTaskSection {
+	internal class RenameTaskSectionCardCommandValidator : AbstractValidator<RenameTaskSectionCardCommand> {
 		private readonly IProjectRepository projectRepository;
 
-		public UpdateTasksSectionCommandValidator(IProjectRepository projectRepository) {
+		public RenameTaskSectionCardCommandValidator(IProjectRepository projectRepository) {
 			this.projectRepository = projectRepository;
 
 			RuleFor(request => request.ProjectId)

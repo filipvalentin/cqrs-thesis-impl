@@ -1,10 +1,10 @@
-using Lunatic.Application.Features.Projects.Commands.CreateProjectTask;
+using Lunatic.Application.Features.Projects.Commands.CreateTask;
 using Lunatic.Application.Features.Projects.Commands.CreateTaskSectionCard;
 using Lunatic.Application.Features.Projects.Commands.DeleteTask;
 using Lunatic.Application.Features.Projects.Commands.DeleteTaskSectionCard;
+using Lunatic.Application.Features.Projects.Commands.RenameTaskSection;
 using Lunatic.Application.Features.Projects.Commands.UpdateProject;
 using Lunatic.Application.Features.Projects.Queries.GetByIdProject;
-using Lunatic.Application.Features.Tasks.Commands.UpdateTasksSection;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lunatic.API.Controllers {
@@ -13,11 +13,11 @@ namespace Lunatic.API.Controllers {
 
 		[HttpPost("{projectId}/tasks")]
 		[Produces("application/json")]
-		[ProducesResponseType<CreateProjectTaskCommandResponse>(StatusCodes.Status201Created)]
-		[ProducesResponseType<CreateProjectTaskCommandResponse>(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> CreateTask(Guid projectId, CreateProjectTaskCommand command) {
+		[ProducesResponseType<CreateTaskCommandResponse>(StatusCodes.Status201Created)]
+		[ProducesResponseType<CreateTaskCommandResponse>(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> CreateTask(Guid projectId, CreateTaskCommand command) {
 			if (projectId != command.ProjectId) {
-				return BadRequest(new CreateProjectTaskCommandResponse {
+				return BadRequest(new CreateTaskCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { "The project Id Path and project Id Body must be equal." }
 				});
@@ -127,17 +127,17 @@ namespace Lunatic.API.Controllers {
 
 		[HttpPut("{projectId}/taskSections/{section}")]
 		[Produces("application/json")]
-		[ProducesResponseType<UpdateTasksSectionCommandResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<UpdateTasksSectionCommandResponse>(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> UpdateTaskSection(Guid projectId, string section, UpdateTaskSectionCommand command) {
+		[ProducesResponseType<RenameTaskSectionCardCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<RenameTaskSectionCardCommandResponse>(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> UpdateTaskSection(Guid projectId, string section, RenameTaskSectionCardCommand command) {
 			if (projectId != command.ProjectId) {
-				return BadRequest(new UpdateTasksSectionCommandResponse {
+				return BadRequest(new RenameTaskSectionCardCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { "The project Id Path and project Id Body must be equal." }
 				});
 			}
 			if (section != command.Section) {
-				return BadRequest(new UpdateTasksSectionCommandResponse {
+				return BadRequest(new RenameTaskSectionCardCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { "The section Path and section Body must be equal." }
 				});

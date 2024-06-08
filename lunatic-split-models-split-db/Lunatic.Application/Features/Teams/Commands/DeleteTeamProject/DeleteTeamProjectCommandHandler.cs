@@ -1,17 +1,17 @@
 ﻿using Lunatic.Application.Persistence.WriteSide;
 using MediatR;
 
-
 namespace Lunatic.Application.Features.Teams.Commands.DeleteTeamProject
 {
     public class DeleteTeamProjectCommandHandler : IRequestHandler<DeleteTeamProjectCommand, DeleteTeamProjectCommandResponse> {
 		private readonly ITeamRepository teamRepository;
-
 		private readonly IProjectRepository projectRepository;
+		private readonly IPublisher publisher;
 
-		public DeleteTeamProjectCommandHandler(ITeamRepository teamRepository, IProjectRepository projectRepository) {
+		public DeleteTeamProjectCommandHandler(ITeamRepository teamRepository, IProjectRepository projectRepository, IPublisher publisher) {
 			this.teamRepository = teamRepository;
 			this.projectRepository = projectRepository;
+			this.publisher = publisher;
 		}
 
 		public async Task<DeleteTeamProjectCommandResponse> Handle(DeleteTeamProjectCommand request, CancellationToken cancellationToken) {

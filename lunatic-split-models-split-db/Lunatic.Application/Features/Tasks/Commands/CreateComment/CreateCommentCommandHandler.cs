@@ -1,23 +1,24 @@
-﻿using Lunatic.Application.Features.Comments.Payload;
+﻿using AutoMapper;
+using Lunatic.Application.Features.Comments.Payload;
 using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Domain.Entities;
 using MediatR;
 
-
-
-namespace Lunatic.Application.Features.Tasks.Commands.CreateComment
-{
-    public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand, CreateCommentCommandResponse> {
+namespace Lunatic.Application.Features.Tasks.Commands.CreateComment {
+	public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand, CreateCommentCommandResponse> {
 		private readonly ITaskRepository taskRepository;
-
 		private readonly ICommentRepository commentRepository;
-
 		private readonly IUserRepository userRepository;
+		private readonly IPublisher publisher;
+		private readonly IMapper mapper;
 
-		public CreateCommentCommandHandler(ITaskRepository taskRepository, ICommentRepository commentRepository, IUserRepository userRepository) {
+		public CreateCommentCommandHandler(ITaskRepository taskRepository, ICommentRepository commentRepository,
+			IUserRepository userRepository, IPublisher publisher, IMapper mapper) {
 			this.taskRepository = taskRepository;
 			this.commentRepository = commentRepository;
 			this.userRepository = userRepository;
+			this.publisher = publisher;
+			this.mapper = mapper;
 		}
 
 		public async Task<CreateCommentCommandResponse> Handle(CreateCommentCommand request, CancellationToken cancellationToken) {
@@ -47,18 +48,7 @@ namespace Lunatic.Application.Features.Tasks.Commands.CreateComment
 
 			return new CreateCommentCommandResponse {
 				Success = true,
-				Comment = new CommentDto {
-					CommentId = commentResult.Value.CommentId,
-					TaskId = commentResult.Value.TaskId,
-					AuthorId = commentResult.Value.CreatedByUserId,
-
-					Content = commentResult.Value.Content,
-
-					//EmoteIds = commentResult.Value.EmoteIds,
-
-					CreatedDate = commentResult.Value.CreatedDate,
-					LastModifiedDate = commentResult.Value.LastModifiedDate
-				}
+				Comment = mapper.Map<CommentDto>(commentResult.Value)
 			};
 		}
 	}

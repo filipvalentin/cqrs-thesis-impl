@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Lunatic.Application.Features.Teams.Events {
 	public class TeamCreatedDomainEventHandler : INotificationHandler<TeamCreatedDomainEvent> {
 		private readonly ITeamReadSideRepository teamReadRepository;
+		private readonly IUserReadSideRepository userReadRepository;
 		private readonly ITeamRepository teamWriteRepository;
 		private readonly ILogger<TeamCreatedDomainEventHandler> logger;
 		private readonly IMapper mapper;
@@ -23,14 +24,22 @@ namespace Lunatic.Application.Features.Teams.Events {
 
 		public async Task Handle(TeamCreatedDomainEvent notification, CancellationToken cancellationToken) {
 			var teamResult = await teamWriteRepository.FindByIdAsync(notification.Id);
-
 			if (!teamResult.IsSuccess) {
 				logger.LogError("Team not found in write side repository. TeamId: {TeamId}", notification.Id);
 				return;
 			}
+			var team = teamResult.Value;
 
-			var addResult = await teamReadRepository.AddAsync(mapper.Map<TeamReadModel>(teamResult.Value));
+			var teamOwnerResult = await userReadRepository.FindByIdAsync(team.CreatedByUserId);
+			if (!teamOwnerResult.IsSuccess) {
+				logger.LogError("Team owner not found in read side repository. UserId: {UserId}", team.CreatedByUserId);
+				return;
+			}
+			var teamOwner = teamOwnerResult.Value;
+			teamOwner.TeamIds.Add(team.Id);
+			var updateOwnerResult = await userReadRepository.UpdateAsync(teamOwner.Id, teamOwner);
 
+			var addResult = await teamReadRepository.AddAsync(mapper.Map<TeamReadModel>(team));
 			if (!addResult.IsSuccess) {
 				logger.LogError("Failed to add team to read side repository. TeamId: {TeamId}", notification.Id);
 			}

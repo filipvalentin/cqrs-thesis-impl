@@ -1,4 +1,4 @@
-﻿
+﻿using AutoMapper;
 using Lunatic.Application.Features.Teams.Payload;
 using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Domain.DomainEvents.Team;
@@ -11,11 +11,13 @@ namespace Lunatic.Application.Features.Teams.Commands.CreateTeam {
 		private readonly ITeamRepository teamRepository;
 		private readonly IUserRepository userRepository;
 		private readonly IPublisher publisher;
+		private readonly IMapper mapper;
 
-		public CreateTeamCommandHandler(ITeamRepository teamRepository, IUserRepository userRepository, IPublisher publisher) {
+		public CreateTeamCommandHandler(ITeamRepository teamRepository, IUserRepository userRepository, IPublisher publisher, IMapper mapper) {
 			this.teamRepository = teamRepository;
 			this.userRepository = userRepository;
 			this.publisher = publisher;
+			this.mapper = mapper;
 		}
 
 		public async Task<CreateTeamCommandResponse> Handle(CreateTeamCommand request, CancellationToken cancellationToken) {
@@ -29,10 +31,17 @@ namespace Lunatic.Application.Features.Teams.Commands.CreateTeam {
 				};
 			}
 
-			var team = Team.Create(request.UserId, request.Name, request.Description).Value;
-
+			var teamResult = Team.Create(request.UserId, request.Name, request.Description);
+			if(!teamResult.IsSuccess) {
+				return new CreateTeamCommandResponse {
+					Success = false,
+					ValidationErrors = new List<string> { teamResult.Error }
+				};
+			}
+			var team = teamResult.Value;
 			team.AddMember(request.UserId);
 			await teamRepository.AddAsync(team);
+
 			var user = (await userRepository.FindByIdAsync(request.UserId)).Value;
 			user.AddTeam(team.Id);
 			await userRepository.UpdateAsync(user);
@@ -41,14 +50,7 @@ namespace Lunatic.Application.Features.Teams.Commands.CreateTeam {
 
 			return new CreateTeamCommandResponse {
 				Success = true,
-				Team = new TeamDto {
-					TeamId = team.Id,
-					OwnerId = team.CreatedByUserId,
-					Name = team.Name,
-					Description = team.Description,
-					MemberIds = team.MemberIds,
-					ProjectIds = team.ProjectIds,
-				}
+				Team = mapper.Map<TeamDto>(team)
 			};
 		}
 	}

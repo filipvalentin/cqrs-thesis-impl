@@ -1,4 +1,5 @@
-﻿using Lunatic.Application.Features.Projects.Payload;
+﻿using AutoMapper;
+using Lunatic.Application.Features.Projects.Payload;
 using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Domain.DomainEvents.Project;
 using Lunatic.Domain.Entities;
@@ -11,13 +12,15 @@ namespace Lunatic.Application.Features.Teams.Commands.AddTeamProject {
 		private readonly ITeamRepository teamRepository;
 		private readonly IUserRepository userRepository;
 		private readonly IPublisher publisher;
+		private readonly IMapper mapper;
 
-		public CreateTeamProjectCommandHandler(IProjectRepository projectRepository, ITeamRepository teamRepository, 
-			IUserRepository userRepository, IPublisher publisher) {
+		public CreateTeamProjectCommandHandler(IProjectRepository projectRepository, ITeamRepository teamRepository,
+			IUserRepository userRepository, IPublisher publisher, IMapper mapper) {
 			this.projectRepository = projectRepository;
 			this.teamRepository = teamRepository;
 			this.userRepository = userRepository;
 			this.publisher = publisher;
+			this.mapper = mapper;
 		}
 
 		public async Task<CreateTeamProjectCommandResponse> Handle(CreateTeamProjectCommand request, CancellationToken cancellationToken) {
@@ -51,17 +54,7 @@ namespace Lunatic.Application.Features.Teams.Commands.AddTeamProject {
 
 			return new CreateTeamProjectCommandResponse {
 				Success = true,
-				Project = new ProjectDto {
-					CreatedByUserId = project.CreatedByUserId,
-					ProjectId = project.Id,
-					TeamId = project.TeamId,
-
-					Title = project.Title,
-					Description = project.Description,
-
-					TaskSections = project.TaskSectionCards,
-					TaskIds = project.TaskIds,
-				}
+				Project = mapper.Map<ProjectDto>(project)
 			};
 		}
 	}

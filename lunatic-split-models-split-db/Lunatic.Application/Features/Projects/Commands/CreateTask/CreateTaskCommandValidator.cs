@@ -1,16 +1,13 @@
-﻿
-using FluentValidation;
+﻿using FluentValidation;
 using Lunatic.Application.Persistence.WriteSide;
 
 
-namespace Lunatic.Application.Features.Projects.Commands.CreateProjectTask
-{
-    internal class CreateProjectTaskCommandValidator : AbstractValidator<CreateProjectTaskCommand> {
+namespace Lunatic.Application.Features.Projects.Commands.CreateTask {
+	internal class CreateTaskCommandValidator : AbstractValidator<CreateTaskCommand> {
 		private readonly IUserRepository userRepository;
-
 		private readonly IProjectRepository projectRepository;
 
-		public CreateProjectTaskCommandValidator(IUserRepository userRepository, IProjectRepository projectRepository) {
+		public CreateTaskCommandValidator(IUserRepository userRepository, IProjectRepository projectRepository) {
 			this.userRepository = userRepository;
 			this.projectRepository = projectRepository;
 

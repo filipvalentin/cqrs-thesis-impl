@@ -18,9 +18,16 @@ namespace Lunatic.Application.Mappers {
 			CreateMap<User, UserReadModel>();
 
 			CreateMap<User, UserDto>();
+			CreateMap<Team, TeamDto>()
+				.ForMember(t => t.TeamId, opt => opt.MapFrom(src => src.Id))
+				.ForMember(t => t.OwnerId, opt => opt.MapFrom(src => src.CreatedByUserId));
+			CreateMap<Project, ProjectDto>()
+				.ForMember(t => t.ProjectId, opt => opt.MapFrom(src => src.Id));
+			CreateMap<Domain.Entities.Task, TaskDto>()
+				.ForMember(t => t.TaskId, opt => opt.MapFrom(src => src.Id))
+				.ForMember(t => t.Section, opt => opt.MapFrom(src => src.TaskSectionCard));
 			CreateMap<Comment, CommentDto>()
 				.ForMember(t => t.AuthorId, opt => opt.MapFrom(src => src.CreatedByUserId));
-
 
 			CreateMap<TeamReadModel, TeamDto>()
 				.ForMember(t => t.TeamId, opt => opt.MapFrom(src => src.Id))

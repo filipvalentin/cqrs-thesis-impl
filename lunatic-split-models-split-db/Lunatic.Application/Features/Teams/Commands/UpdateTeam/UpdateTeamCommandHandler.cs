@@ -1,4 +1,5 @@
 ﻿
+using AutoMapper;
 using Lunatic.Application.Features.Teams.Payload;
 using Lunatic.Application.Persistence.WriteSide;
 using MediatR;
@@ -8,9 +9,13 @@ namespace Lunatic.Application.Features.Teams.Commands.UpdateTeam
 {
     public class UpdateTeamCommandHandler : IRequestHandler<UpdateTeamCommand, UpdateTeamCommandResponse> {
 		private readonly ITeamRepository teamRepository;
+		private readonly IPublisher publisher;
+		private readonly IMapper mapper;
 
-		public UpdateTeamCommandHandler(ITeamRepository teamRepository) {
+		public UpdateTeamCommandHandler(ITeamRepository teamRepository, IPublisher publisher, IMapper mapper) {
 			this.teamRepository = teamRepository;
+			this.publisher = publisher;
+			this.mapper = mapper;
 		}
 
 		public async Task<UpdateTeamCommandResponse> Handle(UpdateTeamCommand request, CancellationToken cancellationToken) {
@@ -38,15 +43,7 @@ namespace Lunatic.Application.Features.Teams.Commands.UpdateTeam
 
 			return new UpdateTeamCommandResponse {
 				Success = true,
-				Team = new TeamDto {
-					TeamId = dbTeamResult.Value.Id,
-
-					Name = dbTeamResult.Value.Name,
-					Description = dbTeamResult.Value.Description,
-
-					MemberIds = dbTeamResult.Value.MemberIds,
-					ProjectIds = dbTeamResult.Value.ProjectIds,
-				}
+				Team = mapper.Map<TeamDto>(dbTeamResult.Value)
 			};
 		}
 	}
