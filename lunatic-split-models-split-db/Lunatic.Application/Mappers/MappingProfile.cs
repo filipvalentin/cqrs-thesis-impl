@@ -46,6 +46,8 @@ namespace Lunatic.Application.Mappers {
 			CreateMap<CommentReadModel, CommentDto>()
 				.ForMember(t => t.CommentId, opt => opt.MapFrom(src => src.Id))
 				.ForMember(t => t.AuthorId, opt => opt.MapFrom(src => src.CreatedByUserId));
+			CreateMap<UserReadModel, UserDto>()
+				.ForMember(t => t.UserId, opt => opt.MapFrom(src => src.Id));
 
 		}
 	}

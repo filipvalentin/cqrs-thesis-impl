@@ -3,9 +3,9 @@ using Lunatic.Application.Responses;
 using MediatR;
 
 namespace Lunatic.Application.Behaviors {
-	public class ValidationPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> 
+	public class ValidationPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
 		where TRequest : IRequest<TResponse>
-		where TResponse : BaseResponse{
+		where TResponse : BaseResponse {
 		private readonly IEnumerable<IValidator<TRequest>> _validators;
 
 		public ValidationPipelineBehavior(IEnumerable<IValidator<TRequest>> validators) {
@@ -13,14 +13,15 @@ namespace Lunatic.Application.Behaviors {
 		}
 
 		public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken) {
-			if(!_validators.Any()) {
+			if (!_validators.Any()) {
 				return await next();
 			}
 
-			var failures = _validators
-				.Select(v => v.Validate(request))
+			var validationTasks = _validators.Select(v => v.ValidateAsync(request, cancellationToken));
+			var validationResults = await Task.WhenAll(validationTasks);
+			var failures = validationResults
 				.SelectMany(result => result.Errors)
-				.Where(f => f is not null)
+				.Where(f => f != null)
 				.ToList();
 
 			if (failures.Any()) {

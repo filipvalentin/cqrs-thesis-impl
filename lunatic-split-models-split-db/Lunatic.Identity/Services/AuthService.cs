@@ -29,7 +29,9 @@ namespace Lunatic.Identity.Services {
 		private readonly ILogger<AuthService> logger;
 		private readonly IPublisher publisher;
 
-		public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IUserRepository userRepository, SignInManager<ApplicationUser> signInManager, IEmailService emailService, ILogger<AuthService> logger, IPublisher publisher) {
+		public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, 
+			IConfiguration configuration, IUserRepository userRepository, SignInManager<ApplicationUser> signInManager, 
+			IEmailService emailService, ILogger<AuthService> logger, IPublisher publisher) {
 			this.userManager = userManager;
 			this.roleManager = roleManager;
 			this.configuration = configuration;
@@ -49,7 +51,7 @@ namespace Lunatic.Identity.Services {
 				};
 			}
 
-			var userDb = User.Create(model.FirstName, model.LastName, model.Email, model.Username, model.Password, Role.USER);
+			var userDb = User.Create(model.FirstName, model.LastName, model.Email, model.Username, Role.USER);
 			if (!userDb.IsSuccess) {
 				return new RegisterResponse {
 					Success = false,
@@ -81,7 +83,7 @@ namespace Lunatic.Identity.Services {
 			}
 			await userRepository.AddAsync(userDb.Value);
 
-			await publisher.Publish(new UserCreatedDomainEvent(Guid.Parse(user.Id)));
+			await publisher.Publish(new UserCreatedDomainEvent(Guid.Parse(user.Id), userDb.Value));
 
 			return new RegisterResponse {
 				Success = true,

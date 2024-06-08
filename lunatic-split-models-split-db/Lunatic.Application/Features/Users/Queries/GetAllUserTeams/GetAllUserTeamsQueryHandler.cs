@@ -29,11 +29,10 @@ namespace Lunatic.Application.Features.Users.Queries.GetAllUserTeams {
 
 			GetAllUserTeamsQueryResponse response = new () { Success = true };
 
-			var teams = user.TeamIds.Select(async teamId => await teamRepository.FindByIdAsync(teamId)).ToList();
-			//foreach (var teamId in teamIds) {
-			//	var team = (await teamRepository.FindByIdAsync(teamId)).Value;
-			//	teams.Add(team);
-			//}
+			var teamTasks = user.TeamIds.Select(teamId => teamRepository.FindByIdAsync(teamId));
+			var teamResults = await Task.WhenAll(teamTasks);
+			var teams = teamResults.Where(result => result.IsSuccess).Select(result => result.Value).ToList();
+
 
 			response.Teams = teams.Select(team => mapper.Map<TeamDto>(team)).ToList();
 			return response;

@@ -14,9 +14,10 @@ namespace Lunatic.Application.Features.Teams.Events {
 		private readonly ILogger<TeamCreatedDomainEventHandler> logger;
 		private readonly IMapper mapper;
 
-		public TeamCreatedDomainEventHandler(ITeamReadSideRepository teamRepository,
+		public TeamCreatedDomainEventHandler(ITeamReadSideRepository teamRepository, IUserReadSideRepository userReadRepository,
 			ITeamRepository teamWriteRepository, ILogger<TeamCreatedDomainEventHandler> logger, IMapper mapper) {
 			this.teamReadRepository = teamRepository;
+			this.userReadRepository = userReadRepository;
 			this.teamWriteRepository = teamWriteRepository;
 			this.logger = logger;
 			this.mapper = mapper;
