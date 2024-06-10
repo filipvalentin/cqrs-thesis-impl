@@ -1,4 +1,4 @@
-# Repository containing CQRS implementations for my practical component of my bachelor's thesis
+# Repository with implementations for my practical component of my bachelor's thesis
 
 It contains a CQRS-based project management application adapted to various stages involved in my thesis. 
 First stage uses the same domain model for read/write operations, the second stage splits the 
