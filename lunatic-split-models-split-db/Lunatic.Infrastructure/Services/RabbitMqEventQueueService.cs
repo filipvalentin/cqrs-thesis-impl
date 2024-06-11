@@ -1,6 +1,5 @@
 ﻿using Lunatic.Application.Utils.Services;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using System.Text;
 using Newtonsoft.Json;
 

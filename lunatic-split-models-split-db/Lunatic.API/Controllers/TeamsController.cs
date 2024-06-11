@@ -1,8 +1,6 @@
 using Lunatic.Application.Features.Teams.Commands.AddTeamMember;
-using Lunatic.Application.Features.Teams.Commands.AddTeamProject;
 using Lunatic.Application.Features.Teams.Commands.CreateTeam;
 using Lunatic.Application.Features.Teams.Commands.DeleteTeam;
-using Lunatic.Application.Features.Teams.Commands.DeleteTeamMember.cs;
 using Lunatic.Application.Features.Teams.Commands.DeleteTeamProject;
 using Lunatic.Application.Features.Teams.Commands.UpdateTeam;
 using Lunatic.Application.Features.Teams.Queries.GetAllMembers;

@@ -24,13 +24,7 @@ namespace Lunatic.Application.Features.Teams.Events {
 		}
 
 		public async Task Handle(TeamDisbandedDomainEvent notification, CancellationToken cancellationToken) {
-			var teamReadRemovedResult = await teamReadRepository.DeleteAsync(notification.Id);
 
-			if (!teamReadRemovedResult.IsSuccess) {
-				logger.LogError("Failed to remove team read model with id {Id}", notification.Id);
-				eventQueueService.Enqueue(new TeamDisbandedDomainEvent(notification.Id, notification.ProjectIds));
-				return;
-			}
 
 			foreach (var projectId in notification.ProjectIds) {
 				var projectReadResult = await projectWriteRepository.FindByIdAsync(projectId);
@@ -46,6 +40,13 @@ namespace Lunatic.Application.Features.Teams.Events {
 					return;
 				}
 				await publisher.Publish(new ProjectDeletedDomainEvent(projectId, projectReadResult.Value), cancellationToken);
+			}
+			
+			var teamReadRemovedResult = await teamReadRepository.DeleteAsync(notification.Id);
+			if (!teamReadRemovedResult.IsSuccess) {
+				logger.LogError("Failed to remove team read model with id {Id}", notification.Id);
+				eventQueueService.Enqueue(new TeamDisbandedDomainEvent(notification.Id, notification.ProjectIds));
+				return;
 			}
 		}
 	}

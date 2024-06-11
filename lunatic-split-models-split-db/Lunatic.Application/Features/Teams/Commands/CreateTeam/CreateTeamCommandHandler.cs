@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Lunatic.Application.Features.Teams.Payload;
-using Lunatic.Application.Models.ReadModels;
 using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Domain.DomainEvents.Team;
 using Lunatic.Domain.Entities;

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Lunatic.Application.Features.Comments.Payload;
 using Lunatic.Application.Persistence.WriteSide;
-using Lunatic.Domain.DomainEvents.Comment;
 using MediatR;
 
 

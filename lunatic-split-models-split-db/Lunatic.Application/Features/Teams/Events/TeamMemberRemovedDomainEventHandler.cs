@@ -3,11 +3,6 @@ using Lunatic.Application.Utils.Services;
 using Lunatic.Domain.DomainEvents.Team;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lunatic.Application.Features.Teams.Events {
 	public class TeamMemberRemovedDomainEventHandler(ITeamReadSideRepository teamReadRepository,
