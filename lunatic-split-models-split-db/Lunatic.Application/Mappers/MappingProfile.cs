@@ -6,6 +6,9 @@ using Lunatic.Application.Features.Teams.Payload;
 using Lunatic.Application.Features.Users.Payload;
 using Lunatic.Application.Models.ReadModels;
 using Lunatic.Application.Models.ReadModels.Tasks;
+using Lunatic.Domain.DomainEvents.Comment;
+using Lunatic.Domain.DomainEvents.Project;
+using Lunatic.Domain.DomainEvents.Team;
 using Lunatic.Domain.Entities;
 
 namespace Lunatic.Application.Mappers {
@@ -49,6 +52,17 @@ namespace Lunatic.Application.Mappers {
 			CreateMap<UserReadModel, UserDto>()
 				.ForMember(t => t.UserId, opt => opt.MapFrom(src => src.Id));
 
+
+			CreateMap<Team, TeamCreatedDomainEvent>();
+			CreateMap<TeamCreatedDomainEvent, TeamReadModel>();
+			CreateMap<Team, TeamDisbandedDomainEvent>();
+			CreateMap<Comment, CommentAddedDomainEvent>();
+			CreateMap<CommentAddedDomainEvent, CommentReadModel>();
+			CreateMap<Comment, CommentDeletedDomainEvent>();
+			CreateMap<Comment, CommentEditedDomainEvent>();
+			CreateMap<CommentEditedDomainEvent, CommentReadModel>();
+			CreateMap<Project, ProjectCreatedDomainEvent>();
+			CreateMap<ProjectDeletedDomainEvent, ProjectReadModel>();
 		}
 	}
 }

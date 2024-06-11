@@ -6,15 +6,15 @@ using Lunatic.Domain.Entities;
 using MediatR;
 
 
-namespace Lunatic.Application.Features.Teams.Commands.AddTeamProject {
-	public class CreateTeamProjectCommandHandler : IRequestHandler<CreateTeamProjectCommand, CreateTeamProjectCommandResponse> {
+namespace Lunatic.Application.Features.Teams.Commands.CreateProject {
+	public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand, CreateProjectCommandResponse> {
 		private readonly IProjectRepository projectRepository;
 		private readonly ITeamRepository teamRepository;
 		private readonly IUserRepository userRepository;
 		private readonly IPublisher publisher;
 		private readonly IMapper mapper;
 
-		public CreateTeamProjectCommandHandler(IProjectRepository projectRepository, ITeamRepository teamRepository,
+		public CreateProjectCommandHandler(IProjectRepository projectRepository, ITeamRepository teamRepository,
 			IUserRepository userRepository, IPublisher publisher, IMapper mapper) {
 			this.projectRepository = projectRepository;
 			this.teamRepository = teamRepository;
@@ -23,20 +23,10 @@ namespace Lunatic.Application.Features.Teams.Commands.AddTeamProject {
 			this.mapper = mapper;
 		}
 
-		public async Task<CreateTeamProjectCommandResponse> Handle(CreateTeamProjectCommand request, CancellationToken cancellationToken) {
-			var validator = new CreateTeamProjectCommandValidator(userRepository, teamRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
-
-			if (!validatorResult.IsValid) {
-				return new CreateTeamProjectCommandResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
-
+		public async Task<CreateProjectCommandResponse> Handle(CreateProjectCommand request, CancellationToken cancellationToken) {
 			var projectResult = Project.Create(request.UserId, request.TeamId, request.Title, request.Description);
 			if (!projectResult.IsSuccess) {
-				return new CreateTeamProjectCommandResponse {
+				return new CreateProjectCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { projectResult.Error }
 				};
@@ -50,9 +40,9 @@ namespace Lunatic.Application.Features.Teams.Commands.AddTeamProject {
 
 			await projectRepository.AddAsync(project);
 
-			await publisher.Publish(new ProjectCreatedDomainEvent(project.Id), cancellationToken);
+			await publisher.Publish(mapper.Map<ProjectCreatedDomainEvent>(project), cancellationToken);
 
-			return new CreateTeamProjectCommandResponse {
+			return new CreateProjectCommandResponse {
 				Success = true,
 				Project = mapper.Map<ProjectDto>(project)
 			};

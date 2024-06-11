@@ -15,15 +15,15 @@ namespace Lunatic.Application.Features.Teams.Commands.DeleteTeamProject
 		}
 
 		public async Task<DeleteTeamProjectCommandResponse> Handle(DeleteTeamProjectCommand request, CancellationToken cancellationToken) {
-			var validator = new DeleteTeamProjectCommandValidator(teamRepository, projectRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
+			//var validator = new DeleteTeamProjectCommandValidator(teamRepository, projectRepository);
+			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
-			if (!validatorResult.IsValid) {
-				return new DeleteTeamProjectCommandResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
+			//if (!validatorResult.IsValid) {
+			//	return new DeleteTeamProjectCommandResponse {
+			//		Success = false,
+			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
+			//	};
+			//}
 
 			var team = (await teamRepository.FindByIdAsync(request.TeamId)).Value;
 			team.RemoveProject(request.ProjectId);

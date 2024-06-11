@@ -26,12 +26,8 @@ namespace Lunatic.Application.Behaviors {
 
 			if (failures.Any()) {
 				var response = Activator.CreateInstance<TResponse>();
-				response.ValidationErrors = new List<string>();
-
-				foreach (var failure in failures) {
-					response.ValidationErrors.Add(failure.ErrorMessage);
-				}
-
+				response.Success = false;
+				response.ValidationErrors = failures.Select(failure => failure.ErrorMessage).ToList();
 				return response;
 			}
 

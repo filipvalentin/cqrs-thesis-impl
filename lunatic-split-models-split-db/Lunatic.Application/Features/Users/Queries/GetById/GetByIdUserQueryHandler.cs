@@ -18,7 +18,7 @@ namespace Lunatic.Application.Features.Users.Queries.GetById {
             if(!userResult.IsSuccess) {
                 return new GetByIdUserQueryResponse {
                     Success = false,
-                    ValidationErrors = new List<string> { "User not found" }
+                    Message = userResult.Error
                 };
             }
 

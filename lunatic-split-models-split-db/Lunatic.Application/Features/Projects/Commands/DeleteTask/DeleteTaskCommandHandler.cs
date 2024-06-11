@@ -14,15 +14,15 @@ namespace Lunatic.Application.Features.Projects.Commands.DeleteTask {
 		}
 
 		public async Task<DeleteTaskCommandResponse> Handle(DeleteProjectTaskCommand request, CancellationToken cancellationToken) {
-			var validator = new DeleteTaskCommandValidator(projectRepository, taskRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
+			//var validator = new DeleteTaskCommandValidator(projectRepository, taskRepository);
+			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
-			if (!validatorResult.IsValid) {
-				return new DeleteTaskCommandResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
+			//if (!validatorResult.IsValid) {
+			//	return new DeleteTaskCommandResponse {
+			//		Success = false,
+			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
+			//	};
+			//}
 
 			var project = (await projectRepository.FindByIdAsync(request.ProjectId)).Value;
 			project.RemoveTask(request.ProjectId);

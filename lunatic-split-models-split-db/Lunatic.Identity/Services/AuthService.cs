@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using Lunatic.Application.Persistence.WriteSide;
 using MediatR;
 using Lunatic.Domain.DomainEvents.User;
-using System.Threading;
 
 
 namespace Lunatic.Identity.Services {

@@ -19,15 +19,15 @@ namespace Lunatic.Application.Features.Projects.Commands.DeleteTaskSectionCard {
 		}
 
 		public async Task<DeleteTaskSectionCommandResponse> Handle(DeleteTaskSectionCommand request, CancellationToken cancellationToken) {
-			var validator = new DeleteTaskSectionCommandValidator(projectRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
+			//var validator = new DeleteTaskSectionCommandValidator(projectRepository);
+			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
-			if (!validatorResult.IsValid) {
-				return new DeleteTaskSectionCommandResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
+			//if (!validatorResult.IsValid) {
+			//	return new DeleteTaskSectionCommandResponse {
+			//		Success = false,
+			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
+			//	};
+			//}
 
 			var project = (await projectRepository.FindByIdAsync(request.ProjectId)).Value;
 			project.RemoveTaskSectionCard(request.Section);

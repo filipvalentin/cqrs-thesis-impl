@@ -19,15 +19,15 @@ namespace Lunatic.Application.Features.Teams.Commands.UpdateTeam
 		}
 
 		public async Task<UpdateTeamCommandResponse> Handle(UpdateTeamCommand request, CancellationToken cancellationToken) {
-			var validator = new UpdateTeamCommandValidator(teamRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
+			//var validator = new UpdateTeamCommandValidator(teamRepository);
+			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
-			if (!validatorResult.IsValid) {
-				return new UpdateTeamCommandResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
+			//if (!validatorResult.IsValid) {
+			//	return new UpdateTeamCommandResponse {
+			//		Success = false,
+			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
+			//	};
+			//}
 
 			var teamResult = await teamRepository.FindByIdAsync(request.TeamId);
 			if (!teamResult.IsSuccess) {

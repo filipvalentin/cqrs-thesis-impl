@@ -58,10 +58,10 @@ namespace Lunatic.API.Controllers {
 
 		[HttpDelete("{teamId}")]
 		[Produces("application/json")]
-		[ProducesResponseType<DeleteTeamCommandResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<DeleteTeamCommandResponse>(StatusCodes.Status404NotFound)]
+		[ProducesResponseType<DisbandTeamCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<DisbandTeamCommandResponse>(StatusCodes.Status404NotFound)]
 		public async Task<IActionResult> Delete(Guid teamId) {
-			var deleteTeamCommand = new DeleteTeamCommand() { TeamId = teamId };
+			var deleteTeamCommand = new DisbandTeamCommand() { TeamId = teamId };
 			var result = await Mediator.Send(deleteTeamCommand);
 			if (!result.Success) {
 				return NotFound(result);
@@ -114,11 +114,11 @@ namespace Lunatic.API.Controllers {
 
 		[HttpPost("{teamId}/projects")]
 		[Produces("application/json")]
-		[ProducesResponseType<CreateTeamProjectCommandResponse>(StatusCodes.Status201Created)]
-		[ProducesResponseType<CreateTeamProjectCommandResponse>(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> CreateProject(Guid teamId, CreateTeamProjectCommand command) {
+		[ProducesResponseType<CreateProjectCommandResponse>(StatusCodes.Status201Created)]
+		[ProducesResponseType<CreateProjectCommandResponse>(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> CreateProject(Guid teamId, CreateProjectCommand command) {
 			if (teamId != command.TeamId) {
-				return BadRequest(new CreateTeamProjectCommandResponse {
+				return BadRequest(new CreateProjectCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { "The team Id Path and team Id Body must be equal." }
 				});

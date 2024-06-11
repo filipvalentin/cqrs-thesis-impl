@@ -2,7 +2,7 @@
 
 
 namespace Lunatic.Application.Features.Tasks.Commands.CreateComment {
-	public class CreateCommentCommand : IRequest<CreateCommentCommandResponse> {
+	public class AddCommentCommand : IRequest<AddCommentCommandResponse> {
 		public Guid UserId { get; set; } = default!;
 		public Guid TaskId { get; set; } = default!;
 

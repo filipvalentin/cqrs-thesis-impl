@@ -22,15 +22,15 @@ namespace Lunatic.Application.Features.Projects.Commands.CreateTask {
 		}
 
 		public async Task<CreateTaskCommandResponse> Handle(CreateTaskCommand request, CancellationToken cancellationToken) {
-			var validator = new CreateTaskCommandValidator(userRepository, projectRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
+			//var validator = new CreateTaskCommandValidator(userRepository, projectRepository);
+			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
-			if (!validatorResult.IsValid) {
-				return new CreateTaskCommandResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
+			//if (!validatorResult.IsValid) {
+			//	return new CreateTaskCommandResponse {
+			//		Success = false,
+			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
+			//	};
+			//}
 
 			var taskResult = Task.Create(request.UserId, request.ProjectId, request.Section, request.Title, request.Description, request.Priority, request.PlannedStartDate, request.PlannedEndDate);
 			if (!taskResult.IsSuccess) {

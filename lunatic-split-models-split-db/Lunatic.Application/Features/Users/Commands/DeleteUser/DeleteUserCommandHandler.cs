@@ -15,14 +15,14 @@ namespace Lunatic.Application.Features.Users.Commands.DeleteUser
 		}
 
 		public async Task<DeleteUserCommandResponse> Handle(DeleteUserCommand request, CancellationToken cancellationToken) {
-            var result = await userRepository.DeleteAsync(request.UserId);
+            //var result = await userRepository.DeleteAsync(request.UserId);
 
-            if(!result.IsSuccess) {
-                return new DeleteUserCommandResponse {
-                    Success = false,
-                    ValidationErrors = new List<string> { result.Error }
-                };
-            }
+            //if(!result.IsSuccess) {
+            //    return new DeleteUserCommandResponse {
+            //        Success = false,
+            //        ValidationErrors = new List<string> { result.Error }
+            //    };
+            //}
 
 			await publisher.Publish(new UserDeletedDomainEvent(request.UserId), cancellationToken);
 

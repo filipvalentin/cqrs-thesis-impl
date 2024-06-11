@@ -2,47 +2,49 @@
 using Lunatic.Application.Models.ReadModels;
 using Lunatic.Application.Persistence.ReadSide;
 using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Application.Utils;
+using Lunatic.Application.Utils.Services;
 using Lunatic.Domain.DomainEvents.Team;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
+
 namespace Lunatic.Application.Features.Teams.Events {
-	public class TeamCreatedDomainEventHandler : INotificationHandler<TeamCreatedDomainEvent> {
-		private readonly ITeamReadSideRepository teamReadRepository;
-		private readonly IUserReadSideRepository userReadRepository;
-		private readonly ITeamRepository teamWriteRepository;
-		private readonly ILogger<TeamCreatedDomainEventHandler> logger;
-		private readonly IMapper mapper;
+	public class TeamCreatedDomainEventHandler(ITeamReadSideRepository teamRepository,
+		IUserReadSideRepository userReadRepository,
+		ITeamRepository teamWriteRepository,
+		ILogger<TeamCreatedDomainEventHandler> logger,
+		IEventQueueService queueService,
+		IMapper mapper) : INotificationHandler<TeamCreatedDomainEvent> {
 
-		public TeamCreatedDomainEventHandler(ITeamReadSideRepository teamRepository, IUserReadSideRepository userReadRepository,
-			ITeamRepository teamWriteRepository, ILogger<TeamCreatedDomainEventHandler> logger, IMapper mapper) {
-			this.teamReadRepository = teamRepository;
-			this.userReadRepository = userReadRepository;
-			this.teamWriteRepository = teamWriteRepository;
-			this.logger = logger;
-			this.mapper = mapper;
-		}
+		private readonly ITeamReadSideRepository teamReadRepository = teamRepository;
+		private readonly IUserReadSideRepository userReadRepository = userReadRepository;
+		private readonly ITeamRepository teamWriteRepository = teamWriteRepository;
+		private readonly ILogger<TeamCreatedDomainEventHandler> logger = logger;
+		private readonly IEventQueueService queueService = queueService;
+		private readonly IMapper mapper = mapper;
 
-		public async Task Handle(TeamCreatedDomainEvent notification, CancellationToken cancellationToken) {
-			var teamResult = await teamWriteRepository.FindByIdAsync(notification.Id);
-			if (!teamResult.IsSuccess) {
-				logger.LogError("Team not found in write side repository. TeamId: {TeamId}", notification.Id);
-				return;
-			}
-			var team = teamResult.Value;
-
-			var teamOwnerResult = await userReadRepository.FindByIdAsync(team.CreatedByUserId);
+		public async Task Handle(TeamCreatedDomainEvent domainEvent, CancellationToken cancellationToken) {
+			var teamOwnerResult = await userReadRepository.FindByIdAsync(domainEvent.CreatedByUserId);
 			if (!teamOwnerResult.IsSuccess) {
-				logger.LogError("Team owner not found in read side repository. UserId: {UserId}", team.CreatedByUserId);
+				logger.LogError("Error from UserReadSideRepository: {Error} when searching for {Id}", teamOwnerResult.Error, domainEvent.CreatedByUserId);
+				queueService.Enqueue(domainEvent);
 				return;
 			}
-			var teamOwner = teamOwnerResult.Value;
-			teamOwner.TeamIds.Add(team.Id);
-			var updateOwnerResult = await userReadRepository.UpdateAsync(teamOwner.Id, teamOwner);
 
-			var addResult = await teamReadRepository.AddAsync(mapper.Map<TeamReadModel>(team));
+			var teamOwner = teamOwnerResult.Value;
+			teamOwner.TeamIds.AddIfNotExists(domainEvent.Id);
+			var updateOwnerResult = await userReadRepository.UpdateAsync(teamOwner.Id, teamOwner);
+			if (!updateOwnerResult.IsSuccess) {
+				logger.LogError("Error from UserReadSideRepository: {Error} when updating entity with {Id}", updateOwnerResult.Error, teamOwner.Id);
+				queueService.Enqueue(domainEvent);
+				return;
+			}
+
+			var addResult = await teamReadRepository.AddAsync(mapper.Map<TeamReadModel>(domainEvent));
 			if (!addResult.IsSuccess) {
-				logger.LogError("Failed to add team to read side repository. TeamId: {TeamId}", notification.Id);
+				logger.LogError("Error from TeamReadSideRepository: {Error} when adding entity with {Id}", addResult.Error, domainEvent.Id);
+				queueService.Enqueue(domainEvent);
 			}
 		}
 	}

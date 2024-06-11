@@ -14,6 +14,12 @@ namespace Lunatic.Application.Features.Projects.Queries.GetByIdProject {
 
 		public async Task<GetByIdProjectQueryResponse> Handle(GetByIdProjectQuery request, CancellationToken cancellationToken) {
 			var project = await projectRepository.FindByIdAsync(request.ProjectId);
+			if (!project.IsSuccess) {
+				return new GetByIdProjectQueryResponse {
+					Success = false,
+					Message = project.Error
+				};
+			}
 
 			return new GetByIdProjectQueryResponse {
 				Success = true,

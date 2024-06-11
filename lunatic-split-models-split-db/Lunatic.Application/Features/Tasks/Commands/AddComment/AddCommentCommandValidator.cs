@@ -4,13 +4,13 @@ using Lunatic.Application.Persistence.WriteSide;
 
 namespace Lunatic.Application.Features.Tasks.Commands.CreateComment
 {
-    internal class CreateCommentCommandValidator : AbstractValidator<CreateCommentCommand>
+    internal class AddCommentCommandValidator : AbstractValidator<AddCommentCommand>
     {
         private readonly IUserRepository userRepository;
 
         private readonly ITaskRepository taskRepository;
 
-        public CreateCommentCommandValidator(IUserRepository userRepository, ITaskRepository taskRepository)
+        public AddCommentCommandValidator(IUserRepository userRepository, ITaskRepository taskRepository)
         {
             this.userRepository = userRepository;
             this.taskRepository = taskRepository;

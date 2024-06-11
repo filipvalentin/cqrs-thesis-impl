@@ -18,15 +18,15 @@ namespace Lunatic.Application.Features.Comments.Commands.UpdateComment {
 		}
 
 		public async Task<UpdateTaskCommentCommandResponse> Handle(UpdateCommentCommand request, CancellationToken cancellationToken) {
-			var validator = new UpdateCommentCommandValidator(commentRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
+			//var validator = new UpdateCommentCommandValidator(commentRepository);
+			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
-			if (!validatorResult.IsValid) {
-				return new UpdateTaskCommentCommandResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
+			//if (!validatorResult.IsValid) {
+			//	return new UpdateTaskCommentCommandResponse {
+			//		Success = false,
+			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
+			//	};
+			//}
 
 			var commentResult = await commentRepository.FindByIdAsync(request.CommentId);
 

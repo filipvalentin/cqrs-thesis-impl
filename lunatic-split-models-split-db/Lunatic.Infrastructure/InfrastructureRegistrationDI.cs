@@ -3,6 +3,8 @@ using Lunatic.Application.Features.Tasks.Interfaces;
 using Lunatic.Application.Persistence.ReadSide;
 using Lunatic.Application.Persistence.ReadSide.Task;
 using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Application.Utils.Services;
+using Lunatic.Domain.Primitives;
 using Lunatic.Infrastructure.Data;
 using Lunatic.Infrastructure.Providers;
 using Lunatic.Infrastructure.ReadSideRepositories;
@@ -16,6 +18,7 @@ using Lunatic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Lunatic.Infrastructure
 {
@@ -57,15 +60,27 @@ namespace Lunatic.Infrastructure
 			services.AddScoped<IProjectReadSideRepository, ProjectReadSideRepository>();
 			services.AddScoped<ICommentReadSideRepository, CommentReadSideRepository>();
 			services.AddScoped<IUserReadSideRepository, UserReadSideRepository>();
-			
-
-			//services.AddScoped<ITeamReadService, TeamReadService>();
-			//services.AddScoped<ITaskReadService, TaskReadService>();
-			//services.AddScoped<IProjectReadService, ProjectReadService>();
-			//services.AddScoped<ICommentReadService, CommentReadService>();
 
 			services.AddScoped<IMLDataStorageService, MLDataStorageService>();
 			services.AddScoped<IMLDataProvider, MLDataProvider>();
+
+			services.AddSingleton<IEventQueueService>(provider => new RabbitMqEventQueueService(configuration["RabbitMQ:Host"]!));
+			services.AddFailedEventProcessorServices();
+
+			return services;
+		}
+	}
+
+	public static class ServiceCollectionExtensions {
+		public static IServiceCollection AddFailedEventProcessorServices(this IServiceCollection services) {
+			var domainEventTypes = AppDomain.CurrentDomain.GetAssemblies()
+				.SelectMany(a => a.GetTypes())
+				.Where(t => typeof(IDomainEvent).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+
+			foreach (var domainEventType in domainEventTypes) {
+				var serviceType = typeof(FailedEventProcessorService<>).MakeGenericType(domainEventType);
+				services.AddSingleton(typeof(IHostedService), serviceType);
+			}
 
 			return services;
 		}

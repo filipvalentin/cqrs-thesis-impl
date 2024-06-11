@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Lunatic.Application.Features.Teams.Payload;
+using Lunatic.Application.Models.ReadModels;
 using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Domain.DomainEvents.Team;
 using Lunatic.Domain.Entities;
@@ -21,15 +22,15 @@ namespace Lunatic.Application.Features.Teams.Commands.CreateTeam {
 		}
 
 		public async Task<CreateTeamCommandResponse> Handle(CreateTeamCommand request, CancellationToken cancellationToken) {
-			var validator = new CreateTeamCommandValidator(userRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
+			//var validator = new CreateTeamCommandValidator(userRepository);
+			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
-			if (!validatorResult.IsValid) {
-				return new CreateTeamCommandResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
+			//if (!validatorResult.IsValid) {
+			//	return new CreateTeamCommandResponse {
+			//		Success = false,
+			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
+			//	};
+			//}
 
 			var teamResult = Team.Create(request.UserId, request.Name, request.Description);
 			if(!teamResult.IsSuccess) {
@@ -46,7 +47,7 @@ namespace Lunatic.Application.Features.Teams.Commands.CreateTeam {
 			user.AddTeam(team.Id);
 			await userRepository.UpdateAsync(user);
 
-			await publisher.Publish(new TeamCreatedDomainEvent(team.Id), cancellationToken);
+			await publisher.Publish(mapper.Map<TeamCreatedDomainEvent>(team), cancellationToken);
 
 			return new CreateTeamCommandResponse {
 				Success = true,

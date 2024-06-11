@@ -23,11 +23,11 @@ namespace Lunatic.API.Controllers
 
 		[HttpPost("{taskId}/comments")]
 		[Produces("application/json")]
-		[ProducesResponseType<CreateCommentCommandResponse>(StatusCodes.Status201Created)]
-		[ProducesResponseType<CreateCommentCommandResponse>(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> CreateComment(Guid taskId, CreateCommentCommand command) {
+		[ProducesResponseType<AddCommentCommandResponse>(StatusCodes.Status201Created)]
+		[ProducesResponseType<AddCommentCommandResponse>(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> CreateComment(Guid taskId, AddCommentCommand command) {
 			if (taskId != command.TaskId) {
-				return BadRequest(new CreateCommentCommandResponse {
+				return BadRequest(new AddCommentCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { "The task Id Path and task Id Body must be equal." }
 				});
