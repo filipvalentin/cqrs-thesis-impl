@@ -1,52 +1,70 @@
 using AutoMapper;
 using Lunatic.Application.Features.Projects.Payload;
 using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Domain.DomainEvents.Project;
+using Lunatic.Domain.DomainEvents.Task;
 using MediatR;
 
 namespace Lunatic.Application.Features.Projects.Commands.RenameTaskSection {
-	public class RenameTaskSectionCardCommandHandler : IRequestHandler<RenameTaskSectionCardCommand, RenameTaskSectionCardCommandResponse> {
-		private readonly ITaskRepository taskRepository;
-		private readonly IProjectRepository projectRepository;
-		private readonly IPublisher publisher;
-		private readonly IMapper mapper;
+	public class RenameTaskSectionCardCommandHandler(
+		ITaskRepository taskRepository, 
+		IProjectRepository projectRepository,
+		IPublisher publisher, 
+		IMapper mapper) : IRequestHandler<RenameTaskSectionCardCommand, RenameTaskSectionCardCommandResponse> {
 
-		public RenameTaskSectionCardCommandHandler(ITaskRepository taskRepository, IProjectRepository projectRepository, 
-			IPublisher publisher, IMapper mapper) {
-			this.taskRepository = taskRepository;
-			this.projectRepository = projectRepository;
-			this.publisher = publisher;
-			this.mapper = mapper;
-		}
+		private readonly ITaskRepository taskRepository = taskRepository;
+		private readonly IProjectRepository projectRepository = projectRepository;
+		private readonly IPublisher publisher = publisher;
+		private readonly IMapper mapper = mapper;
 
 		public async Task<RenameTaskSectionCardCommandResponse> Handle(RenameTaskSectionCardCommand request, CancellationToken cancellationToken) {
-			//var validator = new RenameTaskSectionCardCommandValidator(projectReadRepository);
-			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
-
-			//if (!validatorResult.IsValid) {
-			//	return new RenameTaskSectionCardCommandResponse {
-			//		Success = false,
-			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-			//	};
-			//}
 
 			var projectResult = await projectRepository.FindByIdAsync(request.ProjectId);
-
-			var tasks = (await taskRepository.GetAllAsync()).Value;
-			foreach (var task in tasks) {
-				if (task.TaskSectionCard == request.Section) {
-					task.SetSection(request.NewSection);
-					await taskRepository.UpdateAsync(task);
-				}
+			if (!projectResult.IsSuccess) {
+				return new RenameTaskSectionCardCommandResponse {
+					Success = false,
+					Message = projectResult.Error
+				};
+			}
+			var project = projectResult.Value;
+			project.RemoveTaskSectionCard(request.Section);
+			project.AddTaskSectionCard(request.NewSection);
+			var dbProjectResult = await projectRepository.UpdateAsync(project);
+			if (!dbProjectResult.IsSuccess) {
+				return new RenameTaskSectionCardCommandResponse {
+					Success = false,
+					Message = dbProjectResult.Error
+				};
 			}
 
-			projectResult.Value.RemoveTaskSectionCard(request.Section);
-			projectResult.Value.AddTaskSectionCard(request.NewSection);
+			var tasksResult = await taskRepository.GetAllTasksByProjectIdAndSectionCardAsync(request.ProjectId, request.Section);
+			if (!tasksResult.IsSuccess) {
+				return new RenameTaskSectionCardCommandResponse {
+					Success = false,
+					Message = tasksResult.Error
+				};
+			}
+			foreach (var task in tasksResult.Value) {
+				task.SetSection(request.NewSection);
+				var taskUpdateResult = await taskRepository.UpdateAsync(task);
+				if (!taskUpdateResult.IsSuccess) {
+					return new RenameTaskSectionCardCommandResponse {
+						Success = false,
+						Message = taskUpdateResult.Error
+					};
+				}
+				await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(task), cancellationToken);
+			}
 
-			var dbProjectResult = await projectRepository.UpdateAsync(projectResult.Value);
+			await publisher.Publish(
+				new TaskSectionCardRenamedDomainEvent(Id: project.Id,
+													SectionCardName: request.Section,
+													NewSectionCardName: request.NewSection),
+				cancellationToken);
 
 			return new RenameTaskSectionCardCommandResponse {
 				Success = true,
-				Project = mapper.Map<ProjectDto>(dbProjectResult.Value)
+				Project = mapper.Map<ProjectDto>(dbProjectResult)
 			};
 		}
 	}

@@ -7,17 +7,14 @@ using MediatR;
 using Task = System.Threading.Tasks.Task;
 
 namespace Lunatic.Application.Features.Tasks.Events {
-	internal class TaskCompletedDomainEventHandler : INotificationHandler<TaskCompletedDomainEvent> {
-		private readonly IMLDataStorageService mlDataStorageService;
-		private readonly ITaskRepository taskRepository;
-		private readonly ICommentRepository commentRepository;
+	internal class TaskCompletedDomainEventHandler(
+		IMLDataStorageService mlDataStorageService, 
+		ITaskRepository taskRepository,
+		ICommentRepository commentRepository) : INotificationHandler<TaskCompletedDomainEvent> {
 
-		public TaskCompletedDomainEventHandler(IMLDataStorageService mlDataStorageService, ITaskRepository taskRepository,
-			ICommentRepository commentRepository) {
-			this.mlDataStorageService = mlDataStorageService;
-			this.taskRepository = taskRepository;
-			this.commentRepository = commentRepository;
-		}
+		private readonly IMLDataStorageService mlDataStorageService = mlDataStorageService;
+		private readonly ITaskRepository taskRepository = taskRepository;
+		private readonly ICommentRepository commentRepository = commentRepository;
 
 		public async Task Handle(TaskCompletedDomainEvent notification, CancellationToken cancellationToken) {
 			var taskResult = await taskRepository.FindByIdAsync(notification.Id);

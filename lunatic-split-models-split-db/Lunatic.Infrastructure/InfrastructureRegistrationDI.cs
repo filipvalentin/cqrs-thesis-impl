@@ -54,8 +54,6 @@ namespace Lunatic.Infrastructure {
 			services.AddScoped(typeof(IAsyncReadSideRepository<>), typeof(BaseReadSideRepository<>));
 			services.AddScoped<ITeamReadSideRepository, TeamReadSideRepository>();
 			services.AddScoped<ITaskReadSideRepository, TaskReadSideRepository>();
-			services.AddScoped<ITaskDescriptionReadSideRepository, TaskDescriptionReadSideRepository>();
-			services.AddScoped<IFlatTaskReadSideRepository, FlatTaskReadSideRepository>();
 			services.AddScoped<IProjectReadSideRepository, ProjectReadSideRepository>();
 			services.AddScoped<ICommentReadSideRepository, CommentReadSideRepository>();
 			services.AddScoped<IUserReadSideRepository, UserReadSideRepository>();

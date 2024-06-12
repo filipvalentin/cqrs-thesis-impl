@@ -3,18 +3,16 @@ using Lunatic.API.Interfaces;
 using Lunatic.Application.Features.Projects.Commands.RenameTaskSection;
 using Lunatic.Application.Features.Tasks.Commands.CreateComment;
 using Lunatic.Application.Features.Tasks.Commands.DeleteComment;
+using Lunatic.Application.Features.Tasks.Commands.MarkTaskAsInProgress;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTask;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTaskSectionCardLocation;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTaskStatus;
-using Lunatic.Application.Features.Tasks.Queries.GetByIdCompositeTask;
 using Lunatic.Application.Features.Tasks.Queries.GetByIdTask;
-using Lunatic.Application.Features.Tasks.Queries.GetByIdTaskDescription;
 using Lunatic.Application.Features.Tasks.Queries.GetPredictedTaskTime;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Lunatic.API.Controllers
-{
-    public class TasksController : BaseApiController {
+namespace Lunatic.API.Controllers {
+	public class TasksController : BaseApiController {
 		IDayConversionService _dayConversionService;
 
 		public TasksController(IDayConversionService dayConversionService) {
@@ -61,11 +59,11 @@ namespace Lunatic.API.Controllers
 
 		[HttpPut("{taskId}/sectionLocation")]
 		[Produces("application/json")]
-		[ProducesResponseType<UpdateTaskSectionCommandResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<UpdateTaskSectionCommandResponse>(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType<UpdateTaskSectionCardCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<UpdateTaskSectionCardCommandResponse>(StatusCodes.Status400BadRequest)]
 		public async Task<IActionResult> UpdateSection(Guid taskId, RenameTaskSectionCardCommand command) {
 			if (taskId != command.ProjectId) {
-				return BadRequest(new UpdateTaskSectionCommandResponse {
+				return BadRequest(new UpdateTaskSectionCardCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { "The task Id Path and task Id Body must be equal." }
 				});
@@ -86,35 +84,6 @@ namespace Lunatic.API.Controllers
 			var result = await Mediator.Send(new GetByIdTaskQuery {
 				TaskId = taskId
 			});
-			if (!result.Success) {
-				return NotFound(result);
-			}
-			return Ok(result);
-		}
-
-		[HttpGet("{taskId}/flat")]
-		[Produces("application/json")]
-		[ProducesResponseType<GetByIdFlatTaskQueryResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<GetByIdFlatTaskQueryResponse>(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> GetByIdCompositeTask(Guid taskId) {
-			var result = await Mediator.Send(new GetByIdFlatTaskQuery {
-				TaskId = taskId
-			});
-
-			if (!result.Success) {
-				return NotFound(result);
-			}
-			return Ok(result);
-		}
-		[HttpGet("{taskId}/description")]
-		[Produces("application/json")]
-		[ProducesResponseType<GetByIdTaskDescriptionQueryResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<GetByIdTaskDescriptionQueryResponse>(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> GetByIdTaskDescription(Guid taskId) {
-			var result = await Mediator.Send(new GetByIdTaskDescriptionQuery {
-				TaskId = taskId
-			});
-
 			if (!result.Success) {
 				return NotFound(result);
 			}

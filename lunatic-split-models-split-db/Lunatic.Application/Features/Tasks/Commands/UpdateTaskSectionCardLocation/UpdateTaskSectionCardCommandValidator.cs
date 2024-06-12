@@ -1,16 +1,13 @@
-
 using FluentValidation;
 using Lunatic.Application.Persistence.WriteSide;
 
-
-namespace Lunatic.Application.Features.Tasks.Commands.UpdateTaskSectionCardLocation
-{
-    internal class UpdateTaskSectionCommandValidator : AbstractValidator<UpdateTaskSectionLocationCommand> {
+namespace Lunatic.Application.Features.Tasks.Commands.UpdateTaskSectionCardLocation {
+	internal class UpdateTaskSectionCardCommandValidator : AbstractValidator<UpdateTaskSectionCardCommand> {
 		private readonly ITaskRepository taskRepository;
 
 		private readonly IProjectRepository projectRepository;
 
-		public UpdateTaskSectionCommandValidator(ITaskRepository taskRepository, IProjectRepository projectRepository) {
+		public UpdateTaskSectionCardCommandValidator(ITaskRepository taskRepository, IProjectRepository projectRepository) {
 			this.taskRepository = taskRepository;
 			this.projectRepository = projectRepository;
 
@@ -32,8 +29,6 @@ namespace Lunatic.Application.Features.Tasks.Commands.UpdateTaskSectionCardLocat
 					return project.TaskSectionCards.Contains(req.Section);
 				})
 				.WithMessage("Project must include Section.");
-
-			ClassLevelCascadeMode = CascadeMode.Stop;
 		}
 	}
 }

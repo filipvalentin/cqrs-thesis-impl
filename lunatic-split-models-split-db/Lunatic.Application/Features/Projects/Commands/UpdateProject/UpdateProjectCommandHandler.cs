@@ -1,45 +1,43 @@
-﻿using Lunatic.Application.Features.Projects.Payload;
+﻿using AutoMapper;
+using Lunatic.Application.Features.Projects.Payload;
 using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Domain.DomainEvents.Project;
 using MediatR;
 
 namespace Lunatic.Application.Features.Projects.Commands.UpdateProject {
-	public class UpdateTeamProjectCommandHandler : IRequestHandler<UpdateTeamProjectCommand, UpdateTeamProjectCommandResponse> {
-		private readonly IProjectRepository projectRepository;
+	public class UpdateTeamProjectCommandHandler(
+		IProjectRepository projectRepository, 
+		IMapper mapper, 
+		IPublisher publisher) : IRequestHandler<UpdateTeamProjectCommand, UpdateTeamProjectCommandResponse> {
 
-		public UpdateTeamProjectCommandHandler(IProjectRepository projectRepository) {
-			this.projectRepository = projectRepository;
-		}
+		private readonly IProjectRepository projectRepository = projectRepository;
+		private readonly IMapper mapper = mapper;
+		private readonly IPublisher publisher = publisher;
 
 		public async Task<UpdateTeamProjectCommandResponse> Handle(UpdateTeamProjectCommand request, CancellationToken cancellationToken) {
-			//var validator = new UpdateTeamProjectCommandValidator(projectReadRepository);
-			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
-
-			//if (!validatorResult.IsValid) {
-			//	return new UpdateTeamProjectCommandResponse {
-			//		Success = false,
-			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-			//	};
-			//}
 
 			var projectResult = await projectRepository.FindByIdAsync(request.ProjectId);
+			if (!projectResult.IsSuccess) {
+				return new UpdateTeamProjectCommandResponse {
+					Success = false,
+					Message = projectResult.Error
+				};
+			}
 
 			projectResult.Value.Update(request.Title, request.Description);
-
 			var dbProjectResult = await projectRepository.UpdateAsync(projectResult.Value);
+			if (!dbProjectResult.IsSuccess) {
+				return new UpdateTeamProjectCommandResponse {
+					Success = false,
+					Message = dbProjectResult.Error
+				};
+			}
+
+			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(dbProjectResult.Value), cancellationToken);
 
 			return new UpdateTeamProjectCommandResponse {
 				Success = true,
-				Project = new ProjectDto {
-					CreatedByUserId = dbProjectResult.Value.CreatedByUserId,
-					ProjectId = dbProjectResult.Value.Id,
-					TeamId = dbProjectResult.Value.TeamId,
-
-					Title = dbProjectResult.Value.Title,
-					Description = dbProjectResult.Value.Description,
-
-					TaskSections = dbProjectResult.Value.TaskSectionCards,
-					TaskIds = dbProjectResult.Value.TaskIds,
-				}
+				Project = mapper.Map<ProjectDto>(dbProjectResult.Value)
 			};
 		}
 	}

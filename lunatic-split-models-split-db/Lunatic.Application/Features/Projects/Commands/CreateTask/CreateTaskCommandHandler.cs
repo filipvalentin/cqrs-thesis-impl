@@ -1,36 +1,25 @@
 ﻿using AutoMapper;
 using Lunatic.Application.Features.Tasks.Payload;
 using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Domain.DomainEvents.Task;
 using MediatR;
 using Task = Lunatic.Domain.Entities.Task;
 
 namespace Lunatic.Application.Features.Projects.Commands.CreateTask {
-	public class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, CreateTaskCommandResponse> {
-		private readonly ITaskRepository taskRepository;
-		private readonly IProjectRepository projectRepository;
-		private readonly IUserRepository userRepository;
-		private readonly IPublisher publisher;
-		private readonly IMapper mapper;
+	public class CreateTaskCommandHandler(
+		ITaskRepository taskRepository,
+		IProjectRepository projectRepository,
+		IUserRepository userRepository,
+		IPublisher publisher,
+		IMapper mapper) : IRequestHandler<CreateTaskCommand, CreateTaskCommandResponse> {
 
-		public CreateTaskCommandHandler(ITaskRepository taskRepository, IProjectRepository projectRepository, 
-			IUserRepository userRepository, IPublisher publisher, IMapper mapper) {
-			this.taskRepository = taskRepository;
-			this.projectRepository = projectRepository;
-			this.userRepository = userRepository;
-			this.publisher = publisher;
-			this.mapper = mapper;
-		}
+		private readonly ITaskRepository taskRepository = taskRepository;
+		private readonly IProjectRepository projectRepository = projectRepository;
+		private readonly IUserRepository userRepository = userRepository;
+		private readonly IPublisher publisher = publisher;
+		private readonly IMapper mapper = mapper;
 
 		public async Task<CreateTaskCommandResponse> Handle(CreateTaskCommand request, CancellationToken cancellationToken) {
-			//var validator = new CreateTaskCommandValidator(userRepository, projectReadRepository);
-			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
-
-			//if (!validatorResult.IsValid) {
-			//	return new CreateTaskCommandResponse {
-			//		Success = false,
-			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-			//	};
-			//}
 
 			var taskResult = Task.Create(request.UserId, request.ProjectId, request.Section, request.Title, request.Description, request.Priority, request.PlannedStartDate, request.PlannedEndDate);
 			if (!taskResult.IsSuccess) {
@@ -39,24 +28,31 @@ namespace Lunatic.Application.Features.Projects.Commands.CreateTask {
 					ValidationErrors = new List<string> { taskResult.Error }
 				};
 			}
-
+			var task = taskResult.Value;
 			var project = (await projectRepository.FindByIdAsync(request.ProjectId)).Value;
-			project.AddTask(taskResult.Value);
+			project.AddTask(task);
 			await projectRepository.UpdateAsync(project);
 
 			foreach (var tag in request.Tags) {
-				taskResult.Value.AddTag(tag);
+				task.AddTag(tag);
 			}
-
 			foreach (var assignee in request.AssigneeIds) {
-				taskResult.Value.AddAssignee(assignee);
+				task.AddAssignee(assignee);
 			}
 
-			await taskRepository.AddAsync(taskResult.Value);
+			var addResult = await taskRepository.AddAsync(task);
+			if (!addResult.IsSuccess) {
+				return new CreateTaskCommandResponse {
+					Success = false,
+					ValidationErrors = new List<string> { addResult.Error }
+				};
+			}
+
+			await publisher.Publish(mapper.Map<TaskCreatedDomainEvent>(task), cancellationToken);
 
 			return new CreateTaskCommandResponse {
 				Success = true,
-				Task = mapper.Map<TaskDto>(taskResult.Value)
+				Task = mapper.Map<TaskDto>(task)
 			};
 		}
 	}

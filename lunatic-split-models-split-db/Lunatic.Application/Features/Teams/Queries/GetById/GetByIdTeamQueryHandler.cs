@@ -3,7 +3,6 @@ using Lunatic.Application.Features.Teams.Payload;
 using Lunatic.Application.Persistence.ReadSide;
 using MediatR;
 
-
 namespace Lunatic.Application.Features.Teams.Queries.GetById {
 	public class GetByIdTeamQueryHandler : IRequestHandler<GetByIdTeamQuery, GetByIdTeamQueryResponse> {
 		private readonly ITeamReadSideRepository teamRepository;

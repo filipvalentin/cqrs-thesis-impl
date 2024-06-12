@@ -1,7 +1,9 @@
 using Lunatic.Application.Features.Teams.Commands.AddTeamMember;
+using Lunatic.Application.Features.Teams.Commands.CreateProject;
 using Lunatic.Application.Features.Teams.Commands.CreateTeam;
 using Lunatic.Application.Features.Teams.Commands.DeleteTeam;
 using Lunatic.Application.Features.Teams.Commands.DeleteTeamProject;
+using Lunatic.Application.Features.Teams.Commands.RemoveTeamMember;
 using Lunatic.Application.Features.Teams.Commands.UpdateTeam;
 using Lunatic.Application.Features.Teams.Queries.GetAllMembers;
 using Lunatic.Application.Features.Teams.Queries.GetById;
@@ -149,10 +151,10 @@ namespace Lunatic.API.Controllers {
 
 		[HttpDelete("{teamId}/members/{userId}")]
 		[Produces("application/json")]
-		[ProducesResponseType<DeleteTeamMemberCommandResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<DeleteTeamMemberCommandResponse>(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType<RemoveTeamMemberCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<RemoveTeamMemberCommandResponse>(StatusCodes.Status400BadRequest)]
 		public async Task<IActionResult> DeleteMember(Guid teamId, Guid userId) {
-			var deleteTeamMemberCommand = new DeleteTeamMemberCommand() {
+			var deleteTeamMemberCommand = new RemoveTeamMemberCommand() {
 				TeamId = teamId,
 				UserId = userId
 			};

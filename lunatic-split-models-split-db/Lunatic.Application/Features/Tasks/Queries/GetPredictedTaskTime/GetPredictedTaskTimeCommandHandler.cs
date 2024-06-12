@@ -4,20 +4,15 @@ using Lunatic.Domain.Entities;
 using Lunatic.Domain.MLModel;
 using MediatR;
 
+namespace Lunatic.Application.Features.Tasks.Queries.GetPredictedTaskTime {
+	public class GetPredictedTaskTimeCommandHandler(
+		ITaskRepository taskRepository,
+		ICommentRepository commentRepository,
+		IMLDataProvider mLDataProvider) : IRequestHandler<GetPredictedTaskTimeCommand, GetPredictedTaskTimeCommandResponse> {
 
-namespace Lunatic.Application.Features.Tasks.Queries.GetPredictedTaskTime
-{
-    public class GetPredictedTaskTimeCommandHandler : IRequestHandler<GetPredictedTaskTimeCommand, GetPredictedTaskTimeCommandResponse> {
-		private readonly ITaskRepository taskRepository;
-		private readonly ICommentRepository commentRepository;
-		private readonly IMLDataProvider mLDataProvider;
-
-		public GetPredictedTaskTimeCommandHandler(ITaskRepository taskRepository, ICommentRepository commentRepository,
-			IMLDataProvider mLDataProvider) {
-			this.taskRepository = taskRepository;
-			this.commentRepository = commentRepository;
-			this.mLDataProvider = mLDataProvider;
-		}
+		private readonly ITaskRepository taskRepository = taskRepository;
+		private readonly ICommentRepository commentRepository = commentRepository;
+		private readonly IMLDataProvider mLDataProvider = mLDataProvider;
 
 		public async Task<GetPredictedTaskTimeCommandResponse> Handle(GetPredictedTaskTimeCommand request, CancellationToken cancellationToken) {
 
@@ -38,8 +33,6 @@ namespace Lunatic.Application.Features.Tasks.Queries.GetPredictedTaskTime
 					comments.Add(commentResult.Value);
 				}
 			}
-
-
 
 			var predictionInputData = new DaysToCompleteTaskEntry {
 				TaskId = task.Id.ToString(),

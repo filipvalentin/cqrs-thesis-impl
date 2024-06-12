@@ -93,28 +93,15 @@ namespace Lunatic.API.Controllers {
 			return Ok(result);
 		}
 
-		//not used
-		//[HttpGet("{projectId}/taskSections")]
-		//[Produces("application/json")]
-		//[ProducesResponseType<GetAllProjectTaskSectionsQueryResponse>(StatusCodes.Status200OK)]
-		//[ProducesResponseType<GetAllProjectTaskSectionsQueryResponse>(StatusCodes.Status404NotFound)]
-		//public async Task<IActionResult> GetAllTaskSections(Guid projectId) {
-		//    var result = await Mediator.Send(new GetAllProjectTaskSectionsQuery(projectId));
-		//    if(!result.Success) {
-		//        return NotFound(result);
-		//    }
-		//    return Ok(result);
-		//}
-
 		[HttpPost("{projectId}/taskSections")]
 		[Produces("application/json")]
-		[ProducesResponseType<CreateTaskSectionCommandResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<CreateTaskSectionCommandResponse>(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> CreateTaskSection(Guid projectId, CreateTaskSectionCommand command) {
+		[ProducesResponseType<AddTaskSectionCardCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<AddTaskSectionCardCommandResponse>(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> AddTaskSectionCard(Guid projectId, AddTaskSectionCardCommand command) {
 			if (projectId != command.ProjectId) {
-				return BadRequest(new CreateTaskSectionCommandResponse {
+				return BadRequest(new AddTaskSectionCardCommandResponse {
 					Success = false,
-					ValidationErrors = new List<string> { "The project Id Path and project Id Body must be equal." }
+					Message = "The project Id Path and project Id Body must be equal."
 				});
 			}
 
@@ -152,10 +139,10 @@ namespace Lunatic.API.Controllers {
 
 		[HttpDelete("{projectId}/taskSections/{section}")]
 		[Produces("application/json")]
-		[ProducesResponseType<DeleteTaskSectionCommandResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<DeleteTaskSectionCommandResponse>(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType<DeleteTaskSectionCardCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<DeleteTaskSectionCardCommandResponse>(StatusCodes.Status400BadRequest)]
 		public async Task<IActionResult> DeleteTaskSection(Guid projectId, string section) {
-			var deleteProjectTaskSectionCommand = new DeleteTaskSectionCommand() {
+			var deleteProjectTaskSectionCommand = new DeleteTaskSectionCardCommand() {
 				ProjectId = projectId,
 				Section = section
 			};

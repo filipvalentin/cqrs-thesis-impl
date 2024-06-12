@@ -1,10 +1,7 @@
-
 using Lunatic.Application.Responses;
 
-
-namespace Lunatic.Application.Features.Tasks.Commands.UpdateTaskStatus {
+namespace Lunatic.Application.Features.Tasks.Commands.MarkTaskAsInProgress {
 	public class MarkTaskAsInProgressCommandResponse : BaseResponse {
 		public MarkTaskAsInProgressCommandResponse() : base() { }
-		//public TaskDto Task { get; set; } = default!;
 	}
 }

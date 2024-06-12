@@ -42,11 +42,13 @@ namespace Lunatic.Application.Mappers {
 			CreateMap<TaskReadModel, TaskDto>()
 				.ForMember(t => t.TaskId, opt => opt.MapFrom(src => src.Id))
 				.ForMember(t => t.Section, opt => opt.MapFrom(src => src.TaskSectionCard));
-			CreateMap<FlatTaskReadModel, FlatTaskDto>()
-				.ForMember(t => t.TaskId, opt => opt.MapFrom(src => src.Id))
-				.ForMember(t => t.Section, opt => opt.MapFrom(src => src.TaskSectionCard));
+			//CreateMap<FlatTaskReadModel, FlatTaskDto>()
+			//	.ForMember(t => t.TaskId, opt => opt.MapFrom(src => src.Id))
+			//	.ForMember(t => t.Section, opt => opt.MapFrom(src => src.TaskSectionCard));
 			CreateMap<ProjectReadModel, ProjectDto>()
-				.ForMember(t => t.ProjectId, opt => opt.MapFrom(src => src.Id));
+				.ForMember(t => t.ProjectId, opt => opt.MapFrom(src => src.Id))
+				.ForMember(t => t.TaskSections, opt => opt.MapFrom(src => src.TaskSectionCards));
+
 			CreateMap<CommentReadModel, CommentDto>()
 				.ForMember(t => t.CommentId, opt => opt.MapFrom(src => src.Id))
 				.ForMember(t => t.AuthorId, opt => opt.MapFrom(src => src.CreatedByUserId));
@@ -61,11 +63,12 @@ namespace Lunatic.Application.Mappers {
 			CreateMap<TeamUpdatedDomainEvent, TeamReadModel>();
 
 			CreateMap<Project, ProjectCreatedDomainEvent>();
+			CreateMap<ProjectCreatedDomainEvent, ProjectReadModel>();
 			CreateMap<ProjectDeletedDomainEvent, ProjectReadModel>();
 
 			CreateMap<Domain.Entities.Task, TaskCreatedDomainEvent>();
 			CreateMap<TaskCreatedDomainEvent, TaskReadModel>();
-			
+
 			CreateMap<Comment, CommentAddedDomainEvent>();
 			CreateMap<CommentAddedDomainEvent, CommentReadModel>();
 			CreateMap<Comment, CommentDeletedDomainEvent>();

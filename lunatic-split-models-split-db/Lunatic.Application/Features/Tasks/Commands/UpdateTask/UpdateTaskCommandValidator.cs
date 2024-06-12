@@ -1,11 +1,8 @@
-﻿
-using FluentValidation;
+﻿using FluentValidation;
 using Lunatic.Application.Persistence.WriteSide;
 
-
-namespace Lunatic.Application.Features.Tasks.Commands.UpdateTask
-{
-    internal class UpdateTaskCommandValidator : AbstractValidator<UpdateTaskCommand> {
+namespace Lunatic.Application.Features.Tasks.Commands.UpdateTask {
+	internal class UpdateTaskCommandValidator : AbstractValidator<UpdateTaskCommand> {
 		private readonly ITaskRepository taskRepository;
 
 		public UpdateTaskCommandValidator(ITaskRepository taskRepository) {
@@ -45,8 +42,6 @@ namespace Lunatic.Application.Features.Tasks.Commands.UpdateTask
 					return req.PlannedStartDate <= req.PlannedEndDate;
 				})
 				.WithMessage("PlannedStartDate must be less than or equal to PlannedEndDate");
-
-			ClassLevelCascadeMode = CascadeMode.Stop;
 		}
 	}
 }

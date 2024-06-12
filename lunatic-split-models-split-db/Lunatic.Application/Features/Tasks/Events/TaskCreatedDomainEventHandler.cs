@@ -7,12 +7,11 @@ using Lunatic.Domain.DomainEvents.Task;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Lunatic.Application.Features.Tasks.Events
-{
-    internal class TaskCreatedDomainEventHandler : INotificationHandler<TaskCreatedDomainEvent> {
+namespace Lunatic.Application.Features.Tasks.Events {
+	internal class TaskCreatedDomainEventHandler : INotificationHandler<TaskCreatedDomainEvent> {
 		private readonly ITaskRepository taskWriteRepository;
 		private readonly ITaskReadSideRepository taskReadRepository;
-		private readonly IProjectReadSideRepository	projectReadRepository;
+		private readonly IProjectReadSideRepository projectReadRepository;
 		private readonly ILogger<TaskCreatedDomainEventHandler> logger;
 		private readonly IMapper mapper;
 
@@ -26,11 +25,6 @@ namespace Lunatic.Application.Features.Tasks.Events
 		}
 
 		public async Task Handle(TaskCreatedDomainEvent notification, CancellationToken cancellationToken) {
-			var taskResult = await taskWriteRepository.FindByIdAsync(notification.Id);
-			if (!taskResult.IsSuccess) {
-				logger.LogError("Task with id {Id} not found", notification.Id);
-				return;
-			}
 
 			var projectResult = await projectReadRepository.FindByIdAsync(taskResult.Value.ProjectId);
 			if (!projectResult.IsSuccess) {
@@ -46,8 +40,7 @@ namespace Lunatic.Application.Features.Tasks.Events
 				return;
 			}
 
-			var status = await taskReadRepository.AddAsync( mapper.Map<TaskReadModel>(taskResult.Value));
-
+			var status = await taskReadRepository.AddAsync(mapper.Map<TaskReadModel>(taskResult.Value));
 			if (!status.IsSuccess) {
 				logger.LogError("Failed to add task with id {Id} to read side", notification.Id);
 			}
