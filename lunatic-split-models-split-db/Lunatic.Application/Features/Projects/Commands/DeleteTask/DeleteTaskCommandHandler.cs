@@ -1,42 +1,50 @@
-﻿using Lunatic.Application.Persistence.WriteSide;
+﻿using AutoMapper;
+using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Domain.DomainEvents.Project;
+using Lunatic.Domain.DomainEvents.Task;
 using MediatR;
 
 namespace Lunatic.Application.Features.Projects.Commands.DeleteTask {
-	public class DeleteTaskCommandHandler : IRequestHandler<DeleteProjectTaskCommand, DeleteTaskCommandResponse> {
-		private readonly IProjectRepository projectRepository;
-		private readonly ITaskRepository taskRepository;
-		private readonly IPublisher publisher;
+	public class DeleteTaskCommandHandler(
+		IProjectRepository projectRepository,
+		ITaskRepository taskRepository,
+		IPublisher publisher,
+		IMapper mapper) : IRequestHandler<DeleteProjectTaskCommand, DeleteTaskCommandResponse> {
 
-		public DeleteTaskCommandHandler(IProjectRepository projectRepository, ITaskRepository taskRepository, IPublisher publisher) {
-			this.projectRepository = projectRepository;
-			this.taskRepository = taskRepository;
-			this.publisher = publisher;
-		}
+		private readonly IProjectRepository projectRepository = projectRepository;
+		private readonly ITaskRepository taskRepository = taskRepository;
+		private readonly IPublisher publisher = publisher;
+		private readonly IMapper mapper = mapper;
 
 		public async Task<DeleteTaskCommandResponse> Handle(DeleteProjectTaskCommand request, CancellationToken cancellationToken) {
-			//var validator = new DeleteTaskCommandValidator(projectReadRepository, taskRepository);
-			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
-			//if (!validatorResult.IsValid) {
-			//	return new DeleteTaskCommandResponse {
-			//		Success = false,
-			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-			//	};
-			//}
-
-			var project = (await projectRepository.FindByIdAsync(request.ProjectId)).Value;
-			project.RemoveTask(request.ProjectId);
-			await projectRepository.UpdateAsync(project);
-
-			var result = await taskRepository.DeleteAsync(request.TaskId);
-
-			if (!result.IsSuccess) {
+			var projectResult = await projectRepository.FindByIdAsync(request.ProjectId);
+			if (!projectResult.IsSuccess) {
 				return new DeleteTaskCommandResponse {
 					Success = false,
-					ValidationErrors = new List<string> { result.Error }
+					Message = projectResult.Error
 				};
-
 			}
+			var project = projectResult.Value;
+			project.RemoveTask(request.ProjectId);
+			var projectUpdatedResult = await projectRepository.UpdateAsync(project);
+			if (!projectUpdatedResult.IsSuccess) {
+				return new DeleteTaskCommandResponse {
+					Success = false,
+					Message = projectUpdatedResult.Error
+				};
+			}
+
+			var taskDeletedResult = await taskRepository.DeleteAsync(request.TaskId);
+			if (!taskDeletedResult.IsSuccess) {
+				return new DeleteTaskCommandResponse {
+					Success = false,
+					Message = taskDeletedResult.Error
+				};
+			}
+
+			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);
+
 			return new DeleteTaskCommandResponse {
 				Success = true
 			};

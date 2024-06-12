@@ -54,16 +54,12 @@ namespace Lunatic.Application.Features.Projects.Commands.DeleteTaskSectionCard {
 				}
 				await publisher.Publish(
 					new TaskDeletedDomainEvent(Id: task.Id,
-											CommentIds: task.CommentIds,
-											Cascaded: false,
-											ProjectId: request.ProjectId),
+											CommentIds: task.CommentIds),
 					cancellationToken);
 
 			}
 
-			await publisher.Publish(
-				new TaskSectionCardRemovedDomainEvent(Id: request.ProjectId, SectionCardName: request.Section),
-				cancellationToken);
+			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);
 
 			return new DeleteTaskSectionCardCommandResponse {
 				Success = true,

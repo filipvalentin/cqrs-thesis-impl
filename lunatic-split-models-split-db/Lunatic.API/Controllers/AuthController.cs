@@ -46,7 +46,7 @@ namespace Lunatic.API.Controllers {
                     return BadRequest("Invalid payload");
                 }
 
-                var response = await _authService.Registeration(model, UserRoles.User);
+                var response = await _authService.Registration(model, UserRoles.User);
 
                 if(!response.Success) {
                     return BadRequest(response);

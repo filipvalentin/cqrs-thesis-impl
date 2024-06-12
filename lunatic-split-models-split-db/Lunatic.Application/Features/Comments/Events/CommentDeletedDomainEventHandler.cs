@@ -6,7 +6,8 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Lunatic.Application.Features.Comments.Events {
-	public class CommentDeletedDomainEventHandler(ICommentReadSideRepository commentReadRepository,
+	public class CommentDeletedDomainEventHandler(
+		ICommentReadSideRepository commentReadRepository,
 		ILogger<CommentDeletedDomainEventHandler> logger,
 		IEventQueueService queueService,
 		ITaskReadSideRepository taskReadRepository) : INotificationHandler<CommentDeletedDomainEvent> {
@@ -16,26 +17,11 @@ namespace Lunatic.Application.Features.Comments.Events {
 		private readonly ILogger<CommentDeletedDomainEventHandler> logger = logger;
 		private readonly IEventQueueService queueService = queueService;
 
-		public async Task Handle(CommentDeletedDomainEvent notification, CancellationToken cancellationToken) {
-			var taskResult = await taskReadRepository.FindByIdAsync(notification.TaskId);
-			if (!taskResult.IsSuccess) {
-				logger.LogError("Error from TaskReadSideRepository: {Error} when searching for {Id}", taskResult.Error, notification.TaskId);
-				queueService.Enqueue(notification);
-				return;
-			}
-
-			taskResult.Value.CommentIds.Remove(notification.Id);
-			var taskUpdateResult = await taskReadRepository.UpdateAsync(taskResult.Value.Id, taskResult.Value);
-			if (!taskUpdateResult.IsSuccess) {
-				logger.LogError("Error from TaskReadSideRepository: {Error} when updating entity with {Id}", taskUpdateResult.Error, taskResult.Value.Id);
-				queueService.Enqueue(notification);
-				return;
-			}
-
-			var commentReadRemovedResult = await commentReadRepository.DeleteAsync(notification.Id);
+		public async Task Handle(CommentDeletedDomainEvent domainEvent, CancellationToken cancellationToken) {
+			var commentReadRemovedResult = await commentReadRepository.DeleteAsync(domainEvent.Id);
 			if (!commentReadRemovedResult.IsSuccess) {
-				logger.LogError("Error from CommentReadSideRepository: {Error} when removing entity with {Id}", commentReadRemovedResult.Error, notification.Id);
-				queueService.Enqueue(notification);
+				logger.LogError("Error from CommentReadSideRepository: {Error} when removing entity with {Id}", commentReadRemovedResult.Error, domainEvent.Id);
+				queueService.Enqueue(domainEvent);
 			}
 		}
 

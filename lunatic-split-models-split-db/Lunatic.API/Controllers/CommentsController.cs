@@ -1,5 +1,4 @@
-
-using Lunatic.Application.Features.Comments.Commands.UpdateComment;
+using Lunatic.Application.Features.Comments.Commands.EditComment;
 using Lunatic.Application.Features.Comments.Queries.GetByIdComment;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,11 +21,11 @@ namespace Lunatic.API.Controllers {
 
 		[HttpPut("{commentId}")]
 		[Produces("application/json")]
-		[ProducesResponseType<UpdateTaskCommentCommandResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<UpdateTaskCommentCommandResponse>(StatusCodes.Status400BadRequest)]
-		public async Task<IActionResult> UpdateComment(Guid commentId, UpdateCommentCommand command) {
+		[ProducesResponseType<EditCommentCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<EditCommentCommandResponse>(StatusCodes.Status400BadRequest)]
+		public async Task<IActionResult> UpdateComment(Guid commentId, EditCommentCommand command) {
 			if (commentId != command.CommentId) {
-				return BadRequest(new UpdateTaskCommentCommandResponse {
+				return BadRequest(new EditCommentCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { "The comment Id Path and comment Id Body must be equal." }
 				});

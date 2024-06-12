@@ -10,6 +10,7 @@ using Lunatic.Domain.DomainEvents.Comment;
 using Lunatic.Domain.DomainEvents.Project;
 using Lunatic.Domain.DomainEvents.Task;
 using Lunatic.Domain.DomainEvents.Team;
+using Lunatic.Domain.DomainEvents.User;
 using Lunatic.Domain.Entities;
 
 namespace Lunatic.Application.Mappers {
@@ -57,23 +58,34 @@ namespace Lunatic.Application.Mappers {
 
 
 			CreateMap<Team, TeamCreatedDomainEvent>();
-			CreateMap<TeamCreatedDomainEvent, TeamReadModel>();
-			CreateMap<Team, TeamDisbandedDomainEvent>();
 			CreateMap<Team, TeamUpdatedDomainEvent>();
+			CreateMap<TeamCreatedDomainEvent, TeamReadModel>();
 			CreateMap<TeamUpdatedDomainEvent, TeamReadModel>();
 
 			CreateMap<Project, ProjectCreatedDomainEvent>();
+			CreateMap<Project, ProjectUpdatedDomainEvent>();
 			CreateMap<ProjectCreatedDomainEvent, ProjectReadModel>();
-			CreateMap<ProjectDeletedDomainEvent, ProjectReadModel>();
+			CreateMap<ProjectUpdatedDomainEvent, ProjectReadModel>();
 
 			CreateMap<Domain.Entities.Task, TaskCreatedDomainEvent>();
+			CreateMap<Domain.Entities.Task, TaskUpdatedDomainEvent>();
 			CreateMap<TaskCreatedDomainEvent, TaskReadModel>();
+			CreateMap<TaskUpdatedDomainEvent, TaskReadModel>();
 
-			CreateMap<Comment, CommentAddedDomainEvent>();
+			CreateMap<Comment, CommentAddedDomainEvent>()
+				.ForMember(t => t.Id, opt => opt.MapFrom(src => src.CommentId));
+			CreateMap<Comment, CommentDeletedDomainEvent>()
+				.ForMember(t => t.Id, opt => opt.MapFrom(src => src.CommentId));
+			CreateMap<Comment, CommentEditedDomainEvent>()
+				.ForMember(t => t.Id, opt => opt.MapFrom(src => src.CommentId));
 			CreateMap<CommentAddedDomainEvent, CommentReadModel>();
-			CreateMap<Comment, CommentDeletedDomainEvent>();
-			CreateMap<Comment, CommentEditedDomainEvent>();
 			CreateMap<CommentEditedDomainEvent, CommentReadModel>();
+
+			CreateMap<User, UserCreatedDomainEvent>();
+			CreateMap<User, UserUpdatedDomainEvent>();
+			CreateMap<UserCreatedDomainEvent, UserReadModel>();
+			CreateMap<UserUpdatedDomainEvent, UserReadModel>();
+
 
 		}
 	}

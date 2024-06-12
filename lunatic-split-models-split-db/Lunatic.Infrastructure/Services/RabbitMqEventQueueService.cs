@@ -1,7 +1,7 @@
 ﻿using Lunatic.Application.Utils.Services;
 using RabbitMQ.Client;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace Lunatic.Infrastructure.Services {
 	public class RabbitMqEventQueueService : IEventQueueService {
@@ -15,7 +15,7 @@ namespace Lunatic.Infrastructure.Services {
 		}
 
 		public void Enqueue<T>(T item) {
-			var message = JsonConvert.SerializeObject(item);
+			var message = JsonSerializer.Serialize(item);
 			var body = Encoding.UTF8.GetBytes(message);
 			var queueName = typeof(T).Name;
 
@@ -29,12 +29,12 @@ namespace Lunatic.Infrastructure.Services {
 
 			var result = channel.BasicGet(queueName, autoAck: false);
 			if (result == null) {
-				return default; 
+				return default;
 			}
 
 			var body = result.Body.ToArray();
 			var message = Encoding.UTF8.GetString(body);
-			var item = JsonConvert.DeserializeObject<T>(message);
+			var item = JsonSerializer.Deserialize<T>(message);
 			channel.BasicAck(deliveryTag: result.DeliveryTag, multiple: false);
 
 			return item;

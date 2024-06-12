@@ -33,11 +33,11 @@ namespace Lunatic.Application.Features.Projects.Commands.CreateTaskSectionCard {
 				};
 			}
 
-			await publisher.Publish(new TaskSectionCardAddedDomainEvent(project.Id, request.Section), cancellationToken);
+			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);
 
 			return new AddTaskSectionCardCommandResponse {
 				Success = true,
-				Project = mapper.Map<ProjectDto>(dbProjectResult.Value)
+				Project = mapper.Map<ProjectDto>(project)
 			};
 		}
 	}

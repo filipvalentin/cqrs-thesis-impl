@@ -16,6 +16,7 @@ namespace Lunatic.Application.Features.Comments.Events {
 		IMapper mapper, 
 		ITaskReadSideRepository taskReadRepository, 
 		IEventQueueService queueService) : INotificationHandler<CommentAddedDomainEvent> {
+
 		private readonly ICommentReadSideRepository commentReadRepository = commentReadRepository;
 		private readonly ITaskReadSideRepository taskReadRepository = taskReadRepository;
 		private readonly ICommentRepository commentWriteRepository = commentWriteRepository;

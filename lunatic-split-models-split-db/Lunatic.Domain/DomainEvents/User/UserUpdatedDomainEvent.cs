@@ -1,5 +1,14 @@
-﻿using Lunatic.Domain.Primitives;
+﻿using Lunatic.Domain.Entities;
+using Lunatic.Domain.Primitives;
 
 namespace Lunatic.Domain.DomainEvents.User {
-	public record UserUpdatedDomainEvent(Guid Id) : IDomainEvent;
+	public record UserUpdatedDomainEvent(
+		Guid Id,
+		DateTime RegisteredAt,
+		string FirstName,
+		string LastName,
+		string Email,
+		string Username,
+		Role Role,
+		List<Guid> TeamIds) : IDomainEvent;
 }

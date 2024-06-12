@@ -1,18 +1,16 @@
-﻿using Lunatic.Application.Persistence.WriteSide;
+﻿using AutoMapper;
+using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Domain.DomainEvents.Project;
+using Lunatic.Domain.DomainEvents.Team;
 using MediatR;
 
 namespace Lunatic.Application.Features.Teams.Commands.DeleteTeamProject {
-	public class DeleteTeamProjectCommandHandler : IRequestHandler<DeleteProjectCommand, DeleteProjectCommandResponse> {
-		private readonly ITeamRepository teamRepository;
-		private readonly IProjectRepository projectRepository;
-		private readonly IPublisher publisher;
-
-		public DeleteTeamProjectCommandHandler(ITeamRepository teamRepository, IProjectRepository projectRepository, IPublisher publisher) {
-			this.teamRepository = teamRepository;
-			this.projectRepository = projectRepository;
-			this.publisher = publisher;
-		}
+	public class DeleteProjectCommandHandler(ITeamRepository teamRepository, IProjectRepository projectRepository, IPublisher publisher, IMapper mapper) : IRequestHandler<DeleteProjectCommand, DeleteProjectCommandResponse> {
+		
+		private readonly ITeamRepository teamRepository = teamRepository;
+		private readonly IProjectRepository projectRepository = projectRepository;
+		private readonly IPublisher publisher = publisher;
+		private readonly IMapper mapper = mapper;
 
 		public async Task<DeleteProjectCommandResponse> Handle(DeleteProjectCommand request, CancellationToken cancellationToken) {
 			var teamResult = await teamRepository.FindByIdAsync(request.TeamId);
@@ -41,12 +39,11 @@ namespace Lunatic.Application.Features.Teams.Commands.DeleteTeamProject {
 				};
 			}
 
+			await publisher.Publish(mapper.Map<TeamUpdatedDomainEvent>(team), cancellationToken);
 			await publisher.Publish(
 				new ProjectDeletedDomainEvent(
 					Id: request.ProjectId,
-					TaskIds: deleteProjectResult.Value.TaskIds,
-					Cascaded: false,
-					TeamId: request.TeamId),
+					TaskIds: deleteProjectResult.Value.TaskIds),
 				cancellationToken);
 
 			return new DeleteProjectCommandResponse {

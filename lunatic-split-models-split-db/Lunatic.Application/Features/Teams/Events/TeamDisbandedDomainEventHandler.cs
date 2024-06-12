@@ -7,21 +7,18 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Lunatic.Application.Features.Teams.Events {
-	internal class TeamDisbandedDomainEventHandler : INotificationHandler<TeamDisbandedDomainEvent> {
-		private readonly ITeamReadSideRepository teamReadRepository;
-		private readonly IProjectRepository projectWriteRepository;
-		private readonly ILogger<TeamDisbandedDomainEventHandler> logger;
-		private readonly IPublisher publisher;
-		private readonly IEventQueueService eventQueueService;
+	internal class TeamDisbandedDomainEventHandler(
+		ITeamReadSideRepository teamRepository,
+		IProjectRepository projectWriteRepository,
+		ILogger<TeamDisbandedDomainEventHandler> logger,
+		IPublisher publisher,
+		IEventQueueService eventQueueService) : INotificationHandler<TeamDisbandedDomainEvent> {
 
-		public TeamDisbandedDomainEventHandler(ITeamReadSideRepository teamRepository, IProjectRepository projectWriteRepository,
-			ILogger<TeamDisbandedDomainEventHandler> logger, IPublisher publisher, IEventQueueService eventQueueService) {
-			this.teamReadRepository = teamRepository;
-			this.projectWriteRepository = projectWriteRepository;
-			this.logger = logger;
-			this.publisher = publisher;
-			this.eventQueueService = eventQueueService;
-		}
+		private readonly ITeamReadSideRepository teamReadRepository = teamRepository;
+		private readonly IProjectRepository projectWriteRepository = projectWriteRepository;
+		private readonly ILogger<TeamDisbandedDomainEventHandler> logger = logger;
+		private readonly IPublisher publisher = publisher;
+		private readonly IEventQueueService eventQueueService = eventQueueService;
 
 		public async Task Handle(TeamDisbandedDomainEvent domainEvent, CancellationToken cancellationToken) {
 			var projectIds = domainEvent.ProjectIds;
@@ -40,10 +37,7 @@ namespace Lunatic.Application.Features.Teams.Events {
 					return;
 				}
 				await publisher.Publish(
-					new ProjectDeletedDomainEvent(Id: projectId,
-												TaskIds: projectReadResult.Value.TaskIds,
-												Cascaded: true,
-												TeamId: projectReadResult.Value.TeamId),
+					new ProjectDeletedDomainEvent(Id: projectId, TaskIds: projectReadResult.Value.TaskIds),
 					cancellationToken);
 				projectIds.RemoveAt(0);
 			}

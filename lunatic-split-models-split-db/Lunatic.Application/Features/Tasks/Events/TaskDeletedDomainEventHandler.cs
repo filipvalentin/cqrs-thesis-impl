@@ -25,21 +25,21 @@ namespace Lunatic.Application.Features.Tasks.Events {
 
 
 		public async Task Handle(TaskDeletedDomainEvent domainEvent, CancellationToken cancellationToken) {
-			if (!domainEvent.Cascaded) {
-				var projectResult = await projectReadRepository.FindByIdAsync(domainEvent.ProjectId);
-				if (!projectResult.IsSuccess) {
-					logger.LogError("Failed to find project with id {projectId}", domainEvent.ProjectId);
-					queueService.Enqueue(domainEvent);
-					return;
-				}
-				projectResult.Value.TaskIds.Remove(domainEvent.Id);
-				var projectUpdateResult = await projectReadRepository.UpdateAsync(domainEvent.ProjectId, projectResult.Value);
-				if (!projectUpdateResult.IsSuccess) {
-					logger.LogError("Failed to update project with id {projectId}", domainEvent.ProjectId);
-					queueService.Enqueue(domainEvent);
-					return;
-				}
-			}
+			//if (!domainEvent.Cascaded) {
+			//	var projectResult = await projectReadRepository.FindByIdAsync(domainEvent.ProjectId);
+			//	if (!projectResult.IsSuccess) {
+			//		logger.LogError("Failed to find project with id {projectId}", domainEvent.ProjectId);
+			//		queueService.Enqueue(domainEvent);
+			//		return;
+			//	}
+			//	projectResult.Value.TaskIds.Remove(domainEvent.Id);
+			//	var projectUpdateResult = await projectReadRepository.UpdateAsync(domainEvent.ProjectId, projectResult.Value);
+			//	if (!projectUpdateResult.IsSuccess) {
+			//		logger.LogError("Failed to update project with id {projectId}", domainEvent.ProjectId);
+			//		queueService.Enqueue(domainEvent);
+			//		return;
+			//	}
+			//}
 
 			/*Idempotent since a deleted comment will not be deleted again if the database drops for example*/
 			var commentIds = new List<Guid>(domainEvent.CommentIds);
@@ -51,9 +51,7 @@ namespace Lunatic.Application.Features.Tasks.Events {
 					queueService.Enqueue(domainEvent with { CommentIds = commentIds });
 					return;
 				}
-				await publisher.Publish(
-					new CommentDeletedDomainEvent(Id: commentId, Cascaded: true, TaskId: domainEvent.Id),
-					cancellationToken);
+				await publisher.Publish(new CommentDeletedDomainEvent(Id: commentId), cancellationToken);
 				commentIds.RemoveAt(0);
 			}
 

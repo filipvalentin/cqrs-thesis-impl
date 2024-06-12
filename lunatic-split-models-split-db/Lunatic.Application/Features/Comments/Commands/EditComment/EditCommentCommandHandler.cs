@@ -4,22 +4,21 @@ using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Domain.DomainEvents.Comment;
 using MediatR;
 
-
-namespace Lunatic.Application.Features.Comments.Commands.UpdateComment {
-	public class UpdateCommentCommandHandler(
+namespace Lunatic.Application.Features.Comments.Commands.EditComment {
+	public class EditCommentCommandHandler(
 		ICommentRepository commentRepository, 
 		IMapper mapper,
-		IPublisher publisher) : IRequestHandler<UpdateCommentCommand, UpdateTaskCommentCommandResponse> {
+		IPublisher publisher) : IRequestHandler<EditCommentCommand, EditCommentCommandResponse> {
 
 		private readonly ICommentRepository commentRepository = commentRepository;
 		private readonly IMapper mapper = mapper;
 		private readonly IPublisher publisher = publisher;
 
-		public async Task<UpdateTaskCommentCommandResponse> Handle(UpdateCommentCommand request, CancellationToken cancellationToken) {
+		public async Task<EditCommentCommandResponse> Handle(EditCommentCommand request, CancellationToken cancellationToken) {
 
 			var commentResult = await commentRepository.FindByIdAsync(request.CommentId);
 			if (!commentResult.IsSuccess) {
-				return new UpdateTaskCommentCommandResponse {
+				return new EditCommentCommandResponse {
 					Success = false,
 					Message = commentResult.Error
 				};
@@ -29,7 +28,7 @@ namespace Lunatic.Application.Features.Comments.Commands.UpdateComment {
 			comment.Update(request.Content);
 			var dbCommentResult = await commentRepository.UpdateAsync(comment);
 			if (!dbCommentResult.IsSuccess) {
-				return new UpdateTaskCommentCommandResponse {
+				return new EditCommentCommandResponse {
 					Success = false,
 					Message = dbCommentResult.Error
 				};
@@ -37,7 +36,7 @@ namespace Lunatic.Application.Features.Comments.Commands.UpdateComment {
 
 			await publisher.Publish(mapper.Map<CommentEditedDomainEvent>(comment), cancellationToken);
 
-			return new UpdateTaskCommentCommandResponse {
+			return new EditCommentCommandResponse {
 				Success = true,
 				Comment = mapper.Map<CommentDto>(comment)
 			};

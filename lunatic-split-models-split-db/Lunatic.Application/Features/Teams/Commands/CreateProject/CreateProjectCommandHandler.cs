@@ -2,45 +2,62 @@
 using Lunatic.Application.Features.Projects.Payload;
 using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Domain.DomainEvents.Project;
+using Lunatic.Domain.DomainEvents.Team;
 using Lunatic.Domain.Entities;
 using MediatR;
 
 
 namespace Lunatic.Application.Features.Teams.Commands.CreateProject {
-	public class CreateProjectCommandHandler : IRequestHandler<CreateProjectCommand, CreateProjectCommandResponse> {
-		private readonly IProjectRepository projectRepository;
-		private readonly ITeamRepository teamRepository;
-		private readonly IUserRepository userRepository;
-		private readonly IPublisher publisher;
-		private readonly IMapper mapper;
+	public class CreateProjectCommandHandler(
+		IProjectRepository projectRepository,
+		ITeamRepository teamRepository,
+		IUserRepository userRepository,
+		IPublisher publisher,
+		IMapper mapper) : IRequestHandler<CreateProjectCommand, CreateProjectCommandResponse> {
 
-		public CreateProjectCommandHandler(IProjectRepository projectRepository, ITeamRepository teamRepository,
-			IUserRepository userRepository, IPublisher publisher, IMapper mapper) {
-			this.projectRepository = projectRepository;
-			this.teamRepository = teamRepository;
-			this.userRepository = userRepository;
-			this.publisher = publisher;
-			this.mapper = mapper;
-		}
+		private readonly IProjectRepository projectRepository = projectRepository;
+		private readonly ITeamRepository teamRepository = teamRepository;
+		private readonly IUserRepository userRepository = userRepository;
+		private readonly IPublisher publisher = publisher;
+		private readonly IMapper mapper = mapper;
 
 		public async Task<CreateProjectCommandResponse> Handle(CreateProjectCommand request, CancellationToken cancellationToken) {
 			var projectResult = Project.Create(request.UserId, request.TeamId, request.Title, request.Description);
 			if (!projectResult.IsSuccess) {
 				return new CreateProjectCommandResponse {
 					Success = false,
-					ValidationErrors = new List<string> { projectResult.Error }
+					Message = projectResult.Error
+				};
+			}
+			var project = projectResult.Value;
+
+			var teamResult = await teamRepository.FindByIdAsync(request.TeamId);
+			if (!teamResult.IsSuccess) {
+				return new CreateProjectCommandResponse {
+					Success = false,
+					Message = teamResult.Error
+				};
+			}
+			var team = teamResult.Value;
+			team.AddProject(project.Id);
+			var teamUpdatedResult = await teamRepository.UpdateAsync(team);
+			if (!teamUpdatedResult.IsSuccess) {
+				return new CreateProjectCommandResponse {
+					Success = false,
+					Message = teamUpdatedResult.Error
 				};
 			}
 
-			var project = projectResult.Value;
-
-			var team = (await teamRepository.FindByIdAsync(request.TeamId)).Value;
-			team.AddProject(project.Id);
-			await teamRepository.UpdateAsync(team);
-
-			await projectRepository.AddAsync(project);
+			var projectCreatedResult = await projectRepository.AddAsync(project);
+			if (!projectCreatedResult.IsSuccess) {
+				return new CreateProjectCommandResponse {
+					Success = false,
+					Message = projectCreatedResult.Error
+				};
+			}
 
 			await publisher.Publish(mapper.Map<ProjectCreatedDomainEvent>(project), cancellationToken);
+			await publisher.Publish(mapper.Map<TeamUpdatedDomainEvent>(team), cancellationToken);
 
 			return new CreateProjectCommandResponse {
 				Success = true,

@@ -56,15 +56,11 @@ namespace Lunatic.Application.Features.Projects.Commands.RenameTaskSection {
 				await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(task), cancellationToken);
 			}
 
-			await publisher.Publish(
-				new TaskSectionCardRenamedDomainEvent(Id: project.Id,
-													SectionCardName: request.Section,
-													NewSectionCardName: request.NewSection),
-				cancellationToken);
+			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);
 
 			return new RenameTaskSectionCardCommandResponse {
 				Success = true,
-				Project = mapper.Map<ProjectDto>(dbProjectResult)
+				Project = mapper.Map<ProjectDto>(project)
 			};
 		}
 	}

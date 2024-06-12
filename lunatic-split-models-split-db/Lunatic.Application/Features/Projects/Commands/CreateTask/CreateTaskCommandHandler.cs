@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Lunatic.Application.Features.Tasks.Payload;
 using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Domain.DomainEvents.Project;
 using Lunatic.Domain.DomainEvents.Task;
 using MediatR;
 using Task = Lunatic.Domain.Entities.Task;
@@ -25,13 +26,30 @@ namespace Lunatic.Application.Features.Projects.Commands.CreateTask {
 			if (!taskResult.IsSuccess) {
 				return new CreateTaskCommandResponse {
 					Success = false,
-					ValidationErrors = new List<string> { taskResult.Error }
+					Message = taskResult.Error
 				};
 			}
+
 			var task = taskResult.Value;
-			var project = (await projectRepository.FindByIdAsync(request.ProjectId)).Value;
+
+			var projectResult = await projectRepository.FindByIdAsync(request.ProjectId);
+			if (!projectResult.IsSuccess) {
+				return new CreateTaskCommandResponse {
+					Success = false,
+					Message = projectResult.Error
+				};
+			}
+			var project = projectResult.Value;
+
 			project.AddTask(task);
-			await projectRepository.UpdateAsync(project);
+
+			var projectUpdatedResult = await projectRepository.UpdateAsync(project);
+			if (!projectUpdatedResult.IsSuccess) {
+				return new CreateTaskCommandResponse {
+					Success = false,
+					Message = projectUpdatedResult.Error
+				};
+			}
 
 			foreach (var tag in request.Tags) {
 				task.AddTag(tag);
@@ -44,11 +62,12 @@ namespace Lunatic.Application.Features.Projects.Commands.CreateTask {
 			if (!addResult.IsSuccess) {
 				return new CreateTaskCommandResponse {
 					Success = false,
-					ValidationErrors = new List<string> { addResult.Error }
+					Message = addResult.Error
 				};
 			}
 
 			await publisher.Publish(mapper.Map<TaskCreatedDomainEvent>(task), cancellationToken);
+			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);
 
 			return new CreateTaskCommandResponse {
 				Success = true,

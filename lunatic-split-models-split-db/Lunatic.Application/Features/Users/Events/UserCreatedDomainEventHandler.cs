@@ -2,37 +2,30 @@
 using Lunatic.Application.Models.ReadModels;
 using Lunatic.Application.Persistence.ReadSide;
 using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Application.Utils.Services;
 using Lunatic.Domain.DomainEvents.User;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Lunatic.Application.Features.Users.Events {
-	public class UserCreatedDomainEventHandler : INotificationHandler<UserCreatedDomainEvent> {
-		private readonly IUserReadSideRepository userReadRepository;
-		private readonly IUserRepository userWriteRepository;
-		private readonly ILogger<UserCreatedDomainEventHandler> logger;
-		private readonly IMapper mapper;
+	public class UserCreatedDomainEventHandler(
+		IUserReadSideRepository userReadRepository,
+		IUserRepository userWriteRepository,
+		ILogger<UserCreatedDomainEventHandler> logger, 
+		IMapper mapper, 
+		IEventQueueService queueService) : INotificationHandler<UserCreatedDomainEvent> {
 
-		public UserCreatedDomainEventHandler(IUserReadSideRepository userReadRepository, IUserRepository userWriteRepository,
-			ILogger<UserCreatedDomainEventHandler> logger, IMapper mapper) {
-			this.userReadRepository = userReadRepository;
-			this.userWriteRepository = userWriteRepository;
-			this.logger = logger;
-			this.mapper = mapper;
-		}
+		private readonly IUserReadSideRepository userReadRepository = userReadRepository;
+		private readonly IUserRepository userWriteRepository = userWriteRepository;
+		private readonly ILogger<UserCreatedDomainEventHandler> logger = logger;
+		private readonly IMapper mapper = mapper;
+		private readonly IEventQueueService queueService = queueService;
 
-		public async Task Handle(UserCreatedDomainEvent notification, CancellationToken cancellationToken) {
-			var userResult = await userWriteRepository.FindByIdAsync(notification.Id);
-
-			if (!userResult.IsSuccess) {
-				logger.LogError("User with id {Id} not found", notification.Id);
-				return;
-			}
-
-			var status = await userReadRepository.AddAsync(mapper.Map<UserReadModel>(userResult.Value));
-
+		public async Task Handle(UserCreatedDomainEvent domainEvent, CancellationToken cancellationToken) {
+			var status = await userReadRepository.AddAsync(mapper.Map<UserReadModel>(domainEvent));
 			if (!status.IsSuccess) {
-				logger.LogError("Error while adding user with id {Id} to read side", notification.Id);
+				logger.LogError("Failed to add user with id {Id} to read side. Error: {Error}", domainEvent.Id, status.Error);
+				queueService.Enqueue(domainEvent);
 			}
 		}
 	}

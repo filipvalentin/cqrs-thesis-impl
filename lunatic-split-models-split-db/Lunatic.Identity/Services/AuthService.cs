@@ -15,38 +15,30 @@ using Microsoft.Extensions.Logging;
 using Lunatic.Application.Persistence.WriteSide;
 using MediatR;
 using Lunatic.Domain.DomainEvents.User;
+using AutoMapper;
 
 
 namespace Lunatic.Identity.Services {
-	public class AuthService : IAuthService {
-		private readonly UserManager<ApplicationUser> userManager;
-		private readonly RoleManager<IdentityRole> roleManager;
-		private readonly SignInManager<ApplicationUser> signInManager;
-		private readonly IConfiguration configuration;
-		private readonly IUserRepository userRepository;
-		private readonly IEmailService emailService;
-		private readonly ILogger<AuthService> logger;
-		private readonly IPublisher publisher;
+	public class AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager,
+		IConfiguration configuration, IUserRepository userRepository, SignInManager<ApplicationUser> signInManager,
+		IEmailService emailService, ILogger<AuthService> logger, IPublisher publisher, IMapper mapper) : IAuthService {
 
-		public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, 
-			IConfiguration configuration, IUserRepository userRepository, SignInManager<ApplicationUser> signInManager, 
-			IEmailService emailService, ILogger<AuthService> logger, IPublisher publisher) {
-			this.userManager = userManager;
-			this.roleManager = roleManager;
-			this.configuration = configuration;
-			this.userRepository = userRepository;
-			this.signInManager = signInManager;
-			this.emailService = emailService;
-			this.logger = logger;
-			this.publisher = publisher;
-		}
+		private readonly UserManager<ApplicationUser> userManager = userManager;
+		private readonly RoleManager<IdentityRole> roleManager = roleManager;
+		private readonly SignInManager<ApplicationUser> signInManager = signInManager;
+		private readonly IConfiguration configuration = configuration;
+		private readonly IUserRepository userRepository = userRepository;
+		private readonly IEmailService emailService = emailService;
+		private readonly ILogger<AuthService> logger = logger;
+		private readonly IPublisher publisher = publisher;
+		private readonly IMapper mapper = mapper;
 
-		public async Task<RegisterResponse> Registeration(RegistrationModel model, string role) {
+		public async Task<RegisterResponse> Registration(RegistrationModel model, string role) {
 			var userExists = await userManager.FindByNameAsync(model.Username);
 			if (userExists != null) {
 				return new RegisterResponse {
 					Success = false,
-					ValidationErrors = new List<string> { "User already exists" }
+					Message = "User already exists!"
 				};
 			}
 
@@ -54,7 +46,7 @@ namespace Lunatic.Identity.Services {
 			if (!userDb.IsSuccess) {
 				return new RegisterResponse {
 					Success = false,
-					ValidationErrors = new List<string> { userDb.Error }
+					Message = userDb.Error
 				};
 			}
 
@@ -69,7 +61,7 @@ namespace Lunatic.Identity.Services {
 			if (!createUserResult.Succeeded) {
 				return new RegisterResponse {
 					Success = false,
-					ValidationErrors = new List<string> { "User creation failed! Please check user details and try again." }
+					Message = createUserResult.Errors.Select(e => e.Description).Aggregate((i, j) => i + ", " + j)
 				};
 			}
 
@@ -82,7 +74,7 @@ namespace Lunatic.Identity.Services {
 			}
 			await userRepository.AddAsync(userDb.Value);
 
-			await publisher.Publish(new UserCreatedDomainEvent(Guid.Parse(user.Id), userDb.Value));
+			await publisher.Publish(mapper.Map<UserCreatedDomainEvent>(userDb.Value));
 
 			return new RegisterResponse {
 				Success = true,

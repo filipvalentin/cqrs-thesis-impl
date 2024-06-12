@@ -2,56 +2,68 @@
 using Lunatic.Application.Features.Comments.Payload;
 using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Domain.DomainEvents.Comment;
+using Lunatic.Domain.DomainEvents.Task;
 using Lunatic.Domain.Entities;
 using MediatR;
 
 namespace Lunatic.Application.Features.Tasks.Commands.CreateComment {
-	public class AddCommentCommandHandler : IRequestHandler<AddCommentCommand, AddCommentCommandResponse> {
-		private readonly ITaskRepository taskRepository;
-		private readonly ICommentRepository commentRepository;
-		private readonly IUserRepository userRepository;
-		private readonly IPublisher publisher;
-		private readonly IMapper mapper;
+	public class AddCommentCommandHandler(
+		ITaskRepository taskRepository,
+		ICommentRepository commentRepository,
+		IUserRepository userRepository,
+		IPublisher publisher,
+		IMapper mapper) : IRequestHandler<AddCommentCommand, AddCommentCommandResponse> {
 
-		public AddCommentCommandHandler(ITaskRepository taskRepository, ICommentRepository commentRepository,
-			IUserRepository userRepository, IPublisher publisher, IMapper mapper) {
-			this.taskRepository = taskRepository;
-			this.commentRepository = commentRepository;
-			this.userRepository = userRepository;
-			this.publisher = publisher;
-			this.mapper = mapper;
-		}
+		private readonly ITaskRepository taskRepository = taskRepository;
+		private readonly ICommentRepository commentRepository = commentRepository;
+		private readonly IUserRepository userRepository = userRepository;
+		private readonly IPublisher publisher = publisher;
+		private readonly IMapper mapper = mapper;
 
 		public async Task<AddCommentCommandResponse> Handle(AddCommentCommand request, CancellationToken cancellationToken) {
-			var validator = new AddCommentCommandValidator(userRepository, taskRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
-
-			if (!validatorResult.IsValid) {
-				return new AddCommentCommandResponse {
-					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-				};
-			}
-
 			var commentResult = Comment.Create(request.UserId, request.TaskId, request.Content);
 			if (!commentResult.IsSuccess) {
 				return new AddCommentCommandResponse {
 					Success = false,
-					ValidationErrors = new List<string> { commentResult.Error }
+					Message = commentResult.Error
+				};
+			}
+			var comment = commentResult.Value;
+
+			var taskResult = await taskRepository.FindByIdAsync(request.TaskId);
+			if (!taskResult.IsSuccess) {
+				return new AddCommentCommandResponse {
+					Success = false,
+					Message = taskResult.Error
+				};
+			}
+			var task = taskResult.Value;
+
+			task.AddComment(comment.CommentId);
+			var taskUpdatedResult = await taskRepository.UpdateAsync(task);
+			if (!taskUpdatedResult.IsSuccess) {
+				return new AddCommentCommandResponse {
+					Success = false,
+					Message = taskUpdatedResult.Error
 				};
 			}
 
-			var task = (await taskRepository.FindByIdAsync(request.TaskId)).Value;
-			task.AddComment(commentResult.Value);
-			await taskRepository.UpdateAsync(task);
+			var commentAddedResult = await commentRepository.AddAsync(comment);
+			if (!commentAddedResult.IsSuccess) {
+				return new AddCommentCommandResponse {
+					Success = false,
+					Message = commentAddedResult.Error
+				};
+			}
 
-			await commentRepository.AddAsync(commentResult.Value);
-
-			await publisher.Publish(mapper.Map<CommentAddedDomainEvent>(commentResult.Value), cancellationToken);
+			await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(task), cancellationToken);
+			var t = mapper.Map<CommentAddedDomainEvent>(comment);
+			var c = new CommentAddedDomainEvent();
+			await publisher.Publish(t, cancellationToken);
 
 			return new AddCommentCommandResponse {
 				Success = true,
-				Comment = mapper.Map<CommentDto>(commentResult.Value)
+				Comment = mapper.Map<CommentDto>(comment)
 			};
 		}
 	}

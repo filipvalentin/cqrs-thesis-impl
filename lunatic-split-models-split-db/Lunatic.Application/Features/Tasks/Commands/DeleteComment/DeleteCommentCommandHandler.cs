@@ -1,18 +1,20 @@
-﻿using Lunatic.Application.Persistence.WriteSide;
+﻿using AutoMapper;
+using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Domain.DomainEvents.Comment;
+using Lunatic.Domain.DomainEvents.Task;
 using MediatR;
 
 namespace Lunatic.Application.Features.Tasks.Commands.DeleteComment {
-	public class DeleteTaskCommentCommandHandler : IRequestHandler<DeleteCommentCommand, DeleteCommentCommandResponse> {
-		private readonly ITaskRepository taskRepository;
-		private readonly ICommentRepository commentRepository;
-		private readonly IPublisher publisher;
+	public class DeleteTaskCommentCommandHandler(
+		ITaskRepository taskRepository, 
+		ICommentRepository commentRepository,
+		IPublisher publisher, 
+		IMapper mapper) : IRequestHandler<DeleteCommentCommand, DeleteCommentCommandResponse> {
 
-		public DeleteTaskCommentCommandHandler(ITaskRepository taskRepository, ICommentRepository commentRepository, IPublisher publisher) {
-			this.taskRepository = taskRepository;
-			this.commentRepository = commentRepository;
-			this.publisher = publisher;
-		}
+		private readonly ITaskRepository taskRepository = taskRepository;
+		private readonly ICommentRepository commentRepository = commentRepository;
+		private readonly IPublisher publisher = publisher;
+		private readonly IMapper mapper = mapper;
 
 		public async Task<DeleteCommentCommandResponse> Handle(DeleteCommentCommand request, CancellationToken cancellationToken) {
 			var taskResult = await taskRepository.FindByIdAsync(request.TaskId);
@@ -41,7 +43,8 @@ namespace Lunatic.Application.Features.Tasks.Commands.DeleteComment {
 				};
 			}
 
-			await publisher.Publish(new CommentDeletedDomainEvent(Id: request.CommentId, Cascaded: false, TaskId: request.TaskId), cancellationToken);
+			await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(task), cancellationToken);
+			await publisher.Publish( new CommentDeletedDomainEvent(request.CommentId), cancellationToken);
 
 			return new DeleteCommentCommandResponse {
 				Success = true

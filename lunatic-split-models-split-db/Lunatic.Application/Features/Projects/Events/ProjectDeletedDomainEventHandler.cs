@@ -24,21 +24,21 @@ namespace Lunatic.Application.Features.Projects.Events {
 
 		public async Task Handle(ProjectDeletedDomainEvent domainEvent, CancellationToken cancellationToken) {
 
-			if (!domainEvent.Cascaded) {
-				var teamResult = await teamReadRepository.FindByIdAsync(domainEvent.TeamId!);
-				if (!teamResult.IsSuccess) {
-					logger.LogError("Failed to find team with id {teamId}", domainEvent.TeamId);
-					queueService.Enqueue(domainEvent);
-					return;
-				}
-				teamResult.Value.ProjectIds.Remove(domainEvent.Id);
-				var teamUpdateResult = await teamReadRepository.UpdateAsync(domainEvent.TeamId, teamResult.Value);
-				if (!teamUpdateResult.IsSuccess) {
-					logger.LogError("Failed to update team with id {teamId}", domainEvent.TeamId);
-					queueService.Enqueue(domainEvent);
-					return;
-				}
-			}
+			//if (!domainEvent.Cascaded) {
+			//	var teamResult = await teamReadRepository.FindByIdAsync(domainEvent.TeamId!);
+			//	if (!teamResult.IsSuccess) {
+			//		logger.LogError("Failed to find team with id {teamId}", domainEvent.TeamId);
+			//		queueService.Enqueue(domainEvent);
+			//		return;
+			//	}
+			//	teamResult.Value.ProjectIds.Remove(domainEvent.Id);
+			//	var teamUpdateResult = await teamReadRepository.UpdateAsync(domainEvent.TeamId, teamResult.Value);
+			//	if (!teamUpdateResult.IsSuccess) {
+			//		logger.LogError("Failed to update team with id {teamId}", domainEvent.TeamId);
+			//		queueService.Enqueue(domainEvent);
+			//		return;
+			//	}
+			//}
 
 			var taskIds = new List<Guid>(domainEvent.TaskIds);
 			while (taskIds.Count > 0) {
@@ -56,14 +56,10 @@ namespace Lunatic.Application.Features.Projects.Events {
 					return;
 				}
 				await publisher.Publish(
-					new TaskDeletedDomainEvent(Id: taskId,
-												CommentIds: taskResult.Value.CommentIds,
-												Cascaded: true,
-												ProjectId: domainEvent.Id),
+					new TaskDeletedDomainEvent(Id: taskId, CommentIds: taskResult.Value.CommentIds),
 					cancellationToken);
 				taskIds.RemoveAt(0);
 			}
-
 
 			var projectReadRemovedResult = await projectReadRepository.DeleteAsync(domainEvent.Id);
 			if (!projectReadRemovedResult.IsSuccess) {
