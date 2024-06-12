@@ -22,7 +22,7 @@ namespace Lunatic.Application.Features.Projects.Commands.CreateTask {
 		}
 
 		public async Task<CreateTaskCommandResponse> Handle(CreateTaskCommand request, CancellationToken cancellationToken) {
-			//var validator = new CreateTaskCommandValidator(userRepository, projectRepository);
+			//var validator = new CreateTaskCommandValidator(userRepository, projectReadRepository);
 			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
 			//if (!validatorResult.IsValid) {

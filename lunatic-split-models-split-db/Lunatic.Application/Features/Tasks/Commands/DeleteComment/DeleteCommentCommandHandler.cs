@@ -1,4 +1,5 @@
 ﻿using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Domain.DomainEvents.Comment;
 using MediatR;
 
 namespace Lunatic.Application.Features.Tasks.Commands.DeleteComment {
@@ -14,29 +15,34 @@ namespace Lunatic.Application.Features.Tasks.Commands.DeleteComment {
 		}
 
 		public async Task<DeleteCommentCommandResponse> Handle(DeleteCommentCommand request, CancellationToken cancellationToken) {
-			var validator = new DeleteCommentCommandValidator(taskRepository, commentRepository);
-			var validatorResult = await validator.ValidateAsync(request, cancellationToken);
-
-			if (!validatorResult.IsValid) {
+			var taskResult = await taskRepository.FindByIdAsync(request.TaskId);
+			if (!taskResult.IsSuccess) {
 				return new DeleteCommentCommandResponse {
 					Success = false,
-					ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
+					Message = taskResult.Error
 				};
 			}
 
-			var task = (await taskRepository.FindByIdAsync(request.TaskId)).Value;
+			var task = taskResult.Value;
 			task.RemoveComment(request.CommentId);
-			await taskRepository.UpdateAsync(task);
+			var updateResult = await taskRepository.UpdateAsync(task);
+			if (!updateResult.IsSuccess) {
+				return new DeleteCommentCommandResponse {
+					Success = false,
+					Message = updateResult.Error
+				};
+			}
 
 			var result = await commentRepository.DeleteAsync(request.CommentId);
-
 			if (!result.IsSuccess) {
 				return new DeleteCommentCommandResponse {
 					Success = false,
 					ValidationErrors = new List<string> { result.Error }
 				};
-
 			}
+
+			await publisher.Publish(new CommentDeletedDomainEvent(Id: request.CommentId, Cascaded: false, TaskId: request.TaskId), cancellationToken);
+
 			return new DeleteCommentCommandResponse {
 				Success = true
 			};

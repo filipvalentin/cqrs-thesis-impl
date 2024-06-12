@@ -16,7 +16,7 @@ namespace Lunatic.Application.Features.Projects.Commands.CreateTaskSectionCard {
 		}
 
 		public async Task<CreateTaskSectionCommandResponse> Handle(CreateTaskSectionCommand request, CancellationToken cancellationToken) {
-			//var validator = new CreateTaskSectionCommandValidator(projectRepository);
+			//var validator = new CreateTaskSectionCommandValidator(projectReadRepository);
 			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
 			//if (!validatorResult.IsValid) {

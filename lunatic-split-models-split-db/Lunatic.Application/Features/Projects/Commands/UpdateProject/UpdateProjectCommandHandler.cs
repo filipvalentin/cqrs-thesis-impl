@@ -11,7 +11,7 @@ namespace Lunatic.Application.Features.Projects.Commands.UpdateProject {
 		}
 
 		public async Task<UpdateTeamProjectCommandResponse> Handle(UpdateTeamProjectCommand request, CancellationToken cancellationToken) {
-			//var validator = new UpdateTeamProjectCommandValidator(projectRepository);
+			//var validator = new UpdateTeamProjectCommandValidator(projectReadRepository);
 			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
 			//if (!validatorResult.IsValid) {

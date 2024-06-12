@@ -19,7 +19,7 @@ namespace Lunatic.Application.Features.Teams.Commands.DeleteTeam {
 			if (!teamResult.IsSuccess) {
 				return new DisbandTeamCommandResponse {
 					Success = false,
-					ValidationErrors = new List<string> { teamResult.Error }
+					Message = teamResult.Error
 				};
 			}
 
@@ -32,11 +32,10 @@ namespace Lunatic.Application.Features.Teams.Commands.DeleteTeam {
 			}
 
 			var result = await teamRepository.DeleteAsync(team.Id);
-
 			if (!result.IsSuccess) {
 				return new DisbandTeamCommandResponse {
 					Success = false,
-					ValidationErrors = new List<string> { result.Error }
+					Message = result.Error
 				};
 			}
 

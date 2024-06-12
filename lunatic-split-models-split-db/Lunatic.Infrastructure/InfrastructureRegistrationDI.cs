@@ -20,9 +20,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Lunatic.Infrastructure
-{
-    public static class InfrastructureRegistrationDI {
+namespace Lunatic.Infrastructure {
+	public static class InfrastructureRegistrationDI {
 		public static IServiceCollection AddInfrastructureToDI(this IServiceCollection services, IConfiguration configuration) {
 
 			services.AddDbContext<LunaticContext>(

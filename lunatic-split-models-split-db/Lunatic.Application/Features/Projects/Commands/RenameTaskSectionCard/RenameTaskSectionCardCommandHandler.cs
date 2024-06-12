@@ -19,7 +19,7 @@ namespace Lunatic.Application.Features.Projects.Commands.RenameTaskSection {
 		}
 
 		public async Task<RenameTaskSectionCardCommandResponse> Handle(RenameTaskSectionCardCommand request, CancellationToken cancellationToken) {
-			//var validator = new RenameTaskSectionCardCommandValidator(projectRepository);
+			//var validator = new RenameTaskSectionCardCommandValidator(projectReadRepository);
 			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
 
 			//if (!validatorResult.IsValid) {

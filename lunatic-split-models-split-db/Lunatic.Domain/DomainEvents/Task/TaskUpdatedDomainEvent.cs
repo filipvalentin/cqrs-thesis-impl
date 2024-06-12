@@ -5,10 +5,9 @@ using TaskStatus = Lunatic.Domain.Entities.TaskStatus;
 namespace Lunatic.Domain.DomainEvents.Task {
 	public record TaskUpdatedDomainEvent(
 		Guid Id,
-		Guid CreatedByUserId,
-		Guid TaskId,
 		Guid ProjectId,
-		string Section,
+		Guid CreatedByUserId,
+		string TaskSectionCard,
 		string Title,
 		string Description,
 		TaskPriority Priority,

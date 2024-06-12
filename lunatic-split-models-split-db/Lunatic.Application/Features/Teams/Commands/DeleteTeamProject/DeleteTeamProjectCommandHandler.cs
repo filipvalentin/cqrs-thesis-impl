@@ -1,9 +1,9 @@
 ﻿using Lunatic.Application.Persistence.WriteSide;
+using Lunatic.Domain.DomainEvents.Project;
 using MediatR;
 
-namespace Lunatic.Application.Features.Teams.Commands.DeleteTeamProject
-{
-    public class DeleteTeamProjectCommandHandler : IRequestHandler<DeleteTeamProjectCommand, DeleteTeamProjectCommandResponse> {
+namespace Lunatic.Application.Features.Teams.Commands.DeleteTeamProject {
+	public class DeleteTeamProjectCommandHandler : IRequestHandler<DeleteProjectCommand, DeleteProjectCommandResponse> {
 		private readonly ITeamRepository teamRepository;
 		private readonly IProjectRepository projectRepository;
 		private readonly IPublisher publisher;
@@ -14,31 +14,42 @@ namespace Lunatic.Application.Features.Teams.Commands.DeleteTeamProject
 			this.publisher = publisher;
 		}
 
-		public async Task<DeleteTeamProjectCommandResponse> Handle(DeleteTeamProjectCommand request, CancellationToken cancellationToken) {
-			//var validator = new DeleteTeamProjectCommandValidator(teamRepository, projectRepository);
-			//var validatorResult = await validator.ValidateAsync(request, cancellationToken);
-
-			//if (!validatorResult.IsValid) {
-			//	return new DeleteTeamProjectCommandResponse {
-			//		Success = false,
-			//		ValidationErrors = validatorResult.Errors.Select(e => e.ErrorMessage).ToList()
-			//	};
-			//}
-
-			var team = (await teamRepository.FindByIdAsync(request.TeamId)).Value;
-			team.RemoveProject(request.ProjectId);
-			await teamRepository.UpdateAsync(team);
-
-			var result = await projectRepository.DeleteAsync(request.ProjectId);
-
-			if (!result.IsSuccess) {
-				return new DeleteTeamProjectCommandResponse {
+		public async Task<DeleteProjectCommandResponse> Handle(DeleteProjectCommand request, CancellationToken cancellationToken) {
+			var teamResult = await teamRepository.FindByIdAsync(request.TeamId);
+			if (!teamResult.IsSuccess) {
+				return new DeleteProjectCommandResponse {
 					Success = false,
-					ValidationErrors = new List<string> { result.Error }
+					Message = teamResult.Error
 				};
-
 			}
-			return new DeleteTeamProjectCommandResponse {
+
+			var team = teamResult.Value;
+			team.RemoveProject(request.ProjectId);
+			var updateTeamResult = await teamRepository.UpdateAsync(team);
+			if (!updateTeamResult.IsSuccess) {
+				return new DeleteProjectCommandResponse {
+					Success = false,
+					Message = updateTeamResult.Error
+				};
+			}
+
+			var deleteProjectResult = await projectRepository.DeleteAsync(request.ProjectId);
+			if (!deleteProjectResult.IsSuccess) {
+				return new DeleteProjectCommandResponse {
+					Success = false,
+					Message = deleteProjectResult.Error
+				};
+			}
+
+			await publisher.Publish(
+				new ProjectDeletedDomainEvent(
+					Id: request.ProjectId,
+					TaskIds: deleteProjectResult.Value.TaskIds,
+					Cascaded: false,
+					TeamId: request.TeamId),
+				cancellationToken);
+
+			return new DeleteProjectCommandResponse {
 				Success = true
 			};
 		}

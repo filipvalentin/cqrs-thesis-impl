@@ -8,6 +8,7 @@ using Lunatic.Application.Models.ReadModels;
 using Lunatic.Application.Models.ReadModels.Tasks;
 using Lunatic.Domain.DomainEvents.Comment;
 using Lunatic.Domain.DomainEvents.Project;
+using Lunatic.Domain.DomainEvents.Task;
 using Lunatic.Domain.DomainEvents.Team;
 using Lunatic.Domain.Entities;
 
@@ -59,14 +60,18 @@ namespace Lunatic.Application.Mappers {
 			CreateMap<Team, TeamUpdatedDomainEvent>();
 			CreateMap<TeamUpdatedDomainEvent, TeamReadModel>();
 
+			CreateMap<Project, ProjectCreatedDomainEvent>();
+			CreateMap<ProjectDeletedDomainEvent, ProjectReadModel>();
+
+			CreateMap<Domain.Entities.Task, TaskCreatedDomainEvent>();
+			CreateMap<TaskCreatedDomainEvent, TaskReadModel>();
+			
 			CreateMap<Comment, CommentAddedDomainEvent>();
 			CreateMap<CommentAddedDomainEvent, CommentReadModel>();
 			CreateMap<Comment, CommentDeletedDomainEvent>();
 			CreateMap<Comment, CommentEditedDomainEvent>();
 			CreateMap<CommentEditedDomainEvent, CommentReadModel>();
 
-			CreateMap<Project, ProjectCreatedDomainEvent>();
-			CreateMap<ProjectDeletedDomainEvent, ProjectReadModel>();
 		}
 	}
 }

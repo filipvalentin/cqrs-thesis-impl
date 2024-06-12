@@ -133,10 +133,10 @@ namespace Lunatic.API.Controllers {
 
 		[HttpDelete("{teamId}/projects/{projectId}")]
 		[Produces("application/json")]
-		[ProducesResponseType<DeleteTeamProjectCommandResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<DeleteTeamProjectCommandResponse>(StatusCodes.Status404NotFound)]
+		[ProducesResponseType<DeleteProjectCommandResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<DeleteProjectCommandResponse>(StatusCodes.Status404NotFound)]
 		public async Task<IActionResult> DeleteProject(Guid teamId, Guid projectId) {
-			var deleteTeamProjectCommand = new DeleteTeamProjectCommand() {
+			var deleteTeamProjectCommand = new DeleteProjectCommand() {
 				TeamId = teamId,
 				ProjectId = projectId
 			};
