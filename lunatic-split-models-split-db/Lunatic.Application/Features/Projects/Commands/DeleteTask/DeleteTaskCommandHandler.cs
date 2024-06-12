@@ -44,6 +44,7 @@ namespace Lunatic.Application.Features.Projects.Commands.DeleteTask {
 			}
 
 			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);
+			await publisher.Publish(new TaskDeletedDomainEvent(request.TaskId, taskDeletedResult.Value.CommentIds), cancellationToken);
 
 			return new DeleteTaskCommandResponse {
 				Success = true
