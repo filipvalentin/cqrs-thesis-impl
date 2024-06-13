@@ -8,13 +8,12 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Lunatic.Application.Features.Comments.Events {
-	public class CommentEditedDomainEventHandler(ICommentRepository commentWriteRepository,
+	public class CommentEditedDomainEventHandler(
 		ICommentReadSideRepository commentReadRepository,
 		ILogger<CommentEditedDomainEventHandler> logger,
 		IMapper mapper,
 		IEventQueueService queueService) : INotificationHandler<CommentEditedDomainEvent> {
 
-		private readonly ICommentRepository commentWriteRepository = commentWriteRepository;
 		private readonly ICommentReadSideRepository commentReadRepository = commentReadRepository;
 		private readonly ILogger<CommentEditedDomainEventHandler> logger = logger;
 		private readonly IMapper mapper = mapper;

@@ -72,8 +72,8 @@ namespace Lunatic.Application.Mappers {
 			CreateMap<TaskCreatedDomainEvent, TaskReadModel>();
 			CreateMap<TaskUpdatedDomainEvent, TaskReadModel>();
 
-			CreateMap<Comment, CommentAddedDomainEvent>()
-				.ForMember(t => t.Id, opt => opt.MapFrom(src => src.CommentId));
+			//CreateMap<Comment, CommentAddedDomainEvent>()
+			//	.ForMember(t => t.Id, opt => opt.MapFrom(src => src.CommentId));
 			CreateMap<Comment, CommentDeletedDomainEvent>()
 				.ForMember(t => t.Id, opt => opt.MapFrom(src => src.CommentId));
 			CreateMap<Comment, CommentEditedDomainEvent>()

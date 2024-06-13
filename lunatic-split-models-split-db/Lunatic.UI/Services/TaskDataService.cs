@@ -61,7 +61,7 @@ namespace Lunatic.UI.Services {
 		//}
 
 		public async Task<ApiResponse> DeleteCommentAsync(Guid taskId, Guid commentId) {
-			var result = await httpClient.DeleteAsync($"{RequestUri} /{taskId}/comments/{commentId}");
+			var result = await httpClient.DeleteAsync($"{RequestUri}/{taskId}/comments/{commentId}");
 			var response = await result.Content.ReadFromJsonAsync<ApiResponse>();
 			response!.Success = result.IsSuccessStatusCode;
 			return response!;

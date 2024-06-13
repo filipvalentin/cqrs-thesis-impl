@@ -57,9 +57,15 @@ namespace Lunatic.Application.Features.Tasks.Commands.CreateComment {
 			}
 
 			await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(task), cancellationToken);
-			var t = mapper.Map<CommentAddedDomainEvent>(comment);
-			var c = new CommentAddedDomainEvent();
-			await publisher.Publish(t, cancellationToken);
+			await publisher.Publish(
+				new CommentAddedDomainEvent(
+					Id: comment.CommentId,
+					CreatedByUserId: comment.CreatedByUserId,
+					TaskId: comment.TaskId,
+					Content: comment.Content,
+					CreatedDate: comment.CreatedDate,
+					LastModifiedDate: comment.LastModifiedDate),
+				cancellationToken);
 
 			return new AddCommentCommandResponse {
 				Success = true,
