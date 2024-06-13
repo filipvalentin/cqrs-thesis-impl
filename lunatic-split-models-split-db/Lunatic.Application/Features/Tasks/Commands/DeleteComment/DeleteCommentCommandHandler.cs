@@ -6,15 +6,17 @@ using MediatR;
 
 namespace Lunatic.Application.Features.Tasks.Commands.DeleteComment {
 	public class DeleteTaskCommentCommandHandler(
-		ITaskRepository taskRepository, 
+		ITaskRepository taskRepository,
 		ICommentRepository commentRepository,
-		IPublisher publisher, 
-		IMapper mapper) : IRequestHandler<DeleteCommentCommand, DeleteCommentCommandResponse> {
+		IPublisher publisher,
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<DeleteCommentCommand, DeleteCommentCommandResponse> {
 
 		private readonly ITaskRepository taskRepository = taskRepository;
 		private readonly ICommentRepository commentRepository = commentRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<DeleteCommentCommandResponse> Handle(DeleteCommentCommand request, CancellationToken cancellationToken) {
 			var taskResult = await taskRepository.FindByIdAsync(request.TaskId);
@@ -43,8 +45,10 @@ namespace Lunatic.Application.Features.Tasks.Commands.DeleteComment {
 				};
 			}
 
+			await unitOfWork.SaveChangesAsync(cancellationToken);
+
 			await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(task), cancellationToken);
-			await publisher.Publish( new CommentDeletedDomainEvent(request.CommentId), cancellationToken);
+			await publisher.Publish(new CommentDeletedDomainEvent(request.CommentId), cancellationToken);
 
 			return new DeleteCommentCommandResponse {
 				Success = true

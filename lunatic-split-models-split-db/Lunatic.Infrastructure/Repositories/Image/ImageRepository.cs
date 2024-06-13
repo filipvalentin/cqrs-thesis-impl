@@ -3,9 +3,8 @@ using Lunatic.Domain.Entities;
 using Lunatic.Domain.Utils;
 using Lunatic.Infrastructure.Data;
 
-namespace Lunatic.Infrastructure.Repositories
-{
-    public class ImageRepository : BaseRepository<Image>, IImageRepository {
+namespace Lunatic.Infrastructure.Repositories {
+	public class ImageRepository : BaseRepository<Image>, IImageRepository {
 		public ImageRepository(LunaticContext context) : base(context) { }
 
 		public async Task<bool> ExistsByUserIdAsync(Guid userId) {

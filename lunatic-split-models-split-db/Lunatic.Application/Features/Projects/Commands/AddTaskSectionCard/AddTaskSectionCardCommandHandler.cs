@@ -6,13 +6,15 @@ using MediatR;
 
 namespace Lunatic.Application.Features.Projects.Commands.CreateTaskSectionCard {
 	public class AddTaskSectionCardCommandHandler(
-		IProjectRepository projectRepository, 
-		IPublisher publisher, 
-		IMapper mapper) : IRequestHandler<AddTaskSectionCardCommand, AddTaskSectionCardCommandResponse> {
-		
+		IProjectRepository projectRepository,
+		IPublisher publisher,
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<AddTaskSectionCardCommand, AddTaskSectionCardCommandResponse> {
+
 		private readonly IProjectRepository projectRepository = projectRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<AddTaskSectionCardCommandResponse> Handle(AddTaskSectionCardCommand request, CancellationToken cancellationToken) {
 			var projectResult = await projectRepository.FindByIdAsync(request.ProjectId);
@@ -32,6 +34,8 @@ namespace Lunatic.Application.Features.Projects.Commands.CreateTaskSectionCard {
 					Message = dbProjectResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);
 

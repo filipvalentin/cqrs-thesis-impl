@@ -10,6 +10,7 @@ namespace Lunatic.Application.Features.Projects.Events {
 	public class ProjectDeletedDomainEventHandler(
 		IProjectReadSideRepository projectReadRepository,
 		ITaskRepository taskWriteRepository,
+		IUnitOfWork unitOfWork,
 		ILogger<ProjectDeletedDomainEventHandler> logger,
 		IPublisher publisher,
 		IEventQueueService queueService,
@@ -17,28 +18,13 @@ namespace Lunatic.Application.Features.Projects.Events {
 
 		private readonly IProjectReadSideRepository projectReadRepository = projectReadRepository;
 		private readonly ITaskRepository taskWriteRepository = taskWriteRepository;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 		private readonly ITeamReadSideRepository teamReadRepository = teamReadRepository;
 		private readonly ILogger<ProjectDeletedDomainEventHandler> logger = logger;
 		private readonly IPublisher publisher = publisher;
 		private readonly IEventQueueService queueService = queueService;
 
 		public async Task Handle(ProjectDeletedDomainEvent domainEvent, CancellationToken cancellationToken) {
-
-			//if (!domainEvent.Cascaded) {
-			//	var teamResult = await teamReadRepository.FindByIdAsync(domainEvent.TeamId!);
-			//	if (!teamResult.IsSuccess) {
-			//		logger.LogError("Failed to find team with id {teamId}", domainEvent.TeamId);
-			//		queueService.Enqueue(domainEvent);
-			//		return;
-			//	}
-			//	teamResult.Value.ProjectIds.Remove(domainEvent.Id);
-			//	var teamUpdateResult = await teamReadRepository.UpdateAsync(domainEvent.TeamId, teamResult.Value);
-			//	if (!teamUpdateResult.IsSuccess) {
-			//		logger.LogError("Failed to update team with id {teamId}", domainEvent.TeamId);
-			//		queueService.Enqueue(domainEvent);
-			//		return;
-			//	}
-			//}
 
 			var taskIds = new List<Guid>(domainEvent.TaskIds);
 			while (taskIds.Count > 0) {
@@ -55,6 +41,7 @@ namespace Lunatic.Application.Features.Projects.Events {
 					queueService.Enqueue(domainEvent with { TaskIds = taskIds });
 					return;
 				}
+				await unitOfWork.SaveChangesAsync(cancellationToken);
 				await publisher.Publish(
 					new TaskDeletedDomainEvent(Id: taskId, CommentIds: taskResult.Value.CommentIds),
 					cancellationToken);

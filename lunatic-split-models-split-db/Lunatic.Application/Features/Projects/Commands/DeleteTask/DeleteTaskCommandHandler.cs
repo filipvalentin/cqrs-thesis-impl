@@ -9,12 +9,14 @@ namespace Lunatic.Application.Features.Projects.Commands.DeleteTask {
 		IProjectRepository projectRepository,
 		ITaskRepository taskRepository,
 		IPublisher publisher,
-		IMapper mapper) : IRequestHandler<DeleteProjectTaskCommand, DeleteTaskCommandResponse> {
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<DeleteProjectTaskCommand, DeleteTaskCommandResponse> {
 
 		private readonly IProjectRepository projectRepository = projectRepository;
 		private readonly ITaskRepository taskRepository = taskRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<DeleteTaskCommandResponse> Handle(DeleteProjectTaskCommand request, CancellationToken cancellationToken) {
 
@@ -26,7 +28,7 @@ namespace Lunatic.Application.Features.Projects.Commands.DeleteTask {
 				};
 			}
 			var project = projectResult.Value;
-			project.RemoveTask(request.ProjectId);
+			project.RemoveTask(request.TaskId);
 			var projectUpdatedResult = await projectRepository.UpdateAsync(project);
 			if (!projectUpdatedResult.IsSuccess) {
 				return new DeleteTaskCommandResponse {
@@ -42,6 +44,8 @@ namespace Lunatic.Application.Features.Projects.Commands.DeleteTask {
 					Message = taskDeletedResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);
 			await publisher.Publish(new TaskDeletedDomainEvent(request.TaskId, taskDeletedResult.Value.CommentIds), cancellationToken);

@@ -7,15 +7,17 @@ using MediatR;
 
 namespace Lunatic.Application.Features.Projects.Commands.RenameTaskSection {
 	public class RenameTaskSectionCardCommandHandler(
-		ITaskRepository taskRepository, 
+		ITaskRepository taskRepository,
 		IProjectRepository projectRepository,
-		IPublisher publisher, 
-		IMapper mapper) : IRequestHandler<RenameTaskSectionCardCommand, RenameTaskSectionCardCommandResponse> {
+		IPublisher publisher,
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<RenameTaskSectionCardCommand, RenameTaskSectionCardCommandResponse> {
 
 		private readonly ITaskRepository taskRepository = taskRepository;
 		private readonly IProjectRepository projectRepository = projectRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<RenameTaskSectionCardCommandResponse> Handle(RenameTaskSectionCardCommand request, CancellationToken cancellationToken) {
 
@@ -55,6 +57,8 @@ namespace Lunatic.Application.Features.Projects.Commands.RenameTaskSection {
 				}
 				await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(task), cancellationToken);
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);
 

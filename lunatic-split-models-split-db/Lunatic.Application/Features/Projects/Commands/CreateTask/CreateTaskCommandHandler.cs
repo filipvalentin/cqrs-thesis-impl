@@ -12,13 +12,15 @@ namespace Lunatic.Application.Features.Projects.Commands.CreateTask {
 		IProjectRepository projectRepository,
 		IUserRepository userRepository,
 		IPublisher publisher,
-		IMapper mapper) : IRequestHandler<CreateTaskCommand, CreateTaskCommandResponse> {
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<CreateTaskCommand, CreateTaskCommandResponse> {
 
 		private readonly ITaskRepository taskRepository = taskRepository;
 		private readonly IProjectRepository projectRepository = projectRepository;
 		private readonly IUserRepository userRepository = userRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<CreateTaskCommandResponse> Handle(CreateTaskCommand request, CancellationToken cancellationToken) {
 
@@ -65,6 +67,8 @@ namespace Lunatic.Application.Features.Projects.Commands.CreateTask {
 					Message = addResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<TaskCreatedDomainEvent>(task), cancellationToken);
 			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);

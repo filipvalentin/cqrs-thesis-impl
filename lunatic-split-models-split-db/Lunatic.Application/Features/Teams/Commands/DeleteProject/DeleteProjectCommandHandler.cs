@@ -5,12 +5,18 @@ using Lunatic.Domain.DomainEvents.Team;
 using MediatR;
 
 namespace Lunatic.Application.Features.Teams.Commands.DeleteTeamProject {
-	public class DeleteProjectCommandHandler(ITeamRepository teamRepository, IProjectRepository projectRepository, IPublisher publisher, IMapper mapper) : IRequestHandler<DeleteProjectCommand, DeleteProjectCommandResponse> {
-		
+	public class DeleteProjectCommandHandler(
+		ITeamRepository teamRepository,
+		IProjectRepository projectRepository,
+		IPublisher publisher,
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<DeleteProjectCommand, DeleteProjectCommandResponse> {
+
 		private readonly ITeamRepository teamRepository = teamRepository;
 		private readonly IProjectRepository projectRepository = projectRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<DeleteProjectCommandResponse> Handle(DeleteProjectCommand request, CancellationToken cancellationToken) {
 			var teamResult = await teamRepository.FindByIdAsync(request.TeamId);
@@ -38,6 +44,8 @@ namespace Lunatic.Application.Features.Teams.Commands.DeleteTeamProject {
 					Message = deleteProjectResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<TeamUpdatedDomainEvent>(team), cancellationToken);
 			await publisher.Publish(

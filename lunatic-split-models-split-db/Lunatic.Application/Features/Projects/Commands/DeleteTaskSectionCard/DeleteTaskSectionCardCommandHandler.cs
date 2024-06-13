@@ -10,12 +10,14 @@ namespace Lunatic.Application.Features.Projects.Commands.DeleteTaskSectionCard {
 		IProjectRepository projectRepository,
 		ITaskRepository taskRepository,
 		IPublisher publisher,
-		IMapper mapper) : IRequestHandler<DeleteTaskSectionCardCommand, DeleteTaskSectionCardCommandResponse> {
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<DeleteTaskSectionCardCommand, DeleteTaskSectionCardCommandResponse> {
 
 		private readonly IProjectRepository projectRepository = projectRepository;
 		private readonly ITaskRepository taskRepository = taskRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<DeleteTaskSectionCardCommandResponse> Handle(DeleteTaskSectionCardCommand request, CancellationToken cancellationToken) {
 
@@ -52,12 +54,15 @@ namespace Lunatic.Application.Features.Projects.Commands.DeleteTaskSectionCard {
 						Message = taskDeletedResult.Error
 					};
 				}
+
 				await publisher.Publish(
 					new TaskDeletedDomainEvent(Id: task.Id,
 											CommentIds: task.CommentIds),
 					cancellationToken);
 
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(project), cancellationToken);
 

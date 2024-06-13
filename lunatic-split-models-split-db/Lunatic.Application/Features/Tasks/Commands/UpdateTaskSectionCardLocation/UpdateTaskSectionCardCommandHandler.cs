@@ -9,16 +9,18 @@ namespace Lunatic.Application.Features.Tasks.Commands.UpdateTaskSectionCardLocat
 		ITaskRepository taskRepository,
 		IProjectRepository projectRepository,
 		IPublisher publisher,
-		IMapper mapper) : IRequestHandler<UpdateTaskSectionCardCommand, UpdateTaskSectionCardCommandResponse> {
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<UpdateTaskSectionCardCommand, UpdateTaskSectionCardCommandResponse> {
 
 		private readonly ITaskRepository taskRepository = taskRepository;
 		private readonly IProjectRepository projectRepository = projectRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<UpdateTaskSectionCardCommandResponse> Handle(UpdateTaskSectionCardCommand request, CancellationToken cancellationToken) {
 			var taskResult = await taskRepository.FindByIdAsync(request.TaskId);
-			if(!taskResult.IsSuccess) {
+			if (!taskResult.IsSuccess) {
 				return new UpdateTaskSectionCardCommandResponse {
 					Success = false,
 					Message = taskResult.Error
@@ -28,12 +30,14 @@ namespace Lunatic.Application.Features.Tasks.Commands.UpdateTaskSectionCardLocat
 			taskResult.Value.SetSection(request.Section);
 
 			var dbTaskResult = await taskRepository.UpdateAsync(taskResult.Value);
-			if(!dbTaskResult.IsSuccess) {
+			if (!dbTaskResult.IsSuccess) {
 				return new UpdateTaskSectionCardCommandResponse {
 					Success = false,
 					Message = dbTaskResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(dbTaskResult.Value), cancellationToken);
 

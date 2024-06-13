@@ -8,11 +8,13 @@ namespace Lunatic.Application.Features.Tasks.Commands.UpdateTaskStatus {
 	public class MarkTaskAsDoneCommandHandler(
 		ITaskRepository taskRepository,
 		IPublisher publisher,
-		IMapper mapper) : IRequestHandler<MarkTaskAsDoneCommand, MarkTaskAsDoneCommandResponse> {
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<MarkTaskAsDoneCommand, MarkTaskAsDoneCommandResponse> {
 
 		private readonly ITaskRepository taskRepository = taskRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<MarkTaskAsDoneCommandResponse> Handle(MarkTaskAsDoneCommand request, CancellationToken cancellationToken) {
 			var taskResult = await taskRepository.FindByIdAsync(request.TaskId);
@@ -31,6 +33,8 @@ namespace Lunatic.Application.Features.Tasks.Commands.UpdateTaskStatus {
 					Message = dbTaskResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(new TaskCompletedDomainEvent(taskResult.Value.Id), cancellationToken);
 			await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(dbTaskResult.Value), cancellationToken);

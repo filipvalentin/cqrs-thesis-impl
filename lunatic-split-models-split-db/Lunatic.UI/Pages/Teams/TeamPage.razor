@@ -395,6 +395,8 @@
 	}
 
 	private bool IsOwner() {
+		Console.WriteLine(CurrentUserId);
+		Console.WriteLine(OwnerId);
 		if (CurrentUserId == OwnerId) {
 			return true;
 		}
@@ -422,6 +424,14 @@
 
 
 	protected override async Task OnParametersSetAsync() {
+
+		try {
+			CurrentUserId = await localStorage.GetItemAsync<Guid>("userId");
+		}
+		catch (Exception e) {
+			Snackbar.Add($"Error loading your user id from localstorage. Perhaps you are not logged in. Error: {e.Message}", Severity.Error);
+			navigationManager.NavigateTo("/login");
+		}
 
 		var result = await TeamDataService.GetTeamByIdAsync(TeamId);
 		if (!result.Success) {

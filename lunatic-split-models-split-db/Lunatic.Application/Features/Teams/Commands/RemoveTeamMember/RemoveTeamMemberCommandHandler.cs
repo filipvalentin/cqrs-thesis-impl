@@ -10,12 +10,14 @@ namespace Lunatic.Application.Features.Teams.Commands.RemoveTeamMember {
 		ITeamRepository teamRepository,
 		IUserRepository userRepository,
 		IPublisher publisher,
-		IMapper mapper) : IRequestHandler<RemoveTeamMemberCommand, RemoveTeamMemberCommandResponse> {
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<RemoveTeamMemberCommand, RemoveTeamMemberCommandResponse> {
 
 		private readonly ITeamRepository teamRepository = teamRepository;
 		private readonly IUserRepository userRepository = userRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<RemoveTeamMemberCommandResponse> Handle(RemoveTeamMemberCommand request, CancellationToken cancellationToken) {
 
@@ -30,7 +32,7 @@ namespace Lunatic.Application.Features.Teams.Commands.RemoveTeamMember {
 			team.RemoveMember(request.UserId);
 
 			var userResult = await userRepository.FindByIdAsync(request.UserId);
-			if(!userResult.IsSuccess) {
+			if (!userResult.IsSuccess) {
 				return new RemoveTeamMemberCommandResponse {
 					Success = false,
 					Message = userResult.Error
@@ -53,6 +55,8 @@ namespace Lunatic.Application.Features.Teams.Commands.RemoveTeamMember {
 					Message = teamUpdatedResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<TeamUpdatedDomainEvent>(team), cancellationToken);
 			await publisher.Publish(mapper.Map<UserUpdatedDomainEvent>(user), cancellationToken);

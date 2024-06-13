@@ -10,6 +10,7 @@ namespace Lunatic.Application.Contracts.Identity {
         Task<ChangePasswordResponse> ChangePassword(ChangePasswordModel model);
         Task<ResetPasswordResponse> ResetPassword(ResetPasswordModel model);
         Task<ConfirmPasswordResponse> ConfirmPassword(ConfirmPasswordModel model);
+		Task<bool> Unregister(Guid userId);
         Task<(int, string)> Logout();
 	}
 }

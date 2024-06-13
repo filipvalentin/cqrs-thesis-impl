@@ -7,11 +7,13 @@ namespace Lunatic.Application.Features.Tasks.Commands.MarkTaskAsInProgress {
 	public class MarkTaskAsInProgressCommandHandler(
 		ITaskRepository taskRepository,
 		IPublisher publisher,
-		IMapper mapper) : IRequestHandler<MarkTaskAsInProgressCommand, MarkTaskAsInProgressCommandResponse> {
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<MarkTaskAsInProgressCommand, MarkTaskAsInProgressCommandResponse> {
 
 		private readonly ITaskRepository taskRepository = taskRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<MarkTaskAsInProgressCommandResponse> Handle(MarkTaskAsInProgressCommand request, CancellationToken cancellationToken) {
 			var taskResult = await taskRepository.FindByIdAsync(request.TaskId);
@@ -30,6 +32,8 @@ namespace Lunatic.Application.Features.Tasks.Commands.MarkTaskAsInProgress {
 					Message = dbTaskResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(dbTaskResult.Value), cancellationToken);
 

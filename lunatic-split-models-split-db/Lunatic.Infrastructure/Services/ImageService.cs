@@ -67,5 +67,19 @@ namespace Lunatic.Infrastructure.Services
 
 			return Result.Success();
 		}
+
+		public async Task<Result> DeleteUserImage(Guid userId) {
+			var user = await userRepository.FindByIdAsync(userId);
+			if (!user.IsSuccess) {
+				return  Result.Failure("User not found");
+			}
+
+			var deletedImage = await imageRepository.DeleteAsync(userId);
+			if (!deletedImage.IsSuccess) {
+				return Result.Failure("User never uploaded an image");
+			}
+			return Result.Success();
+		}
+
 	}
 }

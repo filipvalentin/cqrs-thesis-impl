@@ -8,11 +8,13 @@ namespace Lunatic.Application.Features.Tasks.Commands.UpdateTask {
 	public class UpdateTaskCommandHandler(
 		ITaskRepository taskRepository,
 		IMapper mapper,
-		IPublisher publisher) : IRequestHandler<UpdateTaskCommand, UpdateTaskCommandResponse> {
+		IPublisher publisher,
+		IUnitOfWork unitOfWork) : IRequestHandler<UpdateTaskCommand, UpdateTaskCommandResponse> {
 
 		private readonly ITaskRepository taskRepository = taskRepository;
 		private readonly IMapper mapper = mapper;
 		private readonly IPublisher publisher = publisher;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<UpdateTaskCommandResponse> Handle(UpdateTaskCommand request, CancellationToken cancellationToken) {
 			var taskResult = await taskRepository.FindByIdAsync(request.TaskId);
@@ -33,6 +35,8 @@ namespace Lunatic.Application.Features.Tasks.Commands.UpdateTask {
 					Message = dbTaskResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(taskResult.Value), cancellationToken);
 

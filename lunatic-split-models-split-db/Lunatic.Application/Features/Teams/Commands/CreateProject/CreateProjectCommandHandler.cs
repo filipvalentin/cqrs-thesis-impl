@@ -13,13 +13,15 @@ namespace Lunatic.Application.Features.Teams.Commands.CreateProject {
 		ITeamRepository teamRepository,
 		IUserRepository userRepository,
 		IPublisher publisher,
-		IMapper mapper) : IRequestHandler<CreateProjectCommand, CreateProjectCommandResponse> {
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<CreateProjectCommand, CreateProjectCommandResponse> {
 
 		private readonly IProjectRepository projectRepository = projectRepository;
 		private readonly ITeamRepository teamRepository = teamRepository;
 		private readonly IUserRepository userRepository = userRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<CreateProjectCommandResponse> Handle(CreateProjectCommand request, CancellationToken cancellationToken) {
 			var projectResult = Project.Create(request.UserId, request.TeamId, request.Title, request.Description);
@@ -55,6 +57,8 @@ namespace Lunatic.Application.Features.Teams.Commands.CreateProject {
 					Message = projectCreatedResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<ProjectCreatedDomainEvent>(project), cancellationToken);
 			await publisher.Publish(mapper.Map<TeamUpdatedDomainEvent>(team), cancellationToken);

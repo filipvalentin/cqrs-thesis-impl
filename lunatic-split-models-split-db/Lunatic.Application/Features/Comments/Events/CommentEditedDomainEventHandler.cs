@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Lunatic.Application.Models.ReadModels;
 using Lunatic.Application.Persistence.ReadSide;
-using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Application.Utils.Services;
 using Lunatic.Domain.DomainEvents.Comment;
 using MediatR;

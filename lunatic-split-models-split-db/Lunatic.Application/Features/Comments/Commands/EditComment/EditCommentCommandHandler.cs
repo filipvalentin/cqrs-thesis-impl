@@ -6,13 +6,15 @@ using MediatR;
 
 namespace Lunatic.Application.Features.Comments.Commands.EditComment {
 	public class EditCommentCommandHandler(
-		ICommentRepository commentRepository, 
+		ICommentRepository commentRepository,
 		IMapper mapper,
-		IPublisher publisher) : IRequestHandler<EditCommentCommand, EditCommentCommandResponse> {
+		IPublisher publisher,
+		IUnitOfWork unitOfWork) : IRequestHandler<EditCommentCommand, EditCommentCommandResponse> {
 
 		private readonly ICommentRepository commentRepository = commentRepository;
 		private readonly IMapper mapper = mapper;
 		private readonly IPublisher publisher = publisher;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<EditCommentCommandResponse> Handle(EditCommentCommand request, CancellationToken cancellationToken) {
 
@@ -33,6 +35,8 @@ namespace Lunatic.Application.Features.Comments.Commands.EditComment {
 					Message = dbCommentResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<CommentEditedDomainEvent>(comment), cancellationToken);
 

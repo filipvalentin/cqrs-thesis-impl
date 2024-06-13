@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Lunatic.Identity {
 	public static class InfrastructureIdentityRegistrationDI {
-		public static IServiceCollection AddInfrastrutureIdentityToDI(
+		public static IServiceCollection AddInfrastructureIdentityToDI(
 					   this IServiceCollection services,
 								  IConfiguration configuration) {
 			services.AddDbContext<LunaticUserContext>(
@@ -41,8 +41,22 @@ namespace Lunatic.Identity {
 						IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!))
 					};
 				});
+
 			services.AddScoped<IAuthService, AuthService>();
+
 			return services;
+		}
+
+		public static IServiceCollection AddLazyResolution(this IServiceCollection services) {
+			return services.AddTransient(
+				typeof(Lazy<>),
+				typeof(LazilyResolved<>));
+		}
+
+		private class LazilyResolved<T> : Lazy<T> {
+			public LazilyResolved(IServiceProvider serviceProvider)
+				: base(serviceProvider.GetRequiredService<T>) {
+			}
 		}
 	}
 }

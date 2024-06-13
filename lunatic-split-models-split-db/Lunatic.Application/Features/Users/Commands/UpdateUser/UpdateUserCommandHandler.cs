@@ -7,11 +7,13 @@ namespace Lunatic.Application.Features.Users.Commands.UpdateUser {
 	public class UpdateUserCommandHandler(
 		IUserRepository userRepository,
 		IPublisher publisher,
-		IMapper mapper) : IRequestHandler<UpdateUserCommand, UpdateUserCommandResponse> {
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<UpdateUserCommand, UpdateUserCommandResponse> {
 
 		private readonly IUserRepository userRepository = userRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<UpdateUserCommandResponse> Handle(UpdateUserCommand request, CancellationToken cancellationToken) {
 
@@ -22,7 +24,7 @@ namespace Lunatic.Application.Features.Users.Commands.UpdateUser {
 					Message = userResult.Error
 				};
 			}
-			var user =userResult.Value;
+			var user = userResult.Value;
 			user.Update(request.FirstName, request.LastName, request.Email);
 
 			var dbUserResult = await userRepository.UpdateAsync(user);
@@ -32,6 +34,8 @@ namespace Lunatic.Application.Features.Users.Commands.UpdateUser {
 					Message = dbUserResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<UserUpdatedDomainEvent>(user), cancellationToken);
 

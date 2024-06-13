@@ -12,13 +12,15 @@ namespace Lunatic.Application.Features.Tasks.Commands.CreateComment {
 		ICommentRepository commentRepository,
 		IUserRepository userRepository,
 		IPublisher publisher,
-		IMapper mapper) : IRequestHandler<AddCommentCommand, AddCommentCommandResponse> {
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<AddCommentCommand, AddCommentCommandResponse> {
 
 		private readonly ITaskRepository taskRepository = taskRepository;
 		private readonly ICommentRepository commentRepository = commentRepository;
 		private readonly IUserRepository userRepository = userRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<AddCommentCommandResponse> Handle(AddCommentCommand request, CancellationToken cancellationToken) {
 			var commentResult = Comment.Create(request.UserId, request.TaskId, request.Content);
@@ -55,6 +57,8 @@ namespace Lunatic.Application.Features.Tasks.Commands.CreateComment {
 					Message = commentAddedResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<TaskUpdatedDomainEvent>(task), cancellationToken);
 			await publisher.Publish(

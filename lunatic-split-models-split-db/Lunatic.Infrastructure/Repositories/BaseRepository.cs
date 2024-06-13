@@ -27,13 +27,13 @@ namespace Lunatic.Infrastructure.Repositories
 
 		public virtual async Task<Result<T>> AddAsync(T entity) {
 			await context.Set<T>().AddAsync(entity);
-			await context.SaveChangesAsync();
+			//await context.SaveChangesAsync();
 			return Result<T>.Success(entity);
 		}
 
 		public virtual async Task<Result<T>> UpdateAsync(T entity) {
 			context.Entry(entity).State = EntityState.Modified;
-			await context.SaveChangesAsync();
+			//await context.SaveChangesAsync();
 			return Result<T>.Success(entity);
 		}
 
@@ -41,7 +41,7 @@ namespace Lunatic.Infrastructure.Repositories
 			var result = await FindByIdAsync(id);
 			if (result.IsSuccess) {
 				context.Set<T>().Remove(result.Value);
-				await context.SaveChangesAsync();
+				//await context.SaveChangesAsync();
 				return Result<T>.Success(result.Value);
 			}
 			return Result<T>.Failure($"Entity with id {id} not found");

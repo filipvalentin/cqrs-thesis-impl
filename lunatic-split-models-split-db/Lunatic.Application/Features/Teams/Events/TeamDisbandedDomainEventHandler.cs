@@ -12,10 +12,12 @@ namespace Lunatic.Application.Features.Teams.Events {
 		IProjectRepository projectWriteRepository,
 		ILogger<TeamDisbandedDomainEventHandler> logger,
 		IPublisher publisher,
-		IEventQueueService eventQueueService) : INotificationHandler<TeamDisbandedDomainEvent> {
+		IEventQueueService eventQueueService,
+		IUnitOfWork unitOfWork) : INotificationHandler<TeamDisbandedDomainEvent> {
 
 		private readonly ITeamReadSideRepository teamReadRepository = teamRepository;
 		private readonly IProjectRepository projectWriteRepository = projectWriteRepository;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 		private readonly ILogger<TeamDisbandedDomainEventHandler> logger = logger;
 		private readonly IPublisher publisher = publisher;
 		private readonly IEventQueueService eventQueueService = eventQueueService;
@@ -36,6 +38,7 @@ namespace Lunatic.Application.Features.Teams.Events {
 					eventQueueService.Enqueue(domainEvent with { ProjectIds = projectIds });
 					return;
 				}
+				await unitOfWork.SaveChangesAsync(cancellationToken);
 				await publisher.Publish(
 					new ProjectDeletedDomainEvent(Id: projectId, TaskIds: projectReadResult.Value.TaskIds),
 					cancellationToken);

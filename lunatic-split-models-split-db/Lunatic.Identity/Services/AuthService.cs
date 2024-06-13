@@ -20,14 +20,14 @@ using AutoMapper;
 
 namespace Lunatic.Identity.Services {
 	public class AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager,
-		IConfiguration configuration, IUserRepository userRepository, SignInManager<ApplicationUser> signInManager,
+		IConfiguration configuration, Lazy<IUserRepository> userRepository, SignInManager<ApplicationUser> signInManager,
 		IEmailService emailService, ILogger<AuthService> logger, IPublisher publisher, IMapper mapper) : IAuthService {
 
 		private readonly UserManager<ApplicationUser> userManager = userManager;
 		private readonly RoleManager<IdentityRole> roleManager = roleManager;
 		private readonly SignInManager<ApplicationUser> signInManager = signInManager;
 		private readonly IConfiguration configuration = configuration;
-		private readonly IUserRepository userRepository = userRepository;
+		private readonly Lazy<IUserRepository> userRepository = userRepository;
 		private readonly IEmailService emailService = emailService;
 		private readonly ILogger<AuthService> logger = logger;
 		private readonly IPublisher publisher = publisher;
@@ -72,7 +72,7 @@ namespace Lunatic.Identity.Services {
 			if (await roleManager.RoleExistsAsync(UserRoles.User)) {
 				await userManager.AddToRoleAsync(user, role);
 			}
-			await userRepository.AddAsync(userDb.Value);
+			await userRepository.Value.AddAsync(userDb.Value);
 
 			await publisher.Publish(mapper.Map<UserCreatedDomainEvent>(userDb.Value));
 
@@ -235,6 +235,15 @@ namespace Lunatic.Identity.Services {
 			var tokenHandler = new JwtSecurityTokenHandler();
 			var token = tokenHandler.CreateToken(tokenDescriptor);
 			return tokenHandler.WriteToken(token);
+		}
+
+		public async Task<bool> Unregister(Guid userId) {
+			var user = await userManager.FindByIdAsync(userId.ToString());
+			if (user == null) {
+				return true;
+			}
+			var deletedResult =  await userManager.DeleteAsync(user);
+			return deletedResult.Succeeded;
 		}
 	}
 }

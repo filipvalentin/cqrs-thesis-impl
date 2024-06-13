@@ -64,6 +64,8 @@ namespace Lunatic.Infrastructure {
 			services.AddSingleton<IEventQueueService>(provider => new RabbitMqEventQueueService(configuration["RabbitMQ:Host"]!));
 			services.AddFailedEventProcessorServices();
 
+			services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 			return services;
 		}
 	}

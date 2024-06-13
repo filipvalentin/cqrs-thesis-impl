@@ -6,13 +6,15 @@ using MediatR;
 
 namespace Lunatic.Application.Features.Projects.Commands.UpdateProject {
 	public class UpdateTeamProjectCommandHandler(
-		IProjectRepository projectRepository, 
-		IMapper mapper, 
-		IPublisher publisher) : IRequestHandler<UpdateTeamProjectCommand, UpdateTeamProjectCommandResponse> {
+		IProjectRepository projectRepository,
+		IMapper mapper,
+		IPublisher publisher,
+		IUnitOfWork unitOfWork) : IRequestHandler<UpdateTeamProjectCommand, UpdateTeamProjectCommandResponse> {
 
 		private readonly IProjectRepository projectRepository = projectRepository;
 		private readonly IMapper mapper = mapper;
 		private readonly IPublisher publisher = publisher;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<UpdateTeamProjectCommandResponse> Handle(UpdateTeamProjectCommand request, CancellationToken cancellationToken) {
 
@@ -32,6 +34,8 @@ namespace Lunatic.Application.Features.Projects.Commands.UpdateProject {
 					Message = dbProjectResult.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<ProjectUpdatedDomainEvent>(dbProjectResult.Value), cancellationToken);
 

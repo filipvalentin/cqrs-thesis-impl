@@ -7,14 +7,16 @@ using MediatR;
 namespace Lunatic.Application.Features.Teams.Commands.DeleteTeam {
 	public class DisbandTeamCommandHandler(
 		ITeamRepository teamRepository,
-		IUserRepository userRepository, 
-		IPublisher publisher, 
-		IMapper mapper) : IRequestHandler<DisbandTeamCommand, DisbandTeamCommandResponse> {
+		IUserRepository userRepository,
+		IPublisher publisher,
+		IMapper mapper,
+		IUnitOfWork unitOfWork) : IRequestHandler<DisbandTeamCommand, DisbandTeamCommandResponse> {
 
 		private readonly IUserRepository userRepository = userRepository;
 		private readonly ITeamRepository teamRepository = teamRepository;
 		private readonly IPublisher publisher = publisher;
 		private readonly IMapper mapper = mapper;
+		private readonly IUnitOfWork unitOfWork = unitOfWork;
 
 		public async Task<DisbandTeamCommandResponse> Handle(DisbandTeamCommand request, CancellationToken cancellationToken) {
 			var teamResult = await teamRepository.FindByIdAsync(request.TeamId);
@@ -53,6 +55,8 @@ namespace Lunatic.Application.Features.Teams.Commands.DeleteTeam {
 					Message = result.Error
 				};
 			}
+
+			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			/*side-effects are handled in the domain event in cascade*/
 			await publisher.Publish(new TeamDisbandedDomainEvent(team.Id, team.ProjectIds), cancellationToken);
