@@ -1,7 +1,7 @@
 ﻿using Lunatic.Domain.Primitives;
 
 namespace Lunatic.Domain.DomainEvents.Team {
-	public record TeamUpdatedDomainEvent(Guid Id,
+	public record TeamDetailsUpdatedDomainEvent(Guid Id,
 		Guid CreatedByUserId,
 		string Name,
 		string Description,

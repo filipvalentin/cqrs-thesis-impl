@@ -58,7 +58,7 @@ namespace Lunatic.Application.Features.Teams.Commands.AddTeamMember {
 
 			await unitOfWork.SaveChangesAsync(cancellationToken);
 
-			await publisher.Publish(mapper.Map<TeamUpdatedDomainEvent>(team), cancellationToken);
+			await publisher.Publish(mapper.Map<TeamDetailsUpdatedDomainEvent>(team), cancellationToken);
 			await publisher.Publish(mapper.Map<UserUpdatedDomainEvent>(user), cancellationToken);
 
 			return new AddTeamMemberCommandResponse {

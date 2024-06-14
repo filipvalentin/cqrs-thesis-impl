@@ -39,7 +39,7 @@ namespace Lunatic.Application.Features.Teams.Commands.UpdateTeam {
 
 			await unitOfWork.SaveChangesAsync(cancellationToken);
 
-			await publisher.Publish(mapper.Map<TeamUpdatedDomainEvent>(teamResult.Value), cancellationToken);
+			await publisher.Publish(mapper.Map<TeamDetailsUpdatedDomainEvent>(teamResult.Value), cancellationToken);
 
 			return new UpdateTeamCommandResponse {
 				Success = true,

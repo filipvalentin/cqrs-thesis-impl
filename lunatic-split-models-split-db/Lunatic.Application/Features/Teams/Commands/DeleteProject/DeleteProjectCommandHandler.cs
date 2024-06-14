@@ -47,7 +47,7 @@ namespace Lunatic.Application.Features.Teams.Commands.DeleteTeamProject {
 
 			await unitOfWork.SaveChangesAsync(cancellationToken);
 
-			await publisher.Publish(mapper.Map<TeamUpdatedDomainEvent>(team), cancellationToken);
+			await publisher.Publish(mapper.Map<TeamDetailsUpdatedDomainEvent>(team), cancellationToken);
 			await publisher.Publish(
 				new ProjectDeletedDomainEvent(
 					Id: request.ProjectId,

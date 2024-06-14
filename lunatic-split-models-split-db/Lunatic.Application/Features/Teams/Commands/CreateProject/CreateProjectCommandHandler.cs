@@ -61,7 +61,7 @@ namespace Lunatic.Application.Features.Teams.Commands.CreateProject {
 			await unitOfWork.SaveChangesAsync(cancellationToken);
 
 			await publisher.Publish(mapper.Map<ProjectCreatedDomainEvent>(project), cancellationToken);
-			await publisher.Publish(mapper.Map<TeamUpdatedDomainEvent>(team), cancellationToken);
+			await publisher.Publish(mapper.Map<TeamDetailsUpdatedDomainEvent>(team), cancellationToken);
 
 			return new CreateProjectCommandResponse {
 				Success = true,

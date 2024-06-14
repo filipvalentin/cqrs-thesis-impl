@@ -58,9 +58,9 @@ namespace Lunatic.Application.Mappers {
 
 
 			CreateMap<Team, TeamCreatedDomainEvent>();
-			CreateMap<Team, TeamUpdatedDomainEvent>();
+			CreateMap<Team, TeamDetailsUpdatedDomainEvent>();
 			CreateMap<TeamCreatedDomainEvent, TeamReadModel>();
-			CreateMap<TeamUpdatedDomainEvent, TeamReadModel>();
+			CreateMap<TeamDetailsUpdatedDomainEvent, TeamReadModel>();
 
 			CreateMap<Project, ProjectCreatedDomainEvent>();
 			CreateMap<Project, ProjectUpdatedDomainEvent>();

@@ -7,18 +7,18 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Lunatic.Application.Features.Teams.Events {
-	public class TeamUpdatedDomainEventHandler(
+	public class TeamDetailsUpdatedDomainEventHandler(
 		ITeamReadSideRepository teamReadRepository,
 		IMapper mapper,
 		IEventQueueService queueService,
-		ILogger<TeamUpdatedDomainEventHandler> logger) : INotificationHandler<TeamUpdatedDomainEvent> {
+		ILogger<TeamDetailsUpdatedDomainEventHandler> logger) : INotificationHandler<TeamDetailsUpdatedDomainEvent> {
 
 		private readonly ITeamReadSideRepository teamReadRepository = teamReadRepository;
 		private readonly IMapper mapper = mapper;
 		private readonly IEventQueueService queueService = queueService;
-		private readonly ILogger<TeamUpdatedDomainEventHandler> logger = logger;
+		private readonly ILogger<TeamDetailsUpdatedDomainEventHandler> logger = logger;
 
-		public async Task Handle(TeamUpdatedDomainEvent notification, CancellationToken cancellationToken) {
+		public async Task Handle(TeamDetailsUpdatedDomainEvent notification, CancellationToken cancellationToken) {
 			var updateResult = await teamReadRepository.UpdateAsync(notification.Id, mapper.Map<TeamReadModel>(notification));
 			if (!updateResult.IsSuccess) {
 				logger.LogError("Error from TeamReadSideRepository: {Error} when updating entity with {Id}", updateResult.Error, notification.Id);
