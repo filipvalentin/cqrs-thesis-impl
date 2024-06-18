@@ -10,14 +10,14 @@ namespace Lunatic.Infrastructure.ReadServices
 		public TaskReadService(LunaticReadContext context) : base(context) {
 		}
 
-		public async Task<Result<CompositeTaskReadModel>> GetCompositeTaskByIdAsync(Guid taskId) {
+		public async Task<Result<FlatTaskReadModel>> GetFlatTaskByIdAsync(Guid taskId) {
 			var result = await context.CompoundTaskReadModel.FindAsync(taskId);
 			//.Include(t => t.Comments)
 			//.FirstOrDefaultAsync(t => t.Id == taskId);
 			if (result == null) {
-				return Result<CompositeTaskReadModel>.Failure($"Entity with id {taskId} not found");
+				return Result<FlatTaskReadModel>.Failure($"Entity with id {taskId} not found");
 			}
-			return Result<CompositeTaskReadModel>.Success(result);
+			return Result<FlatTaskReadModel>.Success(result);
 		}
 
 		public async Task<Result<TaskDescriptionReadModel>> GetTaskDescriptionByIdAsync(Guid taskId) {

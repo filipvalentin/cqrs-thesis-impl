@@ -6,15 +6,16 @@ using System.Text.Json;
 namespace Lunatic.Infrastructure.Services {
 	public class RabbitMqEventQueueService : IEventQueueService {
 		private readonly IConnection connection;
-		private readonly IModel channel;
+		//private readonly IModel channel;
 
 		public RabbitMqEventQueueService(string hostname) {
 			var factory = new ConnectionFactory() { HostName = hostname };
 			connection = factory.CreateConnection();
-			channel = connection.CreateModel();
+			//channel = connection.CreateModel();
 		}
 
 		public void Enqueue<T>(T item) {
+			using var channel = connection.CreateModel();
 			var message = JsonSerializer.Serialize(item);
 			var body = Encoding.UTF8.GetBytes(message);
 			var queueName = typeof(T).Name;
@@ -24,7 +25,9 @@ namespace Lunatic.Infrastructure.Services {
 		}
 
 		public T? Dequeue<T>() {
+			using var channel = connection.CreateModel();
 			var queueName = typeof(T).Name;
+
 			channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
 
 			var result = channel.BasicGet(queueName, autoAck: false);
@@ -41,12 +44,13 @@ namespace Lunatic.Infrastructure.Services {
 		}
 
 		public uint GetEventCount<T>() {
+			using var channel = connection.CreateModel();
 			var result = channel.QueueDeclarePassive(typeof(T).Name);
 			return result.MessageCount;
 		}
 
 		public void Dispose() {
-			channel.Dispose();
+			//channel.Dispose();
 			connection.Dispose();
 		}
 	}

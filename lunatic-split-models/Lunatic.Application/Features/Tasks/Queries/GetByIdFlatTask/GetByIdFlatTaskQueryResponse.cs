@@ -4,8 +4,8 @@ using Lunatic.Application.Features.Tasks.Payload;
 
 
 namespace Lunatic.Application.Features.Tasks.Queries.GetByIdCompositeTask {
-	public class GetByIdCompositeTaskQueryResponse : BaseResponse {
-		public GetByIdCompositeTaskQueryResponse() : base() { }
+	public class GetByIdFlatTaskQueryResponse : BaseResponse {
+		public GetByIdFlatTaskQueryResponse() : base() { }
 
 		public CompositeTaskDto Task { get; set; } = default!;
 	}

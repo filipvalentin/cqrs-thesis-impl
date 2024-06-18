@@ -51,18 +51,18 @@ namespace Lunatic.Infrastructure {
 			services.AddScoped<IImageRepository, ImageRepository>();
 			services.AddScoped<IEmailService, EmailService>();
 
-			services.AddScoped(typeof(IAsyncReadSideRepository<>), typeof(BaseReadSideRepository<>));
-			services.AddScoped<ITeamReadSideRepository, TeamReadSideRepository>();
-			services.AddScoped<ITaskReadSideRepository, TaskReadSideRepository>();
-			services.AddScoped<IProjectReadSideRepository, ProjectReadSideRepository>();
-			services.AddScoped<ICommentReadSideRepository, CommentReadSideRepository>();
-			services.AddScoped<IUserReadSideRepository, UserReadSideRepository>();
+			services.AddTransient(typeof(IAsyncReadSideRepository<>), typeof(BaseReadSideRepository<>));
+			services.AddTransient<ITeamReadSideRepository, TeamReadSideRepository>();
+			services.AddTransient<ITaskReadSideRepository, TaskReadSideRepository>();
+			services.AddTransient<IProjectReadSideRepository, ProjectReadSideRepository>();
+			services.AddTransient<ICommentReadSideRepository, CommentReadSideRepository>();
+			services.AddTransient<IUserReadSideRepository, UserReadSideRepository>();
 
 			services.AddScoped<IMLDataStorageService, MLDataStorageService>();
 			services.AddScoped<IMLDataProvider, MLDataProvider>();
 
 			services.AddSingleton<IEventQueueService>(provider => new RabbitMqEventQueueService(configuration["RabbitMQ:Host"]!));
-			services.AddFailedEventProcessorServices();
+			//services.AddFailedEventProcessorServices();
 
 			services.AddScoped<IUnitOfWork, UnitOfWork>();
 

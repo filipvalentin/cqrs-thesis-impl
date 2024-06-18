@@ -5,7 +5,7 @@ namespace Lunatic.Infrastructure.Data {
 	public class LunaticReadContext : DbContext {
 		public LunaticReadContext(DbContextOptions<LunaticReadContext> options) : base(options) { }
 
-		public DbSet<CompositeTaskReadModel> CompoundTaskReadModel { get; set; }
+		public DbSet<FlatTaskReadModel> CompoundTaskReadModel { get; set; }
 		public DbSet<TaskDescriptionReadModel> TaskDescriptionReadModel { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder) {

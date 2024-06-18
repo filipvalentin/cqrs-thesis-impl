@@ -4,7 +4,7 @@ using Lunatic.Domain.Utils;
 
 namespace Lunatic.Application.Features.Tasks.Interfaces {
 	public interface ITaskReadService : IGenericReadService<TaskReadModel> {
-		Task<Result<CompositeTaskReadModel>> GetCompositeTaskByIdAsync(Guid taskId);
+		Task<Result<FlatTaskReadModel>> GetFlatTaskByIdAsync(Guid taskId);
 		Task<Result<TaskDescriptionReadModel>> GetTaskDescriptionByIdAsync(Guid taskId);
 
 	}

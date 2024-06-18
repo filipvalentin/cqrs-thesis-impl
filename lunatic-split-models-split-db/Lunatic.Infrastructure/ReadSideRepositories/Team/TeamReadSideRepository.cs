@@ -5,14 +5,11 @@ using Lunatic.Domain.Utils;
 using MongoDB.Driver;
 
 namespace Lunatic.Infrastructure.ReadSideRepositories.Team {
-	public class TeamReadSideRepository : BaseReadSideRepository<TeamReadModel>, ITeamReadSideRepository {
-		public TeamReadSideRepository(ILunaticReadContext context) : base(context) {
-		}
-
+	public class TeamReadSideRepository(ILunaticReadContext context) : BaseReadSideRepository<TeamReadModel>(context), ITeamReadSideRepository {
 		public async Task<Result<List<UserReadModel>>> GetTeamMembers(Guid teamId) {
 			var filter = Builders<TeamReadModel>.Filter.Eq(restaurant => restaurant.Id, teamId);
 
-			var team = await context.GetCollection<TeamReadModel>().Find(filter).FirstOrDefaultAsync();
+			var team = await DbSet.Find(filter).FirstOrDefaultAsync();
 			if (team == null) {
 				return Result<List<UserReadModel>>.Failure($"Team with id {teamId} not found");
 			}

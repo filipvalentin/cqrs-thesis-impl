@@ -93,10 +93,10 @@ namespace Lunatic.API.Controllers {
 
 		[HttpGet("{taskId}/flat")]
 		[Produces("application/json")]
-		[ProducesResponseType<GetByIdCompositeTaskQueryResponse>(StatusCodes.Status200OK)]
-		[ProducesResponseType<GetByIdCompositeTaskQueryResponse>(StatusCodes.Status404NotFound)]
-		public async Task<IActionResult> GetByIdCompositeTask(Guid taskId) {//TODO: check taskId nonnull
-			var result = await Mediator.Send(new GetByIdCompositeTaskQuery {
+		[ProducesResponseType<GetByIdFlatTaskQueryResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<GetByIdFlatTaskQueryResponse>(StatusCodes.Status404NotFound)]
+		public async Task<IActionResult> GetByIdFlatTask(Guid taskId) {//TODO: check taskId nonnull
+			var result = await Mediator.Send(new GetByIdFlatTaskQuery {
 				TaskId = taskId
 			});
 			if (!result.Success) {
