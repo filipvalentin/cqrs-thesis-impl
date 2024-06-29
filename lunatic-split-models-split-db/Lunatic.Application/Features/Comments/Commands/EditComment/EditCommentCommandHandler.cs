@@ -38,7 +38,14 @@ namespace Lunatic.Application.Features.Comments.Commands.EditComment {
 
 			await unitOfWork.SaveChangesAsync(cancellationToken);
 
-			await publisher.Publish(mapper.Map<CommentEditedDomainEvent>(comment), cancellationToken);
+			await publisher.Publish(new CommentEditedDomainEvent(
+				Id : comment.CommentId,
+				TaskId : comment.TaskId,
+				CreatedByUserId : comment.CreatedByUserId,
+				Content : comment.Content,
+				CreatedDate : comment.CreatedDate,
+				LastModifiedDate : comment.LastModifiedDate
+			), cancellationToken);
 
 			return new EditCommentCommandResponse {
 				Success = true,

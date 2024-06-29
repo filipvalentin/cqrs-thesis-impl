@@ -104,6 +104,7 @@ namespace Lunatic.API.Controllers {
 			}
 			return Ok(result);
 		}
+
 		[HttpGet("{taskId}/description")]
 		[Produces("application/json")]
 		[ProducesResponseType<GetByIdTaskDescriptionQueryResponse>(StatusCodes.Status200OK)]

@@ -7,6 +7,7 @@ using Lunatic.Application.Features.Tasks.Commands.MarkTaskAsInProgress;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTask;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTaskSectionCardLocation;
 using Lunatic.Application.Features.Tasks.Commands.UpdateTaskStatus;
+using Lunatic.Application.Features.Tasks.Queries.GetByIdFlatTask;
 using Lunatic.Application.Features.Tasks.Queries.GetByIdTask;
 using Lunatic.Application.Features.Tasks.Queries.GetPredictedTaskTime;
 using Microsoft.AspNetCore.Mvc;
@@ -167,6 +168,20 @@ namespace Lunatic.API.Controllers {
 		[ProducesResponseType<GetPredictedTaskTimeCommandResponse>(StatusCodes.Status400BadRequest)]
 		public IActionResult ConvertDays(int number) {
 			var result = _dayConversionService.ConvertToString(number);
+			return Ok(result);
+		}
+
+		[HttpGet("{taskId}/flat")]
+		[Produces("application/json")]
+		[ProducesResponseType<GetByIdFlatTaskQueryResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<GetByIdFlatTaskQueryResponse>(StatusCodes.Status404NotFound)]
+		public async Task<IActionResult> GetByIdFlatTask(Guid taskId) {//TODO: check taskId nonnull
+			var result = await Mediator.Send(new GetByIdFlatTaskQuery {
+				TaskId = taskId
+			});
+			if (!result.Success) {
+				return NotFound(result);
+			}
 			return Ok(result);
 		}
 	}

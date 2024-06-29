@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Lunatic.Infrastructure.Data.Configurations.Read.Tasks {
-	internal sealed class CompositeTaskConfiguration : IEntityTypeConfiguration<FlatTaskReadModel> {
+	internal sealed class FlatTaskConfiguration : IEntityTypeConfiguration<FlatTaskReadModel> {
 		public void Configure(EntityTypeBuilder<FlatTaskReadModel> builder) {
 			builder.ToTable("Tasks");
 

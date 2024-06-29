@@ -1,5 +1,4 @@
-﻿using Lunatic.Application.Persistence.ReadSide;
-using Lunatic.Application.Persistence.ReadSide.Task;
+﻿using Lunatic.Application.Persistence.ReadSide.Task;
 using Lunatic.Application.Persistence.WriteSide;
 using Lunatic.Application.Utils.Services;
 using Lunatic.Domain.DomainEvents.Comment;
@@ -14,9 +13,11 @@ namespace Lunatic.Application.Features.Tasks.Events {
 		IEventQueueService queueService,
 		IPublisher publisher,
 		ILogger<TaskDeletedDomainEventHandler> logger,
-		IUnitOfWork unitOfWork) : INotificationHandler<TaskDeletedDomainEvent> {
+		IUnitOfWork unitOfWork,
+		IFlatTaskReadSideRepository flatTaskReadRepository) : INotificationHandler<TaskDeletedDomainEvent> {
 
 		private readonly ITaskReadSideRepository taskReadRepository = taskReadRepository;
+		private readonly IFlatTaskReadSideRepository flatTaskReadRepository = flatTaskReadRepository;
 		private readonly ICommentRepository commentWriteRepository = commentWriteRepository;
 		private readonly IUnitOfWork unitOfWork = unitOfWork;
 		private readonly IEventQueueService queueService = queueService;
@@ -45,6 +46,13 @@ namespace Lunatic.Application.Features.Tasks.Events {
 			var taskDeletedResult = await taskReadRepository.DeleteAsync(domainEvent.Id);
 			if (!taskDeletedResult.IsSuccess) {
 				logger.LogError("Failed to remove task with id {taskId}", domainEvent.Id);
+				queueService.Enqueue(domainEvent);
+				return;
+			}
+
+			var flatTaskDeletedResult = await flatTaskReadRepository.DeleteAsync(domainEvent.Id);
+			if (!flatTaskDeletedResult.IsSuccess) {
+				logger.LogError("Failed to remove flat task with id {taskId}", domainEvent.Id);
 				queueService.Enqueue(domainEvent);
 			}
 		}

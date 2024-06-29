@@ -54,6 +54,7 @@ namespace Lunatic.Infrastructure {
 			services.AddTransient(typeof(IAsyncReadSideRepository<>), typeof(BaseReadSideRepository<>));
 			services.AddTransient<ITeamReadSideRepository, TeamReadSideRepository>();
 			services.AddTransient<ITaskReadSideRepository, TaskReadSideRepository>();
+			services.AddTransient<IFlatTaskReadSideRepository, FlatTaskReadSideRepository>();
 			services.AddTransient<IProjectReadSideRepository, ProjectReadSideRepository>();
 			services.AddTransient<ICommentReadSideRepository, CommentReadSideRepository>();
 			services.AddTransient<IUserReadSideRepository, UserReadSideRepository>();
@@ -62,7 +63,7 @@ namespace Lunatic.Infrastructure {
 			services.AddScoped<IMLDataProvider, MLDataProvider>();
 
 			services.AddSingleton<IEventQueueService>(provider => new RabbitMqEventQueueService(configuration["RabbitMQ:Host"]!));
-			//services.AddFailedEventProcessorServices();
+			services.AddFailedEventProcessorServices();
 
 			services.AddScoped<IUnitOfWork, UnitOfWork>();
 

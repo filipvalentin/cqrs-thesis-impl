@@ -3,7 +3,7 @@ using Lunatic.Domain.Utils;
 
 namespace Lunatic.Domain.Entities {
 	public class User {
-		private User(string firstName, string lastName, string email, string username, string password, Role role) {
+		private User(string firstName, string lastName, string email, string username, Role role) {
 			Id = Guid.NewGuid();
 			RegisteredAt = DateTime.UtcNow;
 
@@ -11,7 +11,6 @@ namespace Lunatic.Domain.Entities {
 			LastName = lastName;
 			Email = email;
 			Username = username;
-			Password = password;
 			Role = role;
 		}
 
@@ -22,7 +21,6 @@ namespace Lunatic.Domain.Entities {
 		public string LastName { get; private set; }
 		public string Email { get; private set; }
 		public string Username { get; private set; }
-		public string Password { get; private set; }
 		public Role Role { get; private set; }
 
 		public List<Guid> TeamIds { get; private set; } = new List<Guid>();
@@ -48,7 +46,7 @@ namespace Lunatic.Domain.Entities {
 				return Result<User>.Failure("Password is required.");
 			}
 
-			return Result<User>.Success(new User(firstName, lastName, email, username, password, role));
+			return Result<User>.Success(new User(firstName, lastName, email, username, role));
 		}
 
 		public void Update(string firstName, string lastName, string email) {
